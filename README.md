@@ -37,7 +37,7 @@ git push origin main --force
 
 | Path | Description |
 |------|-------------|
-| `/` | Homepage (hero, showreel, selected work) |
+| `/` | Homepage (hero logo mark / animation, showreel, selected work) |
 | `/work` | Portfolio |
 | `/services` | Services |
 | `/start-a-project` | 7-step inquiry wizard → `leads` |
@@ -55,7 +55,11 @@ Login required (`SUPER_ADMIN` / `ADMIN` only).
 | `/admin/portfolio` | CMS: create / edit / publish |
 | `/admin/faqs` `/team` `/journal` | Lightweight CMS |
 | `/admin/settings` | Contact & social |
-| `/admin/media` | Brand media env status |
+| `/admin/media` | Brand media URLs |
+
+## Brand assets
+
+Static files under `public/brand/` (and `public/brand/brand-optimized/` for video).
 
 ## Setup checklist
 
