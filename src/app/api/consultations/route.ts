@@ -1,12 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import type { ConsultationInsert } from "@/types/database";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as ConsultationInsert;
+    const body = await request.json();
 
-    if (!body.full_name?.trim() || !body.email?.trim() || !body.consultation_type) {
+    const fullName = String(body.fullName || body.name || "").trim();
+    const email = String(body.email || "").trim();
+    const consultationType = String(body.type || body.consultationType || "").trim();
+
+    if (!fullName || !email || !consultationType) {
       return NextResponse.json(
         { error: "Name, email and consultation type are required." },
         { status: 400 }
@@ -18,13 +21,13 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from("consultations")
       .insert({
-        consultation_type: body.consultation_type,
-        full_name: body.full_name.trim(),
-        email: body.email.trim().toLowerCase(),
-        phone: body.phone?.trim() || null,
-        preferred_date: body.preferred_date || null,
-        preferred_time: body.preferred_time || null,
-        notes: body.notes?.trim() || null,
+        consultation_type: consultationType,
+        full_name: fullName,
+        email,
+        phone: body.phone || null,
+        preferred_date: body.date || body.preferredDate || null,
+        notes: body.notes || null,
+        status: "PENDING",
       })
       .select("id")
       .single();
@@ -32,17 +35,14 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error("Consultation insert error:", error.message);
       return NextResponse.json(
-        { error: "Failed to request consultation. Please try again." },
+        { error: "Could not save consultation request." },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, id: data.id });
-  } catch (err) {
-    console.error("Consultation API error:", err);
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again later." },
-      { status: 500 }
-    );
+    return NextResponse.json({ ok: true, id: data.id });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

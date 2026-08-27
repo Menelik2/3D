@@ -7,14 +7,14 @@ Production-ready foundation for META Pictures, a professional film & media produ
 ## Stack
 
 - **Frontend**: Next.js 16 (App Router) + TypeScript + Tailwind CSS v4
-- **Backend / DB**: Supabase (PostgreSQL + Auth + Storage)
-- **Design**: Dark cinematic UI, premium minimalism, film-inspired spacing
+- **Backend / DB**: Supabase (PostgreSQL + Auth + Storage + RLS)
+- **Design**: Dark cinematic UI, red accent matching logo
 
 ## Supabase Project
 
-- URL: `https://oqipymvqqptjxiaeasgd.supabase.co`
+- **URL**: `https://oqipymvqqptjxiaeasgd.supabase.co`
 
-### Setup
+### Setup (required)
 
 1. Clone and install:
 
@@ -25,80 +25,69 @@ git checkout root
 npm install
 ```
 
-2. Create `.env.local` from the example:
+2. Create `.env.local`:
 
 ```bash
 cp .env.example .env.local
 ```
 
-3. Fill in keys from your Supabase dashboard → **Project Settings → API**:
+3. Open [Supabase Dashboard](https://supabase.com/dashboard) → your project → **Project Settings → API** and copy:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://oqipymvqqptjxiaeasgd.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon public key>
+SUPABASE_SERVICE_ROLE_KEY=<service_role key>
 ```
 
-4. Run the database schema:
+> Never commit `.env.local` or the service role key.
 
-- Open Supabase Dashboard → **SQL Editor**
-- Paste and run the contents of `supabase/schema.sql`
-- This creates tables, RLS policies, triggers, and seed data (budget ranges + site settings)
+4. **Run the schema**
 
-5. Create Storage buckets (Dashboard → Storage):
+- Dashboard → **SQL Editor** → New query
+- Paste the full contents of `supabase/schema.sql`
+- Run it
 
-| Bucket         | Public |
-|----------------|--------|
-| `portfolio`    | Yes    |
-| `client-files` | No     |
-| `avatars`      | Yes    |
-| `bts`          | Yes    |
+This creates enums, tables, indexes, RLS policies, lead reference generator, and seed data (budget ranges + site settings).
 
-6. Start the app:
+5. **Storage buckets** (Dashboard → Storage → New bucket):
+
+| Bucket          | Public |
+|-----------------|--------|
+| `portfolio`     | Yes    |
+| `client-files`  | No     |
+| `avatars`       | Yes    |
+| `bts`           | Yes    |
+
+6. Start:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+## Features
 
-## Current Features
+- Full public site (home, work, services, about, team, journal, BTS, FAQ, contact)
+- Multi-step **Start a Project** → `POST /api/leads` → `leads` table
+- **Book Consultation** → `POST /api/consultations` → `consultations` table
+- Automatic lead reference numbers (`MP-YYMMDD-XXXXXX`)
+- RLS: public can insert leads/consultations; staff can manage; clients see own data
 
-- Cinematic public website (all routes)
-- Multi-step **Start a Project** inquiry → saves to `leads` table
-- **Book Consultation** form → saves to `consultations` table
-- Full PostgreSQL schema with RLS
-- Role-ready profiles (SUPER_ADMIN, ADMIN, PRODUCER, EDITOR, CLIENT)
-- Lead status pipeline
-- Portfolio, journal, team, FAQ, BTS structures
-
-## Database Entities
+## Database tables
 
 `profiles` · `clients` · `leads` · `lead_notes` · `projects` · `project_members` · `portfolio_items` · `services` · `consultations` · `availability_slots` · `blocked_dates` · `testimonials` · `team_members` · `journal_posts` · `bts_posts` · `faqs` · `media` · `documents` · `deliverable_revisions` · `messages` · `notifications` · `audit_logs` · `site_settings` · `budget_ranges`
 
-## Security Notes
+## Roles (RBAC)
 
-- Never commit `.env.local` or the service role key
-- RLS is enabled; public can only insert leads/consultations and read published content
-- Staff policies use `is_staff()` helper
-- Tighten policies further by role as you build the admin dashboard
+`SUPER_ADMIN` · `ADMIN` · `PRODUCER` · `EDITOR` · `CLIENT`
 
-## Roadmap
+## Next steps
 
-1. ✅ Public site + inquiry forms
-2. ✅ Database schema + Supabase client
-3. Admin dashboard (leads, portfolio CMS, team, FAQ)
-4. Auth (login for staff + client portal)
-5. File uploads to Storage
-6. Consultation availability calendar
-7. Client portal + approval system
-8. Email notifications
-
-## Brand
-
-- Primary: **EVERY FRAME HAS A STORY.**
-- Supporting: We Don't Just Film. We Create Cinema.
+1. Paste your **anon** + **service_role** keys into `.env.local`
+2. Run `supabase/schema.sql` in the SQL Editor
+3. Create storage buckets
+4. (Optional) Create first admin user in Auth, then set `role = 'SUPER_ADMIN'` on their `profiles` row
+5. Admin dashboard + client portal
 
 ## License
 
-Private / proprietary for META Pictures. All rights reserved.
+Private / proprietary for META Pictures.
