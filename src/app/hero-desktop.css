@@ -1,0 +1,51 @@
+/* Desktop density overrides — larger logo + frames, less empty space */
+@media (min-width: 1024px) {
+  .frame-3d {
+    border-width: 1.5px;
+  }
+  .frame-3d-a {
+    width: 360px !important;
+    height: 210px !important;
+    left: 2% !important;
+    top: 10% !important;
+  }
+  .frame-3d-b {
+    width: 280px !important;
+    height: 380px !important;
+    right: 2% !important;
+    top: 8% !important;
+  }
+  .frame-3d-c {
+    width: 280px !important;
+    height: 160px !important;
+    left: 8% !important;
+    bottom: 14% !important;
+  }
+  .frame-3d-d {
+    width: 300px !important;
+    height: 170px !important;
+    right: 6% !important;
+    bottom: 10% !important;
+  }
+  .frame-3d-e {
+    width: 200px !important;
+    height: 280px !important;
+    left: 4% !important;
+    top: 42% !important;
+  }
+  .logo-stage {
+    width: min(70vw, 920px) !important;
+  }
+  .logo-stage-media {
+    inset: 6% 5% !important;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 30px 90px rgba(0, 0, 0, 0.7),
+      0 0 60px rgba(225, 29, 72, 0.22) !important;
+  }
+}
+@media (min-width: 1280px) {
+  .logo-stage {
+    width: min(62vw, 980px) !important;
+  }
+}
