@@ -52,14 +52,22 @@ export function getSocialConfig(): SocialConfig {
   };
 }
 
-/** Brand media: logo animation, showreel, OG image */
+/**
+ * Brand media — optimized defaults under /public/brand/
+ * logo: webp ~4.5KB, jpg fallback ~11KB
+ * logo video: ~90KB H.264 baseline, muted loop
+ * OG: 1200×630 ~28KB
+ */
 export function getMediaConfig(): MediaConfig {
   return {
     logoUrl: env("NEXT_PUBLIC_LOGO_URL", "/brand/meta-logo.jpg"),
     logoVideoUrl: env("NEXT_PUBLIC_LOGO_VIDEO_URL", "/brand/meta-logo.mp4"),
     showreelUrl: env("NEXT_PUBLIC_SHOWREEL_URL"),
-    showreelPosterUrl: env("NEXT_PUBLIC_SHOWREEL_POSTER_URL"),
-    ogImageUrl: env("NEXT_PUBLIC_OG_IMAGE_URL", "/brand/meta-logo.jpg"),
+    showreelPosterUrl: env(
+      "NEXT_PUBLIC_SHOWREEL_POSTER_URL",
+      "/brand/meta-logo-poster.jpg"
+    ),
+    ogImageUrl: env("NEXT_PUBLIC_OG_IMAGE_URL", "/brand/og.jpg"),
   };
 }
 
