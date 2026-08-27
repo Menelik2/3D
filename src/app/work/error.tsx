@@ -21,7 +21,7 @@ export default function WorkError({
           Work
         </p>
         <h1 className="text-2xl sm:text-3xl font-light">
-          Couldn&apos;t load this project
+          Could not load this project
         </h1>
         <p className="mt-3 text-sm text-muted">
           Portfolio data failed to load. Try again or browse all work.

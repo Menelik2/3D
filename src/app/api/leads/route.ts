@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+/** Empty strings break Postgres DATE columns — normalize to null. */
+function optionalDate(v: unknown): string | null {
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s.length > 0 ? s : null;
+}
+
+function optionalText(v: unknown): string | null {
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s.length > 0 ? s : null;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -19,8 +32,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid email." }, { status: 400 });
     }
 
-    const projectTypes =
-      body.projectTypes || body.project_types || [];
+    const projectTypes = body.projectTypes || body.project_types || [];
 
     const supabase = await createClient();
 
@@ -28,25 +40,35 @@ export async function POST(request: Request) {
       .from("leads")
       .insert({
         full_name: fullName,
-        company: body.company || null,
+        company: optionalText(body.company),
         email,
-        phone: body.phone || null,
-        whatsapp: body.whatsapp || null,
-        preferred_contact: body.preferredContact || body.preferred_contact || null,
+        phone: optionalText(body.phone),
+        whatsapp: optionalText(body.whatsapp),
+        preferred_contact:
+          optionalText(body.preferredContact || body.preferred_contact) ||
+          "email",
         project_types: Array.isArray(projectTypes) ? projectTypes : [],
-        project_title: body.title || body.project_title || null,
-        project_description: body.description || body.project_description || null,
-        creative_idea: body.creativeIdea || body.creative_idea || null,
-        references_text: body.references || body.references_text || null,
-        visual_style: body.visualStyle || body.visual_style || null,
-        preferred_date: body.preferredDate || body.preferred_date || null,
-        alternative_date: body.alternativeDate || body.alternative_date || null,
-        city: body.city || null,
-        location: body.location || null,
-        indoor_outdoor: body.indoorOutdoor || body.indoor_outdoor || null,
-        expected_duration: body.duration || body.expected_duration || null,
-        budget_range: body.budget || body.budget_range || null,
-        source: body.source || "website",
+        project_title: optionalText(body.title || body.project_title),
+        project_description: optionalText(
+          body.description || body.project_description
+        ),
+        creative_idea: optionalText(body.creativeIdea || body.creative_idea),
+        references_text: optionalText(body.references || body.references_text),
+        visual_style: optionalText(body.visualStyle || body.visual_style),
+        preferred_date: optionalDate(
+          body.preferredDate || body.preferred_date
+        ),
+        alternative_date: optionalDate(
+          body.alternativeDate || body.alternative_date
+        ),
+        city: optionalText(body.city),
+        location: optionalText(body.location),
+        indoor_outdoor: optionalText(
+          body.indoorOutdoor || body.indoor_outdoor
+        ),
+        expected_duration: optionalText(body.duration || body.expected_duration),
+        budget_range: optionalText(body.budget || body.budget_range),
+        source: optionalText(body.source) || "website",
         status: "NEW",
       })
       .select("id, reference_number")

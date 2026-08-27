@@ -78,8 +78,8 @@ export default function StartProjectPage() {
             <Link href="/work" className="inline-flex items-center justify-center border border-white/20 px-6 py-3 text-xs uppercase tracking-widest hover:bg-white/5">
               Return to Portfolio
             </Link>
-            <Link href="/admin/leads" className="inline-flex items-center justify-center bg-accent px-6 py-3 text-xs uppercase tracking-widest text-white hover:bg-accent-hover">
-              View in Admin
+            <Link href="/" className="inline-flex items-center justify-center bg-accent px-6 py-3 text-xs uppercase tracking-widest text-white hover:bg-accent-hover">
+              Back to Home
             </Link>
           </div>
         </div>

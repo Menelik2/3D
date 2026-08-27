@@ -19,13 +19,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         `${item.title} — cinematic project by META Pictures.`,
     };
   }
-  const title = slug
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
   return {
-    title,
-    description: `${title} — cinematic project by META Pictures.`,
+    title: "Project",
+    description: "Cinematic project by META Pictures.",
   };
 }
 
@@ -34,34 +30,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   const item = await getPortfolioBySlug(slug);
 
   if (!item) {
-    // Keep soft placeholder for unknown slugs during early CMS fill-out
-    const title = slug
-      .split("-")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
-    return (
-      <div className="pt-24 md:pt-28 pb-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <header className="mb-12 max-w-3xl">
-            <p className="text-xs uppercase tracking-widest text-muted mb-3">
-              Project
-            </p>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight">
-              {title}
-            </h1>
-            <p className="mt-4 text-muted text-sm">
-              This project is not published yet. Add it in the admin CMS.
-            </p>
-          </header>
-          <Link
-            href="/work"
-            className="text-xs uppercase tracking-widest text-muted hover:text-foreground transition-colors"
-          >
-            ← All Work
-          </Link>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
   const related = (await getPublishedPortfolio())
