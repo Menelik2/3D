@@ -1,19 +1,25 @@
 /**
  * Public CMS reads with Cache Components ("use cache").
- * Safe for Server Components — no cookies / request APIs inside cached scopes.
- * Invalidate via revalidateTag / updateTag from CMS write routes.
+ * Long-lived caches + cacheTag; admin mutations call revalidateTag.
  */
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cacheLife, cacheTag } from "next/cache";
 
-function publicSupabase() {
+let _client: SupabaseClient | null | undefined;
+
+function publicSupabase(): SupabaseClient | null {
+  if (_client !== undefined) return _client;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) return null;
-  return createClient(url, anon, {
+  if (!url || !anon) {
+    _client = null;
+    return null;
+  }
+  _client = createClient(url, anon, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  return _client;
 }
 
 export type PortfolioListItem = {
@@ -72,11 +78,56 @@ export type TeamMember = {
   skills: string[] | null;
 };
 
-/** Published portfolio items (list). Cached + tagged for CMS revalidation. */
+/** Slugs for generateStaticParams (build-time prerender). */
+export async function getPublishedPortfolioSlugs(): Promise<string[]> {
+  "use cache";
+  cacheTag("portfolio");
+  cacheLife("cms");
+
+  const supabase = publicSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("portfolio_items")
+    .select("slug")
+    .eq("is_published", true)
+    .order("sort_order", { ascending: true })
+    .limit(100);
+
+  if (error) {
+    console.error("[getPublishedPortfolioSlugs]", error.message);
+    return [];
+  }
+  return (data ?? []).map((r) => r.slug as string).filter(Boolean);
+}
+
+export async function getPublishedJournalSlugs(): Promise<string[]> {
+  "use cache";
+  cacheTag("journal");
+  cacheLife("cms");
+
+  const supabase = publicSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("journal_posts")
+    .select("slug")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false })
+    .limit(100);
+
+  if (error) {
+    console.error("[getPublishedJournalSlugs]", error.message);
+    return [];
+  }
+  return (data ?? []).map((r) => r.slug as string).filter(Boolean);
+}
+
+/** Published portfolio items (list). */
 export async function getPublishedPortfolio(): Promise<PortfolioListItem[]> {
   "use cache";
   cacheTag("portfolio");
-  cacheLife("hours");
+  cacheLife("cms");
 
   const supabase = publicSupabase();
   if (!supabase) return [];
@@ -103,7 +154,7 @@ export async function getFeaturedPortfolio(
 ): Promise<PortfolioListItem[]> {
   "use cache";
   cacheTag("portfolio");
-  cacheLife("hours");
+  cacheLife("cms");
 
   const supabase = publicSupabase();
   if (!supabase) return [];
@@ -125,7 +176,6 @@ export async function getFeaturedPortfolio(
 
   if (data && data.length > 0) return data as PortfolioListItem[];
 
-  // Fallback: latest published if none are featured
   const { data: fallback } = await supabase
     .from("portfolio_items")
     .select(
@@ -145,7 +195,7 @@ export async function getPortfolioBySlug(
   "use cache";
   cacheTag("portfolio");
   cacheTag(`portfolio:${slug}`);
-  cacheLife("hours");
+  cacheLife("cms");
 
   const supabase = publicSupabase();
   if (!supabase) return null;
@@ -170,7 +220,7 @@ export async function getPortfolioBySlug(
 export async function getPublishedFaqs(): Promise<FaqItem[]> {
   "use cache";
   cacheTag("faqs");
-  cacheLife("days");
+  cacheLife("cmsStatic");
 
   const supabase = publicSupabase();
   if (!supabase) return [];
@@ -192,7 +242,7 @@ export async function getPublishedFaqs(): Promise<FaqItem[]> {
 export async function getPublishedJournal(): Promise<JournalListItem[]> {
   "use cache";
   cacheTag("journal");
-  cacheLife("hours");
+  cacheLife("cms");
 
   const supabase = publicSupabase();
   if (!supabase) return [];
@@ -220,7 +270,7 @@ export async function getJournalBySlug(
   "use cache";
   cacheTag("journal");
   cacheTag(`journal:${slug}`);
-  cacheLife("hours");
+  cacheLife("cms");
 
   const supabase = publicSupabase();
   if (!supabase) return null;
@@ -245,7 +295,7 @@ export async function getJournalBySlug(
 export async function getPublishedTeam(): Promise<TeamMember[]> {
   "use cache";
   cacheTag("team");
-  cacheLife("days");
+  cacheLife("cmsStatic");
 
   const supabase = publicSupabase();
   if (!supabase) return [];

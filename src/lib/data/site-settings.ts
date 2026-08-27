@@ -1,6 +1,6 @@
 /**
  * Public site config: env (deploy-time) + site_settings CMS (runtime).
- * Non-empty env values win; CMS fills gaps. Cached for Cache Components.
+ * Non-empty env values win; CMS fills gaps. Long-lived cache + settings tag.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -35,7 +35,6 @@ function mergeFilled<T extends Record<string, string>>(
   return next;
 }
 
-/** Prefer service role so site_settings is readable despite staff-only RLS. */
 function settingsClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -57,7 +56,7 @@ function settingsClient() {
 export async function getPublicSiteConfig(): Promise<PublicSiteConfig> {
   "use cache";
   cacheTag("settings");
-  cacheLife("hours");
+  cacheLife("cmsStatic");
 
   let contact = getContactConfig();
   let social = getSocialConfig();
@@ -86,7 +85,6 @@ export async function getPublicSiteConfig(): Promise<PublicSiteConfig> {
     }
   }
 
-  // Env still wins when set (deploy overrides)
   contact = mergeFilled(contact, getContactConfig());
   social = mergeFilled(social, getSocialConfig());
 

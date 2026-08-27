@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import {
   getJournalBySlug,
   getPublishedJournal,
+  getPublishedJournalSlugs,
 } from "@/lib/data/public-cms";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -19,6 +20,12 @@ function formatDate(iso: string | null) {
   } catch {
     return null;
   }
+}
+
+/** Prerender known published posts at build; others ISR on first visit. */
+export async function generateStaticParams() {
+  const slugs = await getPublishedJournalSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
