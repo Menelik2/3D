@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getPublishedPortfolio } from "@/lib/data/public-cms";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { PerspectiveCard } from "@/components/3d/PerspectiveCard";
 import { CtaBlock } from "@/components/ui/CtaBlock";
+import { WorkFilterGrid } from "@/components/WorkFilterGrid";
 
 export const metadata: Metadata = {
   title: "Work",
@@ -24,18 +24,7 @@ export default async function WorkPage() {
         />
 
         {projects.length > 0 ? (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 [perspective:1200px]">
-            {projects.map((project) => (
-              <PerspectiveCard
-                key={project.id}
-                href={`/work/${project.slug}`}
-                title={project.title}
-                category={project.category}
-                year={project.year}
-                coverUrl={project.cover_image_url}
-              />
-            ))}
-          </div>
+          <WorkFilterGrid projects={projects} />
         ) : (
           <div className="border border-border bg-card/20 px-8 py-20 text-center">
             <p className="text-sm text-muted max-w-md mx-auto leading-relaxed">
