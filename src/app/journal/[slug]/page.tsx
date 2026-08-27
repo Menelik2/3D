@@ -22,7 +22,6 @@ function formatDate(iso: string | null) {
   }
 }
 
-/** Prerender known published posts at build; others ISR on first visit. */
 export async function generateStaticParams() {
   const slugs = await getPublishedJournalSlugs();
   return slugs.map((slug) => ({ slug }));
@@ -63,17 +62,17 @@ export default async function JournalDetailPage({ params }: Props) {
       <article className="mx-auto max-w-3xl px-4 sm:px-6">
         <Link
           href="/journal"
-          className="inline-block text-xs uppercase tracking-widest text-muted hover:text-foreground transition-colors mb-10"
+          className="inline-block text-[11px] uppercase tracking-widest text-muted hover:text-foreground transition-colors mb-10"
         >
           ← Journal
         </Link>
 
         <header className="mb-10">
-          <p className="text-xs uppercase tracking-widest text-muted mb-3">
+          <p className="text-[10px] uppercase tracking-[0.25em] text-muted mb-4">
             {[post.category, dateLabel].filter(Boolean).join(" · ") ||
               "Journal"}
           </p>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight text-balance">
             {post.title}
           </h1>
           {post.excerpt && (
@@ -107,7 +106,7 @@ export default async function JournalDetailPage({ params }: Props) {
         )}
 
         {post.body ? (
-          <div className="prose-journal space-y-4 text-foreground/90 leading-relaxed whitespace-pre-line text-sm sm:text-base">
+          <div className="space-y-4 text-foreground/90 leading-relaxed whitespace-pre-line text-sm sm:text-base">
             {post.body}
           </div>
         ) : (
@@ -117,14 +116,11 @@ export default async function JournalDetailPage({ params }: Props) {
         <div className="mt-16 pt-10 border-t border-border flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <Link
             href="/journal"
-            className="text-xs uppercase tracking-widest text-muted hover:text-foreground transition-colors"
+            className="text-[11px] uppercase tracking-widest text-muted hover:text-foreground transition-colors"
           >
             ← All posts
           </Link>
-          <Link
-            href="/start-a-project"
-            className="inline-flex items-center justify-center bg-accent px-6 py-3 text-xs font-medium uppercase tracking-widest text-white hover:bg-accent-hover"
-          >
+          <Link href="/start-a-project" className="btn-primary">
             Start a Project
           </Link>
         </div>
@@ -132,15 +128,15 @@ export default async function JournalDetailPage({ params }: Props) {
 
       {related.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-20">
-          <h2 className="text-xs uppercase tracking-widest text-muted mb-8">
-            More from the Journal
-          </h2>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-muted mb-8">
+            More from the journal
+          </p>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {related.map((p) => (
               <Link
                 key={p.id}
                 href={`/journal/${p.slug}`}
-                className="group border border-border bg-card/20 overflow-hidden block"
+                className="group border border-border bg-card/20 overflow-hidden block transition hover:border-accent/30"
               >
                 <div className="aspect-[16/10] bg-zinc-900 relative overflow-hidden">
                   {p.cover_image_url && (
@@ -148,7 +144,7 @@ export default async function JournalDetailPage({ params }: Props) {
                     <img
                       src={p.cover_image_url}
                       alt=""
-                      className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
                   )}
                 </div>
