@@ -7,91 +7,98 @@ Production-ready foundation for META Pictures, a professional film & media produ
 ## Stack
 
 - **Frontend**: Next.js 16 (App Router) + TypeScript + Tailwind CSS v4
+- **Backend / DB**: Supabase (PostgreSQL + Auth + Storage)
 - **Design**: Dark cinematic UI, premium minimalism, film-inspired spacing
-- **Planned backend**: PostgreSQL + secure auth (RBAC) + object storage (e.g. Supabase Storage)
 
-## Current Status
+## Supabase Project
 
-This repository contains a **working public website shell** with:
+- URL: `https://oqipymvqqptjxiaeasgd.supabase.co`
 
-- Cinematic homepage (hero, showreel section, selected work, services teaser, CTA)
-- Work / Services / About / Contact / Journal / Team / BTS / FAQ routes
-- Multi-step **Start a Project** inquiry wizard (7 steps)
-- Responsive mobile navigation (full-screen menu)
-- Premium dark theme matching the META Pictures logo aesthetic (red accent)
-- SEO metadata, 404 page, Privacy & Terms placeholders
-- Footer with configurable contact/social structure
+### Setup
 
-### Intentionally left as architecture / next steps
-
-The original brief is very large (full admin CMS, lead management, client portal, consultation booking with conflict prevention, file uploads to private storage, RBAC, notifications, etc.).
-
-These systems require:
-
-1. Database (PostgreSQL) + schema
-2. Auth (e.g. NextAuth / Supabase Auth) with roles: SUPER_ADMIN, ADMIN, PRODUCER, EDITOR, CLIENT
-3. Object storage for videos/images/documents
-4. Environment secrets (never commit them)
-
-They are **not** fully implemented in this initial push so the public site remains clean and deployable immediately.
-
-## Getting Started
+1. Clone and install:
 
 ```bash
 git clone https://github.com/Menelik2/3D.git
 cd 3D
+git checkout root
 npm install
+```
+
+2. Create `.env.local` from the example:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Fill in keys from your Supabase dashboard → **Project Settings → API**:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://oqipymvqqptjxiaeasgd.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+4. Run the database schema:
+
+- Open Supabase Dashboard → **SQL Editor**
+- Paste and run the contents of `supabase/schema.sql`
+- This creates tables, RLS policies, triggers, and seed data (budget ranges + site settings)
+
+5. Create Storage buckets (Dashboard → Storage):
+
+| Bucket         | Public |
+|----------------|--------|
+| `portfolio`    | Yes    |
+| `client-files` | No     |
+| `avatars`      | Yes    |
+| `bts`          | Yes    |
+
+6. Start the app:
+
+```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Environment
+## Current Features
 
-Copy `.env.example` (when added) and configure:
+- Cinematic public website (all routes)
+- Multi-step **Start a Project** inquiry → saves to `leads` table
+- **Book Consultation** form → saves to `consultations` table
+- Full PostgreSQL schema with RLS
+- Role-ready profiles (SUPER_ADMIN, ADMIN, PRODUCER, EDITOR, CLIENT)
+- Lead status pipeline
+- Portfolio, journal, team, FAQ, BTS structures
 
-- Database URL
-- Auth secrets
-- Storage credentials
-- Contact numbers / WhatsApp / email (site settings)
+## Database Entities
 
-Never commit real secrets.
+`profiles` · `clients` · `leads` · `lead_notes` · `projects` · `project_members` · `portfolio_items` · `services` · `consultations` · `availability_slots` · `blocked_dates` · `testimonials` · `team_members` · `journal_posts` · `bts_posts` · `faqs` · `media` · `documents` · `deliverable_revisions` · `messages` · `notifications` · `audit_logs` · `site_settings` · `budget_ranges`
 
-## Design Direction
+## Security Notes
 
-- Deep charcoal / black backgrounds
-- White typography
-- Subtle red accent (`#e11d48`) matching the logo
-- Large editorial cards, film-inspired spacing
-- Full-screen mobile menu
-- Grain texture, reduced-motion support
-- Accessible focus states
+- Never commit `.env.local` or the service role key
+- RLS is enabled; public can only insert leads/consultations and read published content
+- Staff policies use `is_staff()` helper
+- Tighten policies further by role as you build the admin dashboard
 
-## Primary Conversion Path
+## Roadmap
 
-Visitor → Cinematic experience → Showreel → Work → Services → Trust → **Start a Project** → Consultation → Production → Delivery
-
-## Roadmap (recommended order)
-
-1. Connect PostgreSQL + define schema (users, clients, leads, projects, portfolio_items, services, consultations, site_settings, …)
-2. Secure file uploads (public portfolio vs private client files)
-3. Admin dashboard + lightweight CMS
-4. Lead status pipeline & notes
-5. Consultation booking + availability
-6. Client portal + approval / revision system
-7. Email notification templates
-8. Analytics events
-9. Full SEO (sitemap, structured data, OG images)
+1. ✅ Public site + inquiry forms
+2. ✅ Database schema + Supabase client
+3. Admin dashboard (leads, portfolio CMS, team, FAQ)
+4. Auth (login for staff + client portal)
+5. File uploads to Storage
+6. Consultation availability calendar
+7. Client portal + approval system
+8. Email notifications
 
 ## Brand
 
-- Primary message: **EVERY FRAME HAS A STORY.**
-- Supporting: We Don't Just Film. We Create Cinema. / Your Vision. Our Frame.
+- Primary: **EVERY FRAME HAS A STORY.**
+- Supporting: We Don't Just Film. We Create Cinema.
 
 ## License
 
 Private / proprietary for META Pictures. All rights reserved.
-
----
-
-Built as a production foundation — not a template.
