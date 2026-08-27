@@ -55,11 +55,11 @@ export function getSocialConfig(): SocialConfig {
 /** Brand media: logo animation, showreel, OG image */
 export function getMediaConfig(): MediaConfig {
   return {
-    logoUrl: env("NEXT_PUBLIC_LOGO_URL"),
+    logoUrl: env("NEXT_PUBLIC_LOGO_URL", "/brand/meta-logo.jpg"),
     logoVideoUrl: env("NEXT_PUBLIC_LOGO_VIDEO_URL"),
     showreelUrl: env("NEXT_PUBLIC_SHOWREEL_URL"),
     showreelPosterUrl: env("NEXT_PUBLIC_SHOWREEL_POSTER_URL"),
-    ogImageUrl: env("NEXT_PUBLIC_OG_IMAGE_URL"),
+    ogImageUrl: env("NEXT_PUBLIC_OG_IMAGE_URL", "/brand/meta-logo.jpg"),
   };
 }
 
