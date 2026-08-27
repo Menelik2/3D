@@ -9,10 +9,13 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/admin";
+  const notAdmin = searchParams.get("error") === "not_admin";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    notAdmin ? "This account is not an admin. Use the single admin account." : null
+  );
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -33,10 +36,33 @@ function LoginForm() {
         return;
       }
 
+      // Confirm this user is SUPER_ADMIN or ADMIN
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        const role = profile?.role;
+        if (role !== "SUPER_ADMIN" && role !== "ADMIN") {
+          await supabase.auth.signOut();
+          setError(
+            "Not an admin account. Create one user in Supabase Auth, then run supabase/single-admin-setup.sql."
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       router.replace(next);
       router.refresh();
     } catch {
-      setError("Login failed. Check your connection and Supabase keys.");
+      setError("Login failed. Check connection and .env.local keys.");
       setLoading(false);
     }
   }
@@ -46,8 +72,8 @@ function LoginForm() {
       <p className="text-[10px] uppercase tracking-widest text-muted mb-2">META Pictures</p>
       <h1 className="text-2xl font-light tracking-tight">Admin login</h1>
       <p className="mt-2 text-sm text-muted">
-        Sign in with a staff account (Supabase Auth). Create users in the Auth dashboard,
-        then set <code className="text-foreground/80">profiles.role</code> to ADMIN or SUPER_ADMIN.
+        Single admin access. Only accounts with role <strong className="text-foreground/90">SUPER_ADMIN</strong> or{" "}
+        <strong className="text-foreground/90">ADMIN</strong> can enter.
       </p>
 
       <form onSubmit={onSubmit} className="mt-8 space-y-5">
@@ -89,6 +115,15 @@ function LoginForm() {
           {loading ? "Signing in…" : "Sign in"}
         </button>
       </form>
+
+      <div className="mt-8 border-t border-border pt-6 text-xs text-muted space-y-2">
+        <p className="uppercase tracking-widest text-[10px]">Setup (once)</p>
+        <ol className="list-decimal pl-4 space-y-1">
+          <li>Supabase → Authentication → Users → Add user (email + password)</li>
+          <li>Open <code className="text-foreground/80">supabase/single-admin-setup.sql</code></li>
+          <li>Replace the email and run it in SQL Editor</li>
+        </ol>
+      </div>
 
       <p className="mt-6 text-center text-xs text-muted">
         <Link href="/" className="hover:text-foreground">← Back to site</Link>
