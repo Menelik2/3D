@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCmsClient, slugify, parseBool } from "@/lib/cms";
+import { revalidateCms } from "@/lib/data/revalidate";
 
 export async function POST(request: Request) {
   try {
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    revalidateCms("journal");
     return NextResponse.json({ ok: true, item: data });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
