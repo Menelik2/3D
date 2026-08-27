@@ -9,9 +9,15 @@ import {
 
 type Props = { params: Promise<{ slug: string }> };
 
-/** Prerender known published projects at build; others ISR on first visit. */
+/**
+ * Prerender known published projects at build; others ISR on first visit.
+ * Cache Components require at least one param for build-time validation.
+ */
 export async function generateStaticParams() {
   const slugs = await getPublishedPortfolioSlugs();
+  if (slugs.length === 0) {
+    return [{ slug: "__placeholder__" }];
+  }
   return slugs.map((slug) => ({ slug }));
 }
 
@@ -80,70 +86,44 @@ export default async function ProjectDetailPage({ params }: Props) {
               alt=""
               className="absolute inset-0 h-full w-full object-cover"
             />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-sm text-muted">No media yet</p>
-            </div>
-          )}
+          ) : null}
         </div>
 
-        <div className="grid gap-12 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-8">
-            {item.description && (
-              <section>
-                <h2 className="text-xs uppercase tracking-widest text-muted mb-3">
-                  About the Project
-                </h2>
-                <p className="text-foreground/90 leading-relaxed whitespace-pre-line">
-                  {item.description}
-                </p>
-              </section>
-            )}
-
-            {gallery.length > 0 && (
-              <section>
-                <h2 className="text-xs uppercase tracking-widest text-muted mb-3">
-                  Gallery
-                </h2>
-                <div className="grid grid-cols-2 gap-3">
-                  {gallery.map((entry, i) => {
-                    const src =
-                      typeof entry === "string"
-                        ? entry
-                        : entry &&
-                            typeof entry === "object" &&
-                            "url" in entry
-                          ? String((entry as { url: string }).url)
-                          : null;
-                    if (!src) return null;
-                    return (
-                      <div
-                        key={i}
-                        className="aspect-[4/3] bg-card border border-border overflow-hidden"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={src}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    );
-                  })}
+        {gallery.length > 0 && (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-16">
+            {gallery.map((src, i) =>
+              typeof src === "string" ? (
+                <div
+                  key={i}
+                  className="relative aspect-[4/3] overflow-hidden bg-card border border-border"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
                 </div>
-              </section>
+              ) : null
+            )}
+          </div>
+        )}
+
+        <div className="grid gap-12 lg:grid-cols-[1fr_240px]">
+          <div className="space-y-6 text-sm leading-relaxed text-foreground/90">
+            {item.client_name && (
+              <p>
+                <span className="text-muted">Client</span> — {item.client_name}
+              </p>
+            )}
+            {item.artist_name && (
+              <p>
+                <span className="text-muted">Artist</span> — {item.artist_name}
+              </p>
             )}
           </div>
 
           <aside className="space-y-6 text-sm">
-            {item.client_name && (
-              <div>
-                <p className="text-xs uppercase tracking-widest text-muted">
-                  Client
-                </p>
-                <p className="mt-1">{item.client_name}</p>
-              </div>
-            )}
             {item.director && (
               <div>
                 <p className="text-xs uppercase tracking-widest text-muted">

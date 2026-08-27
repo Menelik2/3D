@@ -22,8 +22,12 @@ function formatDate(iso: string | null) {
   }
 }
 
+/** Cache Components require at least one param for build-time validation. */
 export async function generateStaticParams() {
   const slugs = await getPublishedJournalSlugs();
+  if (slugs.length === 0) {
+    return [{ slug: "__placeholder__" }];
+  }
   return slugs.map((slug) => ({ slug }));
 }
 
@@ -85,7 +89,7 @@ export default async function JournalDetailPage({ params }: Props) {
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="border border-border px-3 py-1 text-[10px] uppercase tracking-widest text-muted"
+                  className="text-[10px] uppercase tracking-widest border border-border px-2 py-1 text-muted"
                 >
                   {tag}
                 </span>
