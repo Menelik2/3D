@@ -62,9 +62,10 @@ export default async function JournalPage() {
         {posts.length > 0 ? (
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
-              <article
+              <Link
                 key={post.id}
-                className="group border border-border bg-card/20 overflow-hidden"
+                href={`/journal/${post.slug}`}
+                className="group border border-border bg-card/20 overflow-hidden block"
               >
                 <div className="aspect-[16/10] bg-zinc-900 relative overflow-hidden">
                   {post.cover_image_url && (
@@ -91,7 +92,7 @@ export default async function JournalPage() {
                     </p>
                   )}
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         ) : (

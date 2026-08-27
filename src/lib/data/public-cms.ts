@@ -56,6 +56,13 @@ export type JournalListItem = {
   published_at: string | null;
 };
 
+export type JournalDetail = JournalListItem & {
+  body: string | null;
+  tags: string[] | null;
+  seo_title: string | null;
+  seo_description: string | null;
+};
+
 export type TeamMember = {
   id: string;
   name: string;
@@ -204,6 +211,34 @@ export async function getPublishedJournal(): Promise<JournalListItem[]> {
     return [];
   }
   return (data ?? []) as JournalListItem[];
+}
+
+/** Single published journal post by slug. */
+export async function getJournalBySlug(
+  slug: string
+): Promise<JournalDetail | null> {
+  "use cache";
+  cacheTag("journal");
+  cacheTag(`journal:${slug}`);
+  cacheLife("hours");
+
+  const supabase = publicSupabase();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("journal_posts")
+    .select(
+      "id, title, slug, excerpt, category, cover_image_url, published_at, body, tags, seo_title, seo_description"
+    )
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[getJournalBySlug]", error.message);
+    return null;
+  }
+  return data as JournalDetail | null;
 }
 
 /** Published team members. */

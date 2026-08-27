@@ -29,6 +29,7 @@ export async function POST(request: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     revalidateCms("journal");
+    if (data?.slug) revalidateCms(`journal:${data.slug}`);
     return NextResponse.json({ ok: true, item: data });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCmsClient, slugify, parseBool } from "@/lib/cms";
+import { revalidateCms } from "@/lib/data/revalidate";
 
 export async function PATCH(
   request: Request,
@@ -30,6 +31,8 @@ export async function PATCH(
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    revalidateCms("journal");
+    if (data?.slug) revalidateCms(`journal:${data.slug}`);
     return NextResponse.json({ ok: true, item: data });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
@@ -45,6 +48,7 @@ export async function DELETE(
     const supabase = await getCmsClient();
     const { error } = await supabase.from("journal_posts").delete().eq("id", id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    revalidateCms("journal");
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
