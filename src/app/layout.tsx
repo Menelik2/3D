@@ -37,16 +37,22 @@ export const metadata: Metadata = {
       "Creative film and media production company. We don't just film. We create cinema.",
     type: "website",
     siteName: "META Pictures",
+    images: [{ url: "/brand/meta-logo.jpg" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "META Pictures | Every Frame Has a Story",
     description:
       "Creative film and media production company transforming ideas into cinematic experiences.",
+    images: ["/brand/meta-logo.jpg"],
   },
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: "/brand/meta-logo.jpg",
+    apple: "/brand/meta-logo.jpg",
   },
 };
 
@@ -55,7 +61,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { contact, social } = await getPublicSiteConfig();
+  const { contact, social, media } = await getPublicSiteConfig();
 
   return (
     <html
@@ -63,7 +69,10 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <SiteChrome footer={<Footer contact={contact} social={social} />}>
+        <SiteChrome
+          logoUrl={media.logoUrl}
+          footer={<Footer contact={contact} social={social} />}
+        >
           {children}
         </SiteChrome>
       </body>

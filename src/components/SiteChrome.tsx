@@ -6,9 +6,11 @@ import { Navbar } from "@/components/Navbar";
 export function SiteChrome({
   children,
   footer,
+  logoUrl,
 }: {
   children: React.ReactNode;
   footer: React.ReactNode;
+  logoUrl?: string;
 }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
@@ -19,7 +21,7 @@ export function SiteChrome({
 
   return (
     <>
-      <Navbar />
+      <Navbar logoUrl={logoUrl} />
       <main className="flex-1">{children}</main>
       {footer}
     </>
