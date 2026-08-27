@@ -31,17 +31,24 @@ export function HeroContent({
               muted
               loop
               playsInline
-              poster={logo}
+              preload="metadata"
+              poster={logo || "/brand/meta-logo-poster.jpg"}
               className="h-28 w-auto sm:h-36 md:h-44 object-contain drop-shadow-[0_0_40px_rgba(225,29,72,0.25)]"
               aria-label="META Pictures logo animation"
             />
           ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={logo}
-              alt="META Pictures"
-              className="h-28 w-auto sm:h-36 md:h-44 object-contain drop-shadow-[0_0_40px_rgba(225,29,72,0.25)]"
-            />
+            <picture>
+              <source srcSet="/brand/meta-logo.webp" type="image/webp" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logo}
+                alt="META Pictures"
+                width={280}
+                height={158}
+                className="h-28 w-auto sm:h-36 md:h-44 object-contain drop-shadow-[0_0_40px_rgba(225,29,72,0.25)]"
+                decoding="async"
+              />
+            </picture>
           )}
         </div>
 

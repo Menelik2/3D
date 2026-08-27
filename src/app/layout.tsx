@@ -37,21 +37,21 @@ export const metadata: Metadata = {
       "Creative film and media production company. We don't just film. We create cinema.",
     type: "website",
     siteName: "META Pictures",
-    images: [{ url: "/brand/meta-logo.jpg" }],
+    images: [{ url: "/brand/og.jpg", width: 1200, height: 630, alt: "META Pictures" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "META Pictures | Every Frame Has a Story",
     description:
       "Creative film and media production company transforming ideas into cinematic experiences.",
-    images: ["/brand/meta-logo.jpg"],
+    images: ["/brand/og.jpg"],
   },
   robots: {
     index: true,
     follow: true,
   },
   icons: {
-    icon: "/brand/meta-logo.jpg",
+    icon: "/brand/meta-logo-sm.jpg",
     apple: "/brand/meta-logo.jpg",
   },
 };

@@ -56,12 +56,19 @@ export function Navbar({ logoUrl }: { logoUrl?: string }) {
             className="group flex items-center gap-2.5"
             onClick={() => setOpen(false)}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={logo}
-              alt="META Pictures"
-              className="h-8 w-auto md:h-9 object-contain"
-            />
+            <picture>
+              <source srcSet="/brand/meta-logo-sm.webp" type="image/webp" />
+              <source srcSet="/brand/meta-logo-sm.jpg" type="image/jpeg" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={logo}
+                alt="META Pictures"
+                width={120}
+                height={68}
+                className="h-8 w-auto md:h-9 object-contain"
+                decoding="async"
+              />
+            </picture>
             <span className="sr-only">META Pictures</span>
           </Link>
 
