@@ -55,7 +55,7 @@ function settingsClient() {
 export async function getPublicSiteConfig(): Promise<PublicSiteConfig> {
   let contact = getContactConfig();
   let social = getSocialConfig();
-  const media = getMediaConfig();
+  let media = getMediaConfig();
 
   const supabase = settingsClient();
   if (supabase) {
@@ -63,7 +63,7 @@ export async function getPublicSiteConfig(): Promise<PublicSiteConfig> {
       const { data, error } = await supabase
         .from("site_settings")
         .select("key, value")
-        .in("key", ["contact", "social"]);
+        .in("key", ["contact", "social", "media"]);
 
       if (!error && data) {
         for (const row of data) {
@@ -73,6 +73,9 @@ export async function getPublicSiteConfig(): Promise<PublicSiteConfig> {
           if (row.key === "social") {
             social = mergeFilled(social, row.value as Partial<SocialConfig>);
           }
+          if (row.key === "media") {
+            media = mergeFilled(media, row.value as Partial<MediaConfig>);
+          }
         }
       }
     } catch (e) {
@@ -80,8 +83,10 @@ export async function getPublicSiteConfig(): Promise<PublicSiteConfig> {
     }
   }
 
+  // Env always wins when set (deploy-time override)
   contact = mergeFilled(contact, getContactConfig());
   social = mergeFilled(social, getSocialConfig());
+  media = mergeFilled(media, getMediaConfig());
 
   return { contact, social, media };
 }
