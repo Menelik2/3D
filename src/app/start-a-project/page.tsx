@@ -17,6 +17,9 @@ const BUDGETS = [
 export default function StartProjectPage() {
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [referenceNumber, setReferenceNumber] = useState("");
   const [form, setForm] = useState({
     fullName: "", company: "", email: "", phone: "", whatsapp: "",
     preferredContact: "email", projectTypes: [] as string[],
@@ -34,6 +37,31 @@ export default function StartProjectPage() {
         : [...p.projectTypes, t],
     }));
 
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Submission failed. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+      setReferenceNumber(data.reference_number || data.reference || "");
+      setSubmitted(true);
+    } catch {
+      setError("Network error. Please check your connection and try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   if (submitted) {
     return (
       <div className="pt-28 pb-24 min-h-[70vh] flex items-center">
@@ -43,14 +71,16 @@ export default function StartProjectPage() {
           <p className="mt-6 text-sm text-muted">
             Your project request has been received. META Pictures will review your information and contact you.
           </p>
-          <p className="mt-4 text-xs text-muted/70">Reference: MP-{Date.now().toString().slice(-8)}</p>
+          {referenceNumber && (
+            <p className="mt-4 text-xs text-muted/70">Reference: {referenceNumber}</p>
+          )}
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/work" className="inline-flex items-center justify-center border border-white/20 px-6 py-3 text-xs uppercase tracking-widest hover:bg-white/5">
               Return to Portfolio
             </Link>
-            <a href="#" className="inline-flex items-center justify-center bg-accent px-6 py-3 text-xs uppercase tracking-widest text-white hover:bg-accent-hover">
-              WhatsApp Us
-            </a>
+            <Link href="/admin/leads" className="inline-flex items-center justify-center bg-accent px-6 py-3 text-xs uppercase tracking-widest text-white hover:bg-accent-hover">
+              View in Admin
+            </Link>
           </div>
         </div>
       </div>
@@ -75,13 +105,11 @@ export default function StartProjectPage() {
           </div>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSubmitted(true);
-          }}
-          className="space-y-8"
-        >
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {error && (
+            <div className="border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div>
+          )}
+
           {step === 0 && (
             <div className="space-y-5">
               <div>
@@ -112,18 +140,10 @@ export default function StartProjectPage() {
           {step === 1 && (
             <div className="grid gap-3 sm:grid-cols-2">
               {PROJECT_TYPES.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => toggleType(t)}
+                <button key={t} type="button" onClick={() => toggleType(t)}
                   className={`border px-4 py-3 text-left text-sm transition ${
-                    form.projectTypes.includes(t)
-                      ? "border-accent bg-accent/10"
-                      : "border-border text-muted hover:border-white/30"
-                  }`}
-                >
-                  {t}
-                </button>
+                    form.projectTypes.includes(t) ? "border-accent bg-accent/10" : "border-border text-muted hover:border-white/30"
+                  }`}>{t}</button>
               ))}
             </div>
           )}
@@ -171,16 +191,10 @@ export default function StartProjectPage() {
           {step === 4 && (
             <div className="space-y-3">
               {BUDGETS.map((b) => (
-                <button
-                  key={b}
-                  type="button"
-                  onClick={() => set("budget", b)}
+                <button key={b} type="button" onClick={() => set("budget", b)}
                   className={`w-full border px-4 py-3 text-left text-sm transition ${
                     form.budget === b ? "border-accent bg-accent/10" : "border-border text-muted hover:border-white/30"
-                  }`}
-                >
-                  {b}
-                </button>
+                  }`}>{b}</button>
               ))}
             </div>
           )}
@@ -188,7 +202,7 @@ export default function StartProjectPage() {
           {step === 5 && (
             <div className="border border-dashed border-border p-10 text-center">
               <p className="text-sm text-muted">File upload placeholder</p>
-              <p className="mt-2 text-xs text-muted/60">In production: secure uploads to object storage with validation.</p>
+              <p className="mt-2 text-xs text-muted/60">Secure uploads to private storage come next.</p>
               <input type="file" multiple className="mt-6 text-sm text-muted" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.mov" />
             </div>
           )}
@@ -204,25 +218,15 @@ export default function StartProjectPage() {
           )}
 
           <div className="flex items-center justify-between pt-6 border-t border-border">
-            <button
-              type="button"
-              onClick={() => setStep((s) => Math.max(0, s - 1))}
-              disabled={step === 0}
-              className="text-xs uppercase tracking-widest text-muted disabled:opacity-30 hover:text-foreground"
-            >
-              ← Back
-            </button>
+            <button type="button" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}
+              className="text-xs uppercase tracking-widest text-muted disabled:opacity-30 hover:text-foreground">← Back</button>
             {step < STEPS.length - 1 ? (
-              <button
-                type="button"
-                onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
-                className="bg-accent px-6 py-3 text-xs font-medium uppercase tracking-widest text-white hover:bg-accent-hover"
-              >
-                Continue →
-              </button>
+              <button type="button" onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
+                className="bg-accent px-6 py-3 text-xs font-medium uppercase tracking-widest text-white hover:bg-accent-hover">Continue →</button>
             ) : (
-              <button type="submit" className="bg-accent px-6 py-3 text-xs font-medium uppercase tracking-widest text-white hover:bg-accent-hover">
-                Submit Project Request
+              <button type="submit" disabled={submitting}
+                className="bg-accent px-6 py-3 text-xs font-medium uppercase tracking-widest text-white hover:bg-accent-hover disabled:opacity-50">
+                {submitting ? "Submitting…" : "Submit Project Request"}
               </button>
             )}
           </div>
