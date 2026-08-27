@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { HeroScene } from "./HeroScene";
 import { FloatingFrames } from "./FloatingFrames";
 
@@ -11,8 +12,10 @@ export function HeroContent({
   logoVideoUrl?: string;
   logoUrl?: string;
 }) {
-  const video = logoVideoUrl?.trim();
   const logo = logoUrl?.trim() || "/brand/meta-logo.jpg";
+  const videoSrc = logoVideoUrl?.trim() || "";
+  const [videoFailed, setVideoFailed] = useState(false);
+  const showVideo = Boolean(videoSrc) && !videoFailed;
 
   return (
     <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
@@ -22,19 +25,22 @@ export function HeroContent({
       <div className="absolute inset-0 z-[2] bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,10,10,0.35)_55%,rgba(10,10,10,0.92)_100%)]" />
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
-        <div className="hero-fade-in mb-8 flex justify-center">
-          {video ? (
+        {/* Logo mark replaces the old text title */}
+        <h1 className="hero-fade-in mb-6 flex justify-center">
+          <span className="sr-only">META Pictures</span>
+          {showVideo ? (
             <video
-              key={video}
-              src={video}
+              key={videoSrc}
+              src={videoSrc}
               autoPlay
               muted
               loop
               playsInline
               preload="metadata"
-              poster={logo || "/brand/meta-logo-poster.jpg"}
-              className="h-28 w-auto sm:h-36 md:h-44 object-contain drop-shadow-[0_0_40px_rgba(225,29,72,0.25)]"
-              aria-label="META Pictures logo animation"
+              poster={logo}
+              onError={() => setVideoFailed(true)}
+              className="h-36 w-auto sm:h-44 md:h-56 lg:h-64 object-contain drop-shadow-[0_0_48px_rgba(225,29,72,0.3)]"
+              aria-hidden
             />
           ) : (
             <picture>
@@ -42,23 +48,20 @@ export function HeroContent({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={logo}
-                alt="META Pictures"
-                width={280}
-                height={158}
-                className="h-28 w-auto sm:h-36 md:h-44 object-contain drop-shadow-[0_0_40px_rgba(225,29,72,0.25)]"
+                alt=""
+                width={420}
+                height={236}
+                className="h-36 w-auto sm:h-44 md:h-56 lg:h-64 object-contain drop-shadow-[0_0_48px_rgba(225,29,72,0.3)]"
                 decoding="async"
               />
             </picture>
           )}
-        </div>
-
-        <p className="hero-fade-in hero-delay-1 mb-6 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-muted">
-          Cinematic Film &amp; Media Production
-        </p>
-        <h1 className="hero-fade-in hero-delay-1 text-4xl font-light tracking-tight sm:text-6xl md:text-7xl lg:text-[5.5rem]">
-          <span className="inline-block hero-title-3d">META Pictures</span>
         </h1>
-        <p className="hero-fade-in hero-delay-2 mt-6 text-base sm:text-xl md:text-2xl font-light tracking-[0.12em] text-muted/90">
+
+        <p className="hero-fade-in hero-delay-1 mb-4 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-muted">
+          Cinematic Film & Media Production
+        </p>
+        <p className="hero-fade-in hero-delay-2 text-base sm:text-xl md:text-2xl font-light tracking-[0.12em] text-muted/90">
           Every frame has a story.
         </p>
         <p className="hero-fade-in hero-delay-2 mx-auto mt-5 max-w-lg text-sm text-muted/70 leading-relaxed">
