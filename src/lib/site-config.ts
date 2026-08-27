@@ -56,7 +56,7 @@ export function getSocialConfig(): SocialConfig {
 export function getMediaConfig(): MediaConfig {
   return {
     logoUrl: env("NEXT_PUBLIC_LOGO_URL", "/brand/meta-logo.jpg"),
-    logoVideoUrl: env("NEXT_PUBLIC_LOGO_VIDEO_URL"),
+    logoVideoUrl: env("NEXT_PUBLIC_LOGO_VIDEO_URL", "/brand/meta-logo.mp4"),
     showreelUrl: env("NEXT_PUBLIC_SHOWREEL_URL"),
     showreelPosterUrl: env("NEXT_PUBLIC_SHOWREEL_POSTER_URL"),
     ogImageUrl: env("NEXT_PUBLIC_OG_IMAGE_URL", "/brand/meta-logo.jpg"),

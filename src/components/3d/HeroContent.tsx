@@ -4,7 +4,16 @@ import Link from "next/link";
 import { HeroScene } from "./HeroScene";
 import { FloatingFrames } from "./FloatingFrames";
 
-export function HeroContent() {
+export function HeroContent({
+  logoVideoUrl,
+  logoUrl,
+}: {
+  logoVideoUrl?: string;
+  logoUrl?: string;
+}) {
+  const video = logoVideoUrl?.trim();
+  const logo = logoUrl?.trim() || "/brand/meta-logo.jpg";
+
   return (
     <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-950 to-background" />
@@ -13,7 +22,30 @@ export function HeroContent() {
       <div className="absolute inset-0 z-[2] bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,10,10,0.35)_55%,rgba(10,10,10,0.92)_100%)]" />
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 text-center">
-        <p className="hero-fade-in mb-6 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-muted">
+        <div className="hero-fade-in mb-8 flex justify-center">
+          {video ? (
+            <video
+              key={video}
+              src={video}
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster={logo}
+              className="h-28 w-auto sm:h-36 md:h-44 object-contain drop-shadow-[0_0_40px_rgba(225,29,72,0.25)]"
+              aria-label="META Pictures logo animation"
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logo}
+              alt="META Pictures"
+              className="h-28 w-auto sm:h-36 md:h-44 object-contain drop-shadow-[0_0_40px_rgba(225,29,72,0.25)]"
+            />
+          )}
+        </div>
+
+        <p className="hero-fade-in hero-delay-1 mb-6 text-[10px] sm:text-xs uppercase tracking-[0.4em] text-muted">
           Cinematic Film &amp; Media Production
         </p>
         <h1 className="hero-fade-in hero-delay-1 text-4xl font-light tracking-tight sm:text-6xl md:text-7xl lg:text-[5.5rem]">
