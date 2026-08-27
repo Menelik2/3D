@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 const nav = [
   { href: "/admin", label: "Dashboard", exact: true },
@@ -18,6 +19,18 @@ const nav = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function signOut() {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      /* ignore */
+    }
+    router.replace("/admin/login");
+    router.refresh();
+  }
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-56 flex-col border-r border-border bg-card">
@@ -56,7 +69,13 @@ export function AdminSidebar() {
         >
           ← View site
         </Link>
-        <p className="text-[10px] text-muted/50">Staff only · RLS enforced</p>
+        <button
+          type="button"
+          onClick={signOut}
+          className="block text-[10px] uppercase tracking-widest text-muted hover:text-foreground"
+        >
+          Sign out
+        </button>
       </div>
     </aside>
   );

@@ -49,7 +49,7 @@ export default async function AdminLeadsPage() {
         <div>
           <h1 className="text-2xl font-light tracking-tight">Leads</h1>
           <p className="mt-1 text-sm text-muted">
-            Project inquiries from the website inquiry form.
+            Project inquiries. Click a row to update status and add notes.
           </p>
         </div>
         <p className="text-xs text-muted">{leads.length} shown</p>
@@ -99,8 +99,16 @@ export default async function AdminLeadsPage() {
             ) : (
               leads.map((lead) => (
                 <tr key={lead.id} className="border-b border-border/60 hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 font-mono text-xs">{lead.reference_number}</td>
-                  <td className="px-4 py-3 text-foreground/90">{lead.full_name}</td>
+                  <td className="px-4 py-3 font-mono text-xs">
+                    <Link href={`/admin/leads/${lead.id}`} className="hover:text-accent">
+                      {lead.reference_number}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link href={`/admin/leads/${lead.id}`} className="text-foreground/90 hover:text-accent">
+                      {lead.full_name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-muted text-xs">{lead.email}</td>
                   <td className="px-4 py-3 text-xs text-muted">
                     {lead.project_types?.slice(0, 2).join(", ") || "—"}
@@ -120,11 +128,6 @@ export default async function AdminLeadsPage() {
           </tbody>
         </table>
       </div>
-
-      <p className="text-xs text-muted/70">
-        Pipeline: New → Contacted → Consultation → Proposal → Negotiation → Confirmed → In
-        Production → Completed. Status updates and notes will be editable in a follow-up UI.
-      </p>
     </div>
   );
 }
