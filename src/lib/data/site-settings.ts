@@ -1,10 +1,9 @@
 /**
  * Public site config: env (deploy-time) + site_settings CMS (runtime).
- * Non-empty env values win; CMS fills gaps. Long-lived cache + settings tag.
+ * Non-empty env values win; CMS fills gaps.
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { cacheLife, cacheTag } from "next/cache";
 import {
   getContactConfig,
   getMediaConfig,
@@ -54,10 +53,6 @@ function settingsClient() {
 }
 
 export async function getPublicSiteConfig(): Promise<PublicSiteConfig> {
-  "use cache";
-  cacheTag("settings");
-  cacheLife("cmsStatic");
-
   let contact = getContactConfig();
   let social = getSocialConfig();
   const media = getMediaConfig();
