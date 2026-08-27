@@ -34,7 +34,48 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle film grain overlay */
+/* Buttons — production-house system */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  transition: background 0.2s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 36px rgba(225, 29, 72, 0.28);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.875rem 1.75rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--foreground);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(225, 29, 72, 0.45);
+}
+
+/* Film grain */
 .grain {
   position: relative;
 }
@@ -44,7 +85,7 @@ body {
   position: absolute;
   inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity: 0.35;
+  opacity: 0.3;
   z-index: 50;
 }
 
@@ -52,7 +93,7 @@ body {
   letter-spacing: 0.2em;
 }
 
-/* ——— 3D hero ——— */
+/* 3D hero */
 .perspective-hero {
   perspective: 1200px;
   perspective-origin: 50% 40%;
@@ -60,14 +101,14 @@ body {
 
 .frame-3d {
   position: absolute;
-  border: 1px solid rgba(225, 29, 72, 0.25);
+  border: 1px solid rgba(225, 29, 72, 0.22);
   background: linear-gradient(
     135deg,
-    rgba(225, 29, 72, 0.06),
+    rgba(225, 29, 72, 0.05),
     rgba(255, 255, 255, 0.02)
   );
   box-shadow:
-    0 0 40px rgba(225, 29, 72, 0.08),
+    0 0 40px rgba(225, 29, 72, 0.06),
     inset 0 0 30px rgba(0, 0, 0, 0.4);
   transform-style: preserve-3d;
   animation: float-3d 14s ease-in-out infinite;
@@ -79,9 +120,7 @@ body {
   top: 18%;
   left: 8%;
   transform: rotateY(25deg) rotateX(8deg) translateZ(-80px);
-  animation-delay: 0s;
 }
-
 .frame-3d-b {
   width: min(220px, 32vw);
   height: min(300px, 42vw);
@@ -89,9 +128,8 @@ body {
   right: 6%;
   transform: rotateY(-28deg) rotateX(5deg) translateZ(-40px);
   animation-delay: -3s;
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.1);
 }
-
 .frame-3d-c {
   width: min(180px, 28vw);
   height: min(110px, 16vw);
@@ -100,7 +138,6 @@ body {
   transform: rotateY(18deg) rotateX(-12deg) translateZ(-120px);
   animation-delay: -6s;
 }
-
 .frame-3d-d {
   width: min(200px, 30vw);
   height: min(130px, 18vw);
@@ -108,7 +145,7 @@ body {
   right: 16%;
   transform: rotateY(-15deg) rotateX(-8deg) translateZ(-60px);
   animation-delay: -9s;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 @keyframes float-3d {
@@ -123,15 +160,14 @@ body {
 
 .hero-title-3d {
   text-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.08),
-    0 8px 40px rgba(0, 0, 0, 0.5),
-    0 0 80px rgba(225, 29, 72, 0.15);
+    0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 48px rgba(0, 0, 0, 0.55),
+    0 0 80px rgba(225, 29, 72, 0.12);
 }
 
 .hero-fade-in {
   animation: hero-in 1s ease-out both;
 }
-
 .hero-delay-1 {
   animation-delay: 0.12s;
 }
@@ -148,11 +184,11 @@ body {
 @keyframes hero-in {
   from {
     opacity: 0;
-    transform: translateY(24px) translateZ(-40px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) translateZ(0);
+    transform: translateY(0);
   }
 }
 
