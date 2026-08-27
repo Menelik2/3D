@@ -1,13 +1,27 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+function optionalDate(v: unknown): string | null {
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s.length > 0 ? s : null;
+}
+
+function optionalText(v: unknown): string | null {
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s.length > 0 ? s : null;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
     const fullName = String(body.fullName || body.name || "").trim();
     const email = String(body.email || "").trim();
-    const consultationType = String(body.type || body.consultationType || "").trim();
+    const consultationType = String(
+      body.type || body.consultationType || ""
+    ).trim();
 
     if (!fullName || !email || !consultationType) {
       return NextResponse.json(
@@ -24,9 +38,10 @@ export async function POST(request: Request) {
         consultation_type: consultationType,
         full_name: fullName,
         email,
-        phone: body.phone || null,
-        preferred_date: body.date || body.preferredDate || null,
-        notes: body.notes || null,
+        phone: optionalText(body.phone),
+        preferred_date: optionalDate(body.date || body.preferredDate),
+        preferred_time: optionalText(body.time || body.preferredTime),
+        notes: optionalText(body.notes),
         status: "PENDING",
       })
       .select("id")
