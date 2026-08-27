@@ -1,10 +1,24 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import {
+  getPortfolioBySlug,
+  getPublishedPortfolio,
+} from "@/lib/data/public-cms";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const item = await getPortfolioBySlug(slug);
+  if (item) {
+    return {
+      title: item.title,
+      description:
+        item.description?.slice(0, 160) ||
+        `${item.title} — cinematic project by META Pictures.`,
+    };
+  }
   const title = slug
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -17,86 +31,173 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectDetailPage({ params }: Props) {
   const { slug } = await params;
-  const title = slug
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
+  const item = await getPortfolioBySlug(slug);
+
+  if (!item) {
+    // Keep soft placeholder for unknown slugs during early CMS fill-out
+    const title = slug
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    return (
+      <div className="pt-24 md:pt-28 pb-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <header className="mb-12 max-w-3xl">
+            <p className="text-xs uppercase tracking-widest text-muted mb-3">
+              Project
+            </p>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight">
+              {title}
+            </h1>
+            <p className="mt-4 text-muted text-sm">
+              This project is not published yet. Add it in the admin CMS.
+            </p>
+          </header>
+          <Link
+            href="/work"
+            className="text-xs uppercase tracking-widest text-muted hover:text-foreground transition-colors"
+          >
+            ← All Work
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const related = (await getPublishedPortfolio())
+    .filter((p) => p.id !== item.id)
+    .slice(0, 3);
+
+  const gallery = Array.isArray(item.gallery) ? item.gallery : [];
 
   return (
     <div className="pt-24 md:pt-28 pb-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <header className="mb-12 max-w-3xl">
           <p className="text-xs uppercase tracking-widest text-muted mb-3">
-            Music Video · 2026
+            {item.category}
+            {item.year ? ` · ${item.year}` : ""}
           </p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight">
-            {title}
+            {item.title}
           </h1>
-          <p className="mt-4 text-muted text-sm">
-            Placeholder project detail. Replace with real content from the CMS
-            (title, category, year, client, director, cinematographer, location,
-            description, gallery, credits).
-          </p>
+          {item.description && (
+            <p className="mt-4 text-muted text-sm leading-relaxed">
+              {item.description}
+            </p>
+          )}
         </header>
 
         <div className="relative aspect-video mb-16 overflow-hidden bg-card border border-border">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-white/5">
-                <svg className="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
-              <p className="text-sm text-muted">Project video / still placeholder</p>
+          {item.video_url ? (
+            <iframe
+              src={item.video_url}
+              title={item.title}
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : item.cover_image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={item.cover_image_url}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="text-sm text-muted">No media yet</p>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="grid gap-12 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
-            <section>
-              <h2 className="text-xs uppercase tracking-widest text-muted mb-3">
-                About the Project
-              </h2>
-              <p className="text-foreground/90 leading-relaxed">
-                Full project description will live here. Story, creative
-                direction, production notes and outcome.
-              </p>
-            </section>
+            {item.description && (
+              <section>
+                <h2 className="text-xs uppercase tracking-widest text-muted mb-3">
+                  About the Project
+                </h2>
+                <p className="text-foreground/90 leading-relaxed whitespace-pre-line">
+                  {item.description}
+                </p>
+              </section>
+            )}
 
-            <section>
-              <h2 className="text-xs uppercase tracking-widest text-muted mb-3">
-                Gallery
-              </h2>
-              <div className="grid grid-cols-2 gap-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="aspect-[4/3] bg-card border border-border" />
-                ))}
-              </div>
-            </section>
+            {gallery.length > 0 && (
+              <section>
+                <h2 className="text-xs uppercase tracking-widest text-muted mb-3">
+                  Gallery
+                </h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {gallery.map((entry, i) => {
+                    const src =
+                      typeof entry === "string"
+                        ? entry
+                        : entry &&
+                            typeof entry === "object" &&
+                            "url" in entry
+                          ? String((entry as { url: string }).url)
+                          : null;
+                    if (!src) return null;
+                    return (
+                      <div
+                        key={i}
+                        className="aspect-[4/3] bg-card border border-border overflow-hidden"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={src}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
           </div>
 
           <aside className="space-y-6 text-sm">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-muted">Client</p>
-              <p className="mt-1">—</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-widest text-muted">Director</p>
-              <p className="mt-1">—</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-widest text-muted">Cinematographer</p>
-              <p className="mt-1">—</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-widest text-muted">Location</p>
-              <p className="mt-1">—</p>
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-widest text-muted">Year</p>
-              <p className="mt-1">2026</p>
-            </div>
+            {item.client_name && (
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted">
+                  Client
+                </p>
+                <p className="mt-1">{item.client_name}</p>
+              </div>
+            )}
+            {item.director && (
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted">
+                  Director
+                </p>
+                <p className="mt-1">{item.director}</p>
+              </div>
+            )}
+            {item.cinematographer && (
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted">
+                  Cinematographer
+                </p>
+                <p className="mt-1">{item.cinematographer}</p>
+              </div>
+            )}
+            {item.location && (
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted">
+                  Location
+                </p>
+                <p className="mt-1">{item.location}</p>
+              </div>
+            )}
+            {item.year && (
+              <div>
+                <p className="text-xs uppercase tracking-widest text-muted">Year</p>
+                <p className="mt-1">{item.year}</p>
+              </div>
+            )}
           </aside>
         </div>
 
@@ -115,26 +216,36 @@ export default async function ProjectDetailPage({ params }: Props) {
           </Link>
         </div>
 
-        <section className="mt-20">
-          <h2 className="text-xs uppercase tracking-widest text-muted mb-8">
-            More from META Pictures
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <Link
-                key={i}
-                href={`/work/project-${i}`}
-                className="group block aspect-[4/5] bg-card border border-border relative overflow-hidden"
-              >
-                <div className="absolute inset-0 flex items-end p-4 bg-gradient-to-t from-black/70 to-transparent">
-                  <span className="text-sm group-hover:text-accent transition-colors">
-                    Related Project {i}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+        {related.length > 0 && (
+          <section className="mt-20">
+            <h2 className="text-xs uppercase tracking-widest text-muted mb-8">
+              More from META Pictures
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {related.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/work/${p.slug}`}
+                  className="group block aspect-[4/5] bg-card border border-border relative overflow-hidden"
+                >
+                  {p.cover_image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.cover_image_url}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  )}
+                  <div className="absolute inset-0 flex items-end p-4 bg-gradient-to-t from-black/70 to-transparent">
+                    <span className="text-sm group-hover:text-accent transition-colors">
+                      {p.title}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

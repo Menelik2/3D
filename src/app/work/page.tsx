@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getPublishedPortfolio } from "@/lib/data/public-cms";
 
 export const metadata: Metadata = {
   title: "Work",
-  description: "Selected film and media projects by META Pictures — music videos, commercials, weddings, documentaries and more.",
+  description:
+    "Selected film and media projects by META Pictures — music videos, commercials, weddings, documentaries and more.",
 };
 
 const categories = [
@@ -18,15 +20,9 @@ const categories = [
   "Social Media Content",
 ];
 
-const placeholderProjects = Array.from({ length: 9 }).map((_, i) => ({
-  id: i + 1,
-  title: `Project ${i + 1}`,
-  category: categories[(i % (categories.length - 1)) + 1],
-  year: 2024 + (i % 3),
-  slug: `project-${i + 1}`,
-}));
+export default async function WorkPage() {
+  const projects = await getPublishedPortfolio();
 
-export default function WorkPage() {
   return (
     <div className="pt-24 md:pt-28 pb-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -39,7 +35,6 @@ export default function WorkPage() {
           </p>
         </header>
 
-        {/* Category filters (UI only — wire to real data later) */}
         <div className="mb-12 flex flex-wrap gap-2">
           {categories.map((cat) => (
             <button
@@ -52,31 +47,65 @@ export default function WorkPage() {
           ))}
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {placeholderProjects.map((project) => (
-            <Link
-              key={project.id}
-              href={`/work/${project.slug}`}
-              className="group relative block aspect-[4/5] overflow-hidden bg-card border border-border"
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              <div className="absolute inset-0 flex items-end p-6">
-                <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted">
-                    {project.category} · {project.year}
-                  </p>
-                  <h2 className="mt-1 text-lg font-light group-hover:text-accent transition-colors">
-                    {project.title}
-                  </h2>
+        {projects.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map((project) => (
+              <Link
+                key={project.id}
+                href={`/work/${project.slug}`}
+                className="group relative block aspect-[4/5] overflow-hidden bg-card border border-border"
+              >
+                {project.cover_image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={project.cover_image_url}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-zinc-900" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 flex items-end p-6">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-muted">
+                      {project.category}
+                      {project.year ? ` · ${project.year}` : ""}
+                    </p>
+                    <h2 className="mt-1 text-lg font-light group-hover:text-accent transition-colors">
+                      {project.title}
+                    </h2>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        <p className="mt-16 text-center text-sm text-muted">
-          Portfolio items are managed in the admin dashboard. Replace placeholders with real projects.
-        </p>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="relative block aspect-[4/5] overflow-hidden bg-card border border-border"
+                >
+                  <div className="absolute inset-0 bg-zinc-900" />
+                  <div className="absolute inset-0 flex items-end p-6">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-muted">
+                        Coming soon
+                      </p>
+                      <h2 className="mt-1 text-lg font-light">Project {i + 1}</h2>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-16 text-center text-sm text-muted">
+              Portfolio items are managed in the admin dashboard. Publish projects
+              to show them here.
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
