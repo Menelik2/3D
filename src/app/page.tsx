@@ -12,10 +12,12 @@ export default async function HomePage() {
 
   const showreel = media.showreelUrl;
   const poster = media.showreelPosterUrl;
+  const logoVideoUrl = media.logoVideoUrl;
+  const logoUrl = media.logoUrl;
 
   return (
     <div className="grain">
-      <HeroContent />
+      <HeroContent logoVideoUrl={logoVideoUrl} logoUrl={logoUrl} />
 
       <section id="showreel" className="relative py-24 md:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -189,7 +191,7 @@ export default async function HomePage() {
             Whether you have a clear vision or just an idea — we help shape it
             into cinema.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+n          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/start-a-project" className="btn-primary min-w-[200px]">
               Start a Project
             </Link>
