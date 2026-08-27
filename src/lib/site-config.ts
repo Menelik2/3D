@@ -53,14 +53,16 @@ export function getSocialConfig(): SocialConfig {
 }
 
 /**
- * Brand media — optimized defaults under /public/brand/
- * Logo image is primary; set NEXT_PUBLIC_LOGO_VIDEO_URL or upload
- * public/brand/meta-logo.mp4 for the animated mark.
+ * Brand media under /public/brand/
+ * Video files live in brand-optimized/ from the Termux upload.
  */
 export function getMediaConfig(): MediaConfig {
   return {
     logoUrl: env("NEXT_PUBLIC_LOGO_URL", "/brand/meta-logo.jpg"),
-    logoVideoUrl: env("NEXT_PUBLIC_LOGO_VIDEO_URL"),
+    logoVideoUrl: env(
+      "NEXT_PUBLIC_LOGO_VIDEO_URL",
+      "/brand/brand-optimized/meta-logo.mp4"
+    ),
     showreelUrl: env("NEXT_PUBLIC_SHOWREEL_URL"),
     showreelPosterUrl: env(
       "NEXT_PUBLIC_SHOWREEL_POSTER_URL",
