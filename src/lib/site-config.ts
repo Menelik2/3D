@@ -54,14 +54,13 @@ export function getSocialConfig(): SocialConfig {
 
 /**
  * Brand media — optimized defaults under /public/brand/
- * logo: webp ~4.5KB, jpg fallback ~11KB
- * logo video: ~90KB H.264 baseline, muted loop
- * OG: 1200×630 ~28KB
+ * Logo image is primary; set NEXT_PUBLIC_LOGO_VIDEO_URL or upload
+ * public/brand/meta-logo.mp4 for the animated mark.
  */
 export function getMediaConfig(): MediaConfig {
   return {
     logoUrl: env("NEXT_PUBLIC_LOGO_URL", "/brand/meta-logo.jpg"),
-    logoVideoUrl: env("NEXT_PUBLIC_LOGO_VIDEO_URL", "/brand/meta-logo.mp4"),
+    logoVideoUrl: env("NEXT_PUBLIC_LOGO_VIDEO_URL"),
     showreelUrl: env("NEXT_PUBLIC_SHOWREEL_URL"),
     showreelPosterUrl: env(
       "NEXT_PUBLIC_SHOWREEL_POSTER_URL",
