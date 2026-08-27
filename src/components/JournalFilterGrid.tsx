@@ -8,6 +8,7 @@ import {
   buildCategoryOptions,
   matchesCategory,
 } from "@/components/ui/CategoryFilter";
+import { CategoryTagCloud } from "@/components/ui/CategoryTagCloud";
 
 const FALLBACK = [
   "Cinematography",
@@ -47,6 +48,13 @@ export function JournalFilterGrid({ posts }: { posts: JournalListItem[] }) {
 
   return (
     <div>
+      <CategoryTagCloud
+        counts={counts}
+        active={active}
+        onChange={setActive}
+        label="Topics"
+      />
+
       <CategoryFilter
         categories={categories}
         active={active}

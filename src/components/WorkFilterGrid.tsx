@@ -8,6 +8,7 @@ import {
   buildCategoryOptions,
   matchesCategory,
 } from "@/components/ui/CategoryFilter";
+import { CategoryTagCloud } from "@/components/ui/CategoryTagCloud";
 
 const FALLBACK = [
   "Music Videos",
@@ -35,6 +36,13 @@ export function WorkFilterGrid({ projects }: { projects: PortfolioListItem[] }) 
 
   return (
     <div>
+      <CategoryTagCloud
+        counts={counts}
+        active={active}
+        onChange={setActive}
+        label="Categories"
+      />
+
       <CategoryFilter
         categories={categories}
         active={active}
