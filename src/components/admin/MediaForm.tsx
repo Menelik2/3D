@@ -76,7 +76,7 @@ export function MediaForm({ media }: { media: Media }) {
       setMsg("Network error");
     } finally {
       setSaving(false);
-    ind
+    }
   }
 
   return (
