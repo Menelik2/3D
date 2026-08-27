@@ -191,7 +191,7 @@ export default async function HomePage() {
             Whether you have a clear vision or just an idea — we help shape it
             into cinema.
           </p>
-n          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/start-a-project" className="btn-primary min-w-[200px]">
               Start a Project
             </Link>
