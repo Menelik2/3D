@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPublishedFaqs } from "@/lib/data/public-cms";
+import { PageHeader } from "@/components/ui/PageHeader";
 
 export const metadata: Metadata = {
   title: "FAQ",
@@ -11,27 +12,27 @@ export const metadata: Metadata = {
 const fallbackFaqs = [
   {
     q: "How do I book a project?",
-    a: "Use the Start a Project form or book a consultation. We will review your brief and respond with next steps.",
+    a: "Use the Start a Project form or book a consultation. We review your brief and respond with next steps and a clear proposal.",
   },
   {
     q: "Do you travel for productions?",
-    a: "Yes. Travel and location details are discussed during the inquiry and proposal stage.",
+    a: "Yes. Travel and location details are confirmed during the inquiry and proposal stage.",
   },
   {
     q: "What is included in a typical package?",
-    a: "Packages vary by project type. Music videos, commercials and weddings each have different scopes — we outline inclusions in the proposal.",
+    a: "Packages vary by project type. Music videos, commercials, and weddings each have different scopes — inclusions are listed in the proposal.",
   },
   {
     q: "How long does delivery take?",
-    a: "Timelines depend on project complexity. A clear schedule is agreed before production begins.",
+    a: "Timelines depend on complexity. A production schedule is agreed before cameras roll.",
   },
   {
     q: "Can I request revisions?",
-    a: "Yes. Revision rounds are defined in the production agreement.",
+    a: "Yes. Revision rounds are defined in the production agreement so expectations stay clear.",
   },
   {
     q: "Who owns the final footage?",
-    a: "Usage rights and ownership are specified in the contract. Client media rights are clear and documented.",
+    a: "Usage rights and ownership are specified in the contract. Client media rights are documented before delivery.",
   },
 ];
 
@@ -45,38 +46,36 @@ export default async function FAQPage() {
   return (
     <div className="pt-24 md:pt-28 pb-24">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
-        <header className="mb-16">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-tight">
-            FAQ
-          </h1>
-          <p className="mt-4 text-muted text-sm">
-            Common questions about working with META Pictures.
-          </p>
-        </header>
+        <PageHeader
+          eyebrow="Support"
+          title="FAQ"
+          description="Common questions about working with META Pictures."
+        />
 
-        <div className="space-y-6">
+        <div className="space-y-0 border-t border-border">
           {faqs.map((item) => (
-            <div key={item.q} className="border-b border-border pb-6">
-              <h2 className="text-base font-light">{item.q}</h2>
-              <p className="mt-2 text-sm text-muted leading-relaxed">{item.a}</p>
+            <div
+              key={item.q}
+              className="border-b border-border py-7 first:pt-8"
+            >
+              <h2 className="text-base sm:text-lg font-light tracking-tight">
+                {item.q}
+              </h2>
+              <p className="mt-3 text-sm text-muted leading-relaxed">{item.a}</p>
             </div>
           ))}
         </div>
 
-        {cmsFaqs.length === 0 && (
-          <p className="mt-12 text-sm text-muted">
-            FAQs are managed in the admin dashboard. Additional questions can be
-            added there.
-          </p>
-        )}
-
-        <div className="mt-10 text-center">
-          <Link
-            href="/contact"
-            className="text-xs uppercase tracking-widest text-accent hover:underline"
-          >
-            Still have questions? Contact us →
-          </Link>
+        <div className="mt-14 border border-border bg-card/20 p-8 text-center">
+          <p className="text-sm text-muted">Still have questions?</p>
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/contact" className="btn-ghost min-w-[160px]">
+              Contact
+            </Link>
+            <Link href="/start-a-project" className="btn-primary min-w-[160px]">
+              Start a Project
+            </Link>
+          </div>
         </div>
       </div>
     </div>

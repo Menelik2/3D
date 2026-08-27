@@ -17,15 +17,17 @@ export default async function HomePage() {
     <div className="grain">
       <HeroContent />
 
-      {/* SHOWREEL */}
       <section id="showreel" className="relative py-24 md:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-wide">
-              SEE WHAT WE SEE.
+            <p className="text-[10px] uppercase tracking-[0.35em] text-muted mb-4">
+              Showreel
+            </p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight">
+              See what we see.
             </h2>
             <p className="mt-3 text-sm text-muted">
-              Our latest showreel — a selection of cinematic work.
+              A selection of cinematic work from META Pictures.
             </p>
           </div>
 
@@ -52,8 +54,8 @@ export default async function HomePage() {
               )
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-white/5">
+                <div className="text-center px-6">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/5">
                     <svg
                       className="h-6 w-6 text-white ml-1"
                       fill="currentColor"
@@ -63,33 +65,29 @@ export default async function HomePage() {
                     </svg>
                   </div>
                   <p className="text-sm text-muted">Showreel coming soon</p>
-                  <p className="mt-1 text-xs text-muted/60">
-                    Set NEXT_PUBLIC_SHOWREEL_URL in env
-                  </p>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-xs text-muted">
-            <span>META Pictures · Showreel</span>
-            <Link
-              href="/work"
-              className="uppercase tracking-widest hover:text-foreground transition-colors"
-            >
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-[11px] uppercase tracking-widest text-muted">
+            <span>META Pictures</span>
+            <Link href="/work" className="hover:text-foreground transition-colors">
               View all work →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* SELECTED WORK — 3D perspective cards */}
       <section className="py-24 md:py-32 border-t border-border">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-light">
-                Selected Work
+              <p className="text-[10px] uppercase tracking-[0.35em] text-muted mb-3">
+                Portfolio
+              </p>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight">
+                Selected work
               </h2>
               <p className="mt-2 text-sm text-muted">
                 Music videos · Commercials · Weddings · Documentaries
@@ -97,14 +95,14 @@ export default async function HomePage() {
             </div>
             <Link
               href="/work"
-              className="text-xs uppercase tracking-widest text-muted hover:text-foreground transition-colors"
+              className="text-[11px] uppercase tracking-widest text-muted hover:text-foreground transition-colors"
             >
-              View All Work →
+              View all →
             </Link>
           </div>
 
           {featured.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 [perspective:1200px]">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 [perspective:1200px]">
               {featured.map((project) => (
                 <PerspectiveCard
                   key={project.id}
@@ -118,35 +116,33 @@ export default async function HomePage() {
             </div>
           ) : (
             <div className="border border-border bg-card/20 p-12 text-center">
-              <p className="text-sm text-muted">
-                Featured projects will appear here once published in the admin
-                portfolio (mark items as Featured).
+              <p className="text-sm text-muted max-w-md mx-auto">
+                Featured projects appear here when published and marked featured
+                in the studio dashboard.
               </p>
-              <Link
-                href="/work"
-                className="mt-6 inline-flex text-xs uppercase tracking-widest text-accent hover:underline"
-              >
-                Browse work →
+              <Link href="/work" className="btn-ghost mt-8 inline-flex">
+                Browse work
               </Link>
             </div>
           )}
         </div>
       </section>
 
-      {/* SERVICES TEASER */}
-      <section className="py-24 md:py-32 border-t border-border bg-card/30">
+      <section className="py-24 md:py-32 border-t border-border bg-card/25">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-16 text-center">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light">
-              What We Create
+          <div className="mb-14 text-center">
+            <p className="text-[10px] uppercase tracking-[0.35em] text-muted mb-3">
+              Capabilities
+            </p>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight">
+              What we create
             </h2>
             <p className="mt-3 text-sm text-muted max-w-xl mx-auto">
-              From music videos to documentaries — cinematic storytelling for
-              brands, artists, and real moments.
+              Cinematic storytelling for brands, artists, and real moments.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               "Music Videos",
               "Commercial Films",
@@ -160,7 +156,7 @@ export default async function HomePage() {
               <Link
                 key={service}
                 href="/services"
-                className="group border border-border bg-background/50 p-6 transition hover:border-accent/50 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.35)] duration-300"
+                className="group border border-border bg-background/40 px-5 py-6 transition duration-300 hover:border-accent/40 hover:-translate-y-0.5"
               >
                 <h3 className="text-sm font-medium tracking-wide group-hover:text-accent transition-colors">
                   {service}
@@ -170,44 +166,34 @@ export default async function HomePage() {
           </div>
 
           <div className="mt-12 text-center">
-            <Link
-              href="/services"
-              className="inline-flex items-center text-xs uppercase tracking-widest text-muted hover:text-foreground transition-colors"
-            >
-              Explore All Services →
+            <Link href="/services" className="btn-ghost">
+              Explore services
             </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
       <section className="relative py-24 md:py-32 border-t border-border overflow-hidden">
         <div
-          className="pointer-events-none absolute inset-0 opacity-40"
+          className="pointer-events-none absolute inset-0 opacity-50"
           style={{
             background:
-              "radial-gradient(ellipse at 50% 50%, rgba(225,29,72,0.12), transparent 60%)",
+              "radial-gradient(ellipse at 50% 40%, rgba(225,29,72,0.1), transparent 55%)",
           }}
         />
         <div className="relative mx-auto max-w-3xl px-4 text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-light">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-light tracking-tight">
             Ready to tell your story?
           </h2>
-          <p className="mt-4 text-muted text-sm sm:text-base">
+          <p className="mt-4 text-muted text-sm sm:text-base max-w-lg mx-auto">
             Whether you have a clear vision or just an idea — we help shape it
             into cinema.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href="/start-a-project"
-              className="inline-flex min-w-[200px] items-center justify-center bg-accent px-8 py-3.5 text-xs font-medium uppercase tracking-widest text-white transition hover:bg-accent-hover shadow-[0_0_40px_rgba(225,29,72,0.2)]"
-            >
+          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/start-a-project" className="btn-primary min-w-[200px]">
               Start a Project
             </Link>
-            <Link
-              href="/book-consultation"
-              className="inline-flex min-w-[200px] items-center justify-center border border-white/20 px-8 py-3.5 text-xs font-medium uppercase tracking-widest text-foreground transition hover:bg-white/5"
-            >
+            <Link href="/book-consultation" className="btn-ghost min-w-[200px]">
               Book Consultation
             </Link>
           </div>

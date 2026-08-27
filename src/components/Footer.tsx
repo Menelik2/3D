@@ -10,6 +10,7 @@ const explore = [
   { href: "/work", label: "Work" },
   { href: "/services", label: "Services" },
   { href: "/about", label: "About" },
+  { href: "/team", label: "Team" },
   { href: "/journal", label: "Journal" },
   { href: "/contact", label: "Contact" },
   { href: "/faq", label: "FAQ" },
@@ -42,31 +43,48 @@ export function Footer({
 
   return (
     <footer className="border-t border-border bg-background">
+      <div className="border-b border-border">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-muted mb-2">
+              Next project
+            </p>
+            <p className="text-lg font-light tracking-tight">
+              Ready when you are.
+            </p>
+          </div>
+          <Link href="/start-a-project" className="btn-primary self-start sm:self-auto">
+            Start a Project
+          </Link>
+        </div>
+      </div>
+
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-1">
-            <Link
-              href="/"
-              className="text-sm font-semibold tracking-cinematic uppercase"
-            >
-              META Pictures
+            <Link href="/" className="inline-flex items-center gap-2.5 group">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              <span className="text-[13px] font-semibold tracking-[0.2em] uppercase group-hover:text-accent transition-colors">
+                META Pictures
+              </span>
             </Link>
-            <p className="mt-4 text-sm text-muted leading-relaxed max-w-xs">
-              Every Frame Has a Story.
+            <p className="mt-5 text-sm text-muted leading-relaxed max-w-xs">
+              Every frame has a story.
             </p>
-            <p className="mt-2 text-xs text-muted/70">
-              We transform ideas into visual stories that people remember.
+            <p className="mt-2 text-xs text-muted/65 leading-relaxed max-w-xs">
+              Cinematic film &amp; media production for brands, artists, and
+              real moments.
             </p>
             {contact.address && (
-              <p className="mt-4 text-xs text-muted/70">{contact.address}</p>
+              <p className="mt-5 text-xs text-muted/65">{contact.address}</p>
             )}
           </div>
 
           <div>
-            <h3 className="text-xs font-medium uppercase tracking-widest text-foreground mb-4">
+            <h3 className="text-[10px] font-medium uppercase tracking-[0.25em] text-foreground mb-5">
               Explore
             </h3>
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {explore.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -81,11 +99,11 @@ export function Footer({
           </div>
 
           <div>
-            <h3 className="text-xs font-medium uppercase tracking-widest text-foreground mb-4">
+            <h3 className="text-[10px] font-medium uppercase tracking-[0.25em] text-foreground mb-5">
               Contact
             </h3>
             {contactLinks.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {contactLinks.map((link) => (
                   <li key={link.label}>
                     <a
@@ -107,11 +125,11 @@ export function Footer({
           </div>
 
           <div>
-            <h3 className="text-xs font-medium uppercase tracking-widest text-foreground mb-4">
+            <h3 className="text-[10px] font-medium uppercase tracking-[0.25em] text-foreground mb-5">
               Follow
             </h3>
             {socialLinks.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="space-y-2.5">
                 {socialLinks.map((link) => (
                   <li key={link.label}>
                     <a
@@ -127,7 +145,7 @@ export function Footer({
               </ul>
             ) : (
               <p className="text-xs text-muted/60">
-                Social links can be set in Admin → Settings.
+                Social links: Admin → Settings
               </p>
             )}
           </div>
@@ -142,7 +160,7 @@ export function Footer({
               href="/privacy"
               className="hover:text-foreground transition-colors"
             >
-              Privacy Policy
+              Privacy
             </Link>
             <Link
               href="/terms"
