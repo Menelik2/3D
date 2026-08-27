@@ -1,11 +1,20 @@
 import Link from "next/link";
+import { getFeaturedPortfolio } from "@/lib/data/public-cms";
+import { getPublicSiteConfig } from "@/lib/data/site-settings";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [featured, { media }] = await Promise.all([
+    getFeaturedPortfolio(6),
+    getPublicSiteConfig(),
+  ]);
+
+  const showreel = media.showreelUrl;
+  const poster = media.showreelPosterUrl;
+
   return (
     <div className="grain">
       {/* HERO */}
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
-        {/* Background placeholder — replace with video or high-res image */}
         <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-950 to-background" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-zinc-900/40 via-transparent to-transparent" />
 
@@ -36,7 +45,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-muted">
           <span className="text-[10px] uppercase tracking-widest">Scroll</span>
           <div className="h-8 w-px bg-gradient-to-b from-muted to-transparent" />
@@ -55,34 +63,55 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Video placeholder */}
           <div className="relative aspect-video overflow-hidden bg-card border border-border">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-white/5">
-                  <svg
-                    className="h-6 w-6 text-white ml-1"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
+            {showreel ? (
+              showreel.includes("youtube.com") ||
+              showreel.includes("youtu.be") ||
+              showreel.includes("vimeo.com") ? (
+                <iframe
+                  src={showreel}
+                  title="META Pictures showreel"
+                  className="absolute inset-0 h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  className="absolute inset-0 h-full w-full object-cover"
+                  controls
+                  playsInline
+                  poster={poster || undefined}
+                  src={showreel}
+                />
+              )
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-white/30 bg-white/5">
+                    <svg
+                      className="h-6 w-6 text-white ml-1"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-muted">Showreel coming soon</p>
+                  <p className="mt-1 text-xs text-muted/60">
+                    Set NEXT_PUBLIC_SHOWREEL_URL in env
+                  </p>
                 </div>
-                <p className="text-sm text-muted">Showreel video placeholder</p>
-                <p className="mt-1 text-xs text-muted/60">
-                  Replace with real video + poster in CMS / settings
-                </p>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-xs text-muted">
-            <span>Production Year · Duration</span>
+            <span>META Pictures · Showreel</span>
             <Link
               href="/work"
               className="uppercase tracking-widest hover:text-foreground transition-colors"
             >
-              Watch Full Showreel →
+              View all work →
             </Link>
           </div>
         </div>
@@ -108,37 +137,53 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Editorial grid of placeholder projects */}
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { title: "Project One", cat: "Music Video", year: "2025" },
-              { title: "Project Two", cat: "Commercial", year: "2025" },
-              { title: "Project Three", cat: "Wedding Film", year: "2024" },
-              { title: "Project Four", cat: "Documentary", year: "2024" },
-              { title: "Project Five", cat: "Corporate", year: "2025" },
-              { title: "Project Six", cat: "Event", year: "2024" },
-            ].map((project, i) => (
-              <Link
-                key={i}
-                href="/work"
-                className="group relative block aspect-[4/5] overflow-hidden bg-card border border-border"
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 transition group-hover:opacity-90" />
-                <div className="absolute inset-0 flex items-end p-6">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-widest text-muted">
-                      {project.cat} · {project.year}
-                    </p>
-                    <h3 className="mt-1 text-lg font-light text-foreground group-hover:text-accent transition-colors">
-                      {project.title}
-                    </h3>
+          {featured.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((project) => (
+                <Link
+                  key={project.id}
+                  href={`/work/${project.slug}`}
+                  className="group relative block aspect-[4/5] overflow-hidden bg-card border border-border"
+                >
+                  {project.cover_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={project.cover_image_url}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-zinc-900" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 transition group-hover:opacity-90" />
+                  <div className="absolute inset-0 flex items-end p-6">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-muted">
+                        {project.category}
+                        {project.year ? ` · ${project.year}` : ""}
+                      </p>
+                      <h3 className="mt-1 text-lg font-light text-foreground group-hover:text-accent transition-colors">
+                        {project.title}
+                      </h3>
+                    </div>
                   </div>
-                </div>
-                {/* Placeholder image area */}
-                <div className="absolute inset-0 -z-10 bg-zinc-900" />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="border border-border bg-card/20 p-12 text-center">
+              <p className="text-sm text-muted">
+                Featured projects will appear here once published in the admin
+                portfolio (mark items as Featured).
+              </p>
+              <Link
+                href="/work"
+                className="mt-6 inline-flex text-xs uppercase tracking-widest text-accent hover:underline"
+              >
+                Browse work →
               </Link>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 

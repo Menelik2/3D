@@ -1,33 +1,49 @@
 import Link from "next/link";
+import {
+  telLink,
+  whatsappLink,
+  type ContactConfig,
+  type SocialConfig,
+} from "@/lib/site-config";
 
-const footerLinks = {
-  explore: [
-    { href: "/work", label: "Work" },
-    { href: "/services", label: "Services" },
-    { href: "/about", label: "About" },
-    { href: "/journal", label: "Journal" },
-    { href: "/contact", label: "Contact" },
-    { href: "/faq", label: "FAQ" },
-  ],
-  contact: [
-    { href: "mailto:hello@metapictures.example", label: "Email" },
-    { href: "#", label: "WhatsApp" },
-    { href: "tel:+0000000000", label: "Call" },
-  ],
-  social: [
-    { href: "#", label: "Instagram" },
-    { href: "#", label: "YouTube" },
-    { href: "#", label: "TikTok" },
-    { href: "#", label: "Facebook" },
-  ],
-};
+const explore = [
+  { href: "/work", label: "Work" },
+  { href: "/services", label: "Services" },
+  { href: "/about", label: "About" },
+  { href: "/journal", label: "Journal" },
+  { href: "/contact", label: "Contact" },
+  { href: "/faq", label: "FAQ" },
+];
 
-export function Footer() {
+export function Footer({
+  contact,
+  social,
+}: {
+  contact: ContactConfig;
+  social: SocialConfig;
+}) {
+  const contactLinks = [
+    contact.email
+      ? { href: `mailto:${contact.email}`, label: contact.email }
+      : null,
+    contact.whatsapp
+      ? { href: whatsappLink(contact.whatsapp), label: "WhatsApp" }
+      : null,
+    contact.phone ? { href: telLink(contact.phone), label: contact.phone } : null,
+  ].filter(Boolean) as { href: string; label: string }[];
+
+  const socialLinks = [
+    social.instagram ? { href: social.instagram, label: "Instagram" } : null,
+    social.youtube ? { href: social.youtube, label: "YouTube" } : null,
+    social.tiktok ? { href: social.tiktok, label: "TikTok" } : null,
+    social.facebook ? { href: social.facebook, label: "Facebook" } : null,
+    social.telegram ? { href: social.telegram, label: "Telegram" } : null,
+  ].filter(Boolean) as { href: string; label: string }[];
+
   return (
     <footer className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
-          {/* Brand */}
           <div className="lg:col-span-1">
             <Link
               href="/"
@@ -41,15 +57,17 @@ export function Footer() {
             <p className="mt-2 text-xs text-muted/70">
               We transform ideas into visual stories that people remember.
             </p>
+            {contact.address && (
+              <p className="mt-4 text-xs text-muted/70">{contact.address}</p>
+            )}
           </div>
 
-          {/* Explore */}
           <div>
             <h3 className="text-xs font-medium uppercase tracking-widest text-foreground mb-4">
               Explore
             </h3>
             <ul className="space-y-2">
-              {footerLinks.explore.map((link) => (
+              {explore.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -62,48 +80,56 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
             <h3 className="text-xs font-medium uppercase tracking-widest text-foreground mb-4">
               Contact
             </h3>
-            <ul className="space-y-2">
-              {footerLinks.contact.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-muted hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 text-xs text-muted/60">
-              {/* Placeholder — configure real contact in admin settings */}
-              Contact details are managed in site settings.
-            </p>
+            {contactLinks.length > 0 ? (
+              <ul className="space-y-2">
+                {contactLinks.map((link) => (
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      className="text-sm text-muted hover:text-foreground transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted">
+                <Link href="/contact" className="hover:text-foreground">
+                  Get in touch →
+                </Link>
+              </p>
+            )}
           </div>
 
-          {/* Social */}
           <div>
             <h3 className="text-xs font-medium uppercase tracking-widest text-foreground mb-4">
               Follow
             </h3>
-            <ul className="space-y-2">
-              {footerLinks.social.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-muted hover:text-foreground transition-colors"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {socialLinks.length > 0 ? (
+              <ul className="space-y-2">
+                {socialLinks.map((link) => (
+                  <li key={link.label}>
+                    <a
+                      href={link.href}
+                      className="text-sm text-muted hover:text-foreground transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-muted/60">
+                Social links can be set in Admin → Settings.
+              </p>
+            )}
           </div>
         </div>
 
@@ -112,10 +138,16 @@ export function Footer() {
             © {new Date().getFullYear()} META Pictures. All rights reserved.
           </p>
           <div className="flex gap-6 text-xs text-muted">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
+            <Link
+              href="/privacy"
+              className="hover:text-foreground transition-colors"
+            >
               Privacy Policy
             </Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">
+            <Link
+              href="/terms"
+              className="hover:text-foreground transition-colors"
+            >
               Terms
             </Link>
           </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCmsClient } from "@/lib/cms";
+import { revalidateCms } from "@/lib/data/revalidate";
 
 export async function PATCH(request: Request) {
   try {
@@ -27,6 +28,7 @@ export async function PATCH(request: Request) {
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    revalidateCms("settings");
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

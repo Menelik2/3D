@@ -2,9 +2,14 @@
 
 import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 
-export function SiteChrome({ children }: { children: React.ReactNode }) {
+export function SiteChrome({
+  children,
+  footer,
+}: {
+  children: React.ReactNode;
+  footer: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
 
@@ -16,7 +21,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
     <>
       <Navbar />
       <main className="flex-1">{children}</main>
-      <Footer />
+      {footer}
     </>
   );
 }
