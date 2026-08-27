@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { HeroScene } from "./HeroScene";
 import { FloatingFrames } from "./FloatingFrames";
-import { LogoStage } from "./LogoStage";
+import { MetaTitle3D } from "./MetaTitle3D";
 
 export function HeroContent({
-  logoVideoUrl,
-  logoUrl,
+  logoVideoUrl: _logoVideoUrl,
+  logoUrl: _logoUrl,
 }: {
   logoVideoUrl?: string;
   logoUrl?: string;
@@ -20,14 +20,14 @@ export function HeroContent({
       <div className="absolute inset-0 z-[2] bg-[radial-gradient(ellipse_at_center,transparent_10%,rgba(10,10,10,0.35)_55%,rgba(10,10,10,0.95)_100%)]" />
 
       <div className="relative z-10 mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10 py-20 sm:py-16 lg:py-12">
-        <div className="flex flex-col items-center text-center lg:gap-1">
-          <h1 className="hero-fade-in mb-4 sm:mb-5 lg:mb-6 flex w-full justify-center">
+        <div className="flex flex-col items-center text-center">
+          <h1 className="mb-5 sm:mb-6 lg:mb-8 flex w-full justify-center">
             <span className="sr-only">META Pictures</span>
-            <LogoStage logoVideoUrl={logoVideoUrl} logoUrl={logoUrl} />
+            <MetaTitle3D />
           </h1>
 
           <p className="hero-fade-in hero-delay-1 mb-2 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-muted">
-            Cinematic Film & Media Production
+            Cinematic Film &amp; Media Production
           </p>
           <p className="hero-fade-in hero-delay-2 text-lg sm:text-2xl md:text-3xl lg:text-[2.15rem] font-light tracking-[0.1em] text-foreground/90">
             Every frame has a story.
