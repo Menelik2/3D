@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   telLink,
@@ -5,16 +7,7 @@ import {
   type ContactConfig,
   type SocialConfig,
 } from "@/lib/site-config";
-
-const explore = [
-  { href: "/work", label: "Work" },
-  { href: "/services", label: "Services" },
-  { href: "/about", label: "About" },
-  { href: "/team", label: "Team" },
-  { href: "/journal", label: "Journal" },
-  { href: "/contact", label: "Contact" },
-  { href: "/faq", label: "FAQ" },
-];
+import { useT } from "@/lib/i18n/context";
 
 export function Footer({
   contact,
@@ -23,6 +16,18 @@ export function Footer({
   contact: ContactConfig;
   social: SocialConfig;
 }) {
+  const t = useT();
+
+  const explore = [
+    { href: "/work", label: t.footer.work },
+    { href: "/services", label: t.footer.services },
+    { href: "/about", label: t.footer.about },
+    { href: "/team", label: t.footer.team },
+    { href: "/journal", label: t.footer.journal },
+    { href: "/contact", label: t.footer.contact },
+    { href: "/faq", label: t.footer.faq },
+  ];
+
   const contactLinks = [
     contact.email
       ? { href: `mailto:${contact.email}`, label: contact.email }
@@ -47,14 +52,12 @@ export function Footer({
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div>
             <p className="text-[10px] uppercase tracking-[0.3em] text-muted mb-2">
-              Next project
+              {t.footer.nextProject}
             </p>
-            <p className="text-lg font-light tracking-tight">
-              Ready when you are.
-            </p>
+            <p className="text-lg font-light tracking-tight">{t.footer.readyWhen}</p>
           </div>
           <Link href="/start-a-project" className="btn-primary self-start sm:self-auto">
-            Start a Project
+            {t.footer.startProject}
           </Link>
         </div>
       </div>
@@ -69,11 +72,10 @@ export function Footer({
               </span>
             </Link>
             <p className="mt-5 text-sm text-muted leading-relaxed max-w-xs">
-              Every frame has a story.
+              {t.footer.tagline}
             </p>
             <p className="mt-2 text-xs text-muted/65 leading-relaxed max-w-xs">
-              Cinematic film &amp; media production for brands, artists, and
-              real moments.
+              {t.footer.blurb}
             </p>
             {contact.address && (
               <p className="mt-5 text-xs text-muted/65">{contact.address}</p>
@@ -82,7 +84,7 @@ export function Footer({
 
           <div>
             <h3 className="text-[10px] font-medium uppercase tracking-[0.25em] text-foreground mb-5">
-              Explore
+              {t.footer.explore}
             </h3>
             <ul className="space-y-2.5">
               {explore.map((link) => (
@@ -100,7 +102,7 @@ export function Footer({
 
           <div>
             <h3 className="text-[10px] font-medium uppercase tracking-[0.25em] text-foreground mb-5">
-              Contact
+              {t.footer.contact}
             </h3>
             {contactLinks.length > 0 ? (
               <ul className="space-y-2.5">
@@ -118,7 +120,7 @@ export function Footer({
             ) : (
               <p className="text-sm text-muted">
                 <Link href="/contact" className="hover:text-foreground">
-                  Get in touch →
+                  {t.footer.getInTouch}
                 </Link>
               </p>
             )}
@@ -126,7 +128,7 @@ export function Footer({
 
           <div>
             <h3 className="text-[10px] font-medium uppercase tracking-[0.25em] text-foreground mb-5">
-              Follow
+              {t.footer.follow}
             </h3>
             {socialLinks.length > 0 ? (
               <ul className="space-y-2.5">
@@ -144,29 +146,21 @@ export function Footer({
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-muted/60">
-                Social links: Admin → Settings
-              </p>
+              <p className="text-xs text-muted/60">Social links: Admin → Settings</p>
             )}
           </div>
         </div>
 
         <div className="mt-16 flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted">
-            © {new Date().getFullYear()} META Pictures. All rights reserved.
+            © {new Date().getFullYear()} META Pictures. {t.footer.rights}
           </p>
           <div className="flex gap-6 text-xs text-muted">
-            <Link
-              href="/privacy"
-              className="hover:text-foreground transition-colors"
-            >
-              Privacy
+            <Link href="/privacy" className="hover:text-foreground transition-colors">
+              {t.footer.privacy}
             </Link>
-            <Link
-              href="/terms"
-              className="hover:text-foreground transition-colors"
-            >
-              Terms
+            <Link href="/terms" className="hover:text-foreground transition-colors">
+              {t.footer.terms}
             </Link>
           </div>
         </div>

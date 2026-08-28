@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { META_SPLASH_LOGO } from "@/lib/logo-data";
+import { useT } from "@/lib/i18n/context";
 
 const SPLASH_MS = 2600;
 const FADE_MS = 750;
@@ -11,6 +12,7 @@ const FADE_MS = 750;
  * Skips on /admin and when user prefers reduced motion.
  */
 export function SplashScreen() {
+  const t = useT();
   const [phase, setPhase] = useState<"show" | "fade" | "done">("show");
 
   useEffect(() => {
@@ -78,7 +80,7 @@ export function SplashScreen() {
           />
         </div>
 
-        <p className="splash-tagline">Every frame has a story.</p>
+        <p className="splash-tagline">{t.splash.tagline}</p>
 
         <div className="splash-bar">
           <span className="splash-bar-fill" />
