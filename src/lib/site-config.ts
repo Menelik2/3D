@@ -36,7 +36,7 @@ export function getContactConfig(): ContactConfig {
   return {
     phone: env("NEXT_PUBLIC_CONTACT_PHONE"),
     whatsapp: env("NEXT_PUBLIC_CONTACT_WHATSAPP"),
-    email: env("NEXT_PUBLIC_CONTACT_EMAIL", "hello@metapictures.example"),
+    email: env("NEXT_PUBLIC_CONTACT_EMAIL", "Metapictures23@gmail.com"),
     address: env("NEXT_PUBLIC_CONTACT_ADDRESS"),
   };
 }

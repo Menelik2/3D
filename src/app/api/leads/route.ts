@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendLeadNotification } from "@/lib/email";
 
 /** Empty strings break Postgres DATE columns — normalize to null. */
 function optionalDate(v: unknown): string | null {
@@ -36,39 +37,52 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
+    const company = optionalText(body.company);
+    const phone = optionalText(body.phone);
+    const whatsapp = optionalText(body.whatsapp);
+    const preferredContact =
+      optionalText(body.preferredContact || body.preferred_contact) || "email";
+    const projectTitle = optionalText(body.title || body.project_title);
+    const projectDescription = optionalText(
+      body.description || body.project_description
+    );
+    const creativeIdea = optionalText(body.creativeIdea || body.creative_idea);
+    const city = optionalText(body.city);
+    const location = optionalText(body.location);
+    const preferredDate = optionalDate(
+      body.preferredDate || body.preferred_date
+    );
+    const budgetRange = optionalText(body.budget || body.budget_range);
+    const source = optionalText(body.source) || "website";
+    const typesArr = Array.isArray(projectTypes) ? projectTypes : [];
+
     const { data, error } = await supabase
       .from("leads")
       .insert({
         full_name: fullName,
-        company: optionalText(body.company),
+        company,
         email,
-        phone: optionalText(body.phone),
-        whatsapp: optionalText(body.whatsapp),
-        preferred_contact:
-          optionalText(body.preferredContact || body.preferred_contact) ||
-          "email",
-        project_types: Array.isArray(projectTypes) ? projectTypes : [],
-        project_title: optionalText(body.title || body.project_title),
-        project_description: optionalText(
-          body.description || body.project_description
-        ),
-        creative_idea: optionalText(body.creativeIdea || body.creative_idea),
+        phone,
+        whatsapp,
+        preferred_contact: preferredContact,
+        project_types: typesArr,
+        project_title: projectTitle,
+        project_description: projectDescription,
+        creative_idea: creativeIdea,
         references_text: optionalText(body.references || body.references_text),
         visual_style: optionalText(body.visualStyle || body.visual_style),
-        preferred_date: optionalDate(
-          body.preferredDate || body.preferred_date
-        ),
+        preferred_date: preferredDate,
         alternative_date: optionalDate(
           body.alternativeDate || body.alternative_date
         ),
-        city: optionalText(body.city),
-        location: optionalText(body.location),
+        city,
+        location,
         indoor_outdoor: optionalText(
           body.indoorOutdoor || body.indoor_outdoor
         ),
         expected_duration: optionalText(body.duration || body.expected_duration),
-        budget_range: optionalText(body.budget || body.budget_range),
-        source: optionalText(body.source) || "website",
+        budget_range: budgetRange,
+        source,
         status: "NEW",
       })
       .select("id, reference_number")
@@ -84,6 +98,26 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    // Fire-and-forget email — never block the client on mail failures
+    void sendLeadNotification({
+      reference: data.reference_number,
+      fullName,
+      email,
+      phone,
+      whatsapp,
+      company,
+      preferredContact,
+      projectTypes: typesArr,
+      projectTitle,
+      projectDescription,
+      creativeIdea,
+      city,
+      location,
+      preferredDate,
+      budgetRange,
+      source,
+    });
 
     return NextResponse.json({
       ok: true,

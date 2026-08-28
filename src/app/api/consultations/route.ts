@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendConsultationNotification } from "@/lib/email";
 
 function optionalDate(v: unknown): string | null {
   if (v == null) return null;
@@ -30,6 +31,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const phone = optionalText(body.phone);
+    const preferredDate = optionalDate(body.date || body.preferredDate);
+    const preferredTime = optionalText(body.time || body.preferredTime);
+    const notes = optionalText(body.notes);
+
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -38,10 +44,10 @@ export async function POST(request: Request) {
         consultation_type: consultationType,
         full_name: fullName,
         email,
-        phone: optionalText(body.phone),
-        preferred_date: optionalDate(body.date || body.preferredDate),
-        preferred_time: optionalText(body.time || body.preferredTime),
-        notes: optionalText(body.notes),
+        phone,
+        preferred_date: preferredDate,
+        preferred_time: preferredTime,
+        notes,
         status: "PENDING",
       })
       .select("id")
@@ -54,6 +60,17 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+
+    void sendConsultationNotification({
+      id: data.id,
+      fullName,
+      email,
+      phone,
+      consultationType,
+      preferredDate,
+      preferredTime,
+      notes,
+    });
 
     return NextResponse.json({ ok: true, id: data.id });
   } catch (e) {

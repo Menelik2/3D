@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./hero-desktop.css";
+@import "./meta-title-3d.css";
 
 :root {
   --background: #0a0a0a;
@@ -34,7 +36,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Buttons — production-house system */
+/* App-like page entrance after splash */
+.splash-site-main {
+  animation: site-reveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+@keyframes site-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -75,7 +92,6 @@ body {
   border-color: rgba(225, 29, 72, 0.45);
 }
 
-/* Film grain */
 .grain {
   position: relative;
 }
@@ -93,7 +109,6 @@ body {
   letter-spacing: 0.2em;
 }
 
-/* 3D hero */
 .perspective-hero {
   perspective: 1200px;
   perspective-origin: 50% 40%;
@@ -115,37 +130,51 @@ body {
 }
 
 .frame-3d-a {
-  width: min(280px, 40vw);
-  height: min(170px, 24vw);
-  top: 18%;
-  left: 8%;
-  transform: rotateY(25deg) rotateX(8deg) translateZ(-80px);
+  width: min(320px, 28vw);
+  height: min(190px, 17vw);
+  top: 12%;
+  left: 4%;
+  transform: rotateY(22deg) rotateX(6deg) translateZ(-60px);
+  opacity: 0.85;
 }
 .frame-3d-b {
-  width: min(220px, 32vw);
-  height: min(300px, 42vw);
-  top: 22%;
-  right: 6%;
-  transform: rotateY(-28deg) rotateX(5deg) translateZ(-40px);
+  width: min(260px, 22vw);
+  height: min(340px, 30vw);
+  top: 14%;
+  right: 3%;
+  transform: rotateY(-24deg) rotateX(4deg) translateZ(-30px);
   animation-delay: -3s;
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.12);
+  opacity: 0.8;
 }
 .frame-3d-c {
-  width: min(180px, 28vw);
-  height: min(110px, 16vw);
-  bottom: 22%;
-  left: 18%;
-  transform: rotateY(18deg) rotateX(-12deg) translateZ(-120px);
+  width: min(240px, 20vw);
+  height: min(140px, 12vw);
+  bottom: 16%;
+  left: 10%;
+  transform: rotateY(16deg) rotateX(-10deg) translateZ(-90px);
   animation-delay: -6s;
+  opacity: 0.75;
 }
 .frame-3d-d {
-  width: min(200px, 30vw);
-  height: min(130px, 18vw);
-  bottom: 18%;
-  right: 16%;
-  transform: rotateY(-15deg) rotateX(-8deg) translateZ(-60px);
+  width: min(280px, 24vw);
+  height: min(160px, 14vw);
+  bottom: 12%;
+  right: 8%;
+  transform: rotateY(-14deg) rotateX(-6deg) translateZ(-45px);
   animation-delay: -9s;
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.1);
+  opacity: 0.75;
+}
+.frame-3d-e {
+  width: min(180px, 16vw);
+  height: min(240px, 22vw);
+  left: 6%;
+  top: 48%;
+  animation-delay: -5s;
+  border-color: rgba(225, 29, 72, 0.3);
+  transform: rotateY(20deg) rotateX(6deg) translateZ(-40px);
+  opacity: 0.7;
 }
 
 @keyframes float-3d {
@@ -192,6 +221,57 @@ body {
   }
 }
 
+.light-streak {
+  position: absolute;
+  width: 1px;
+  height: 140px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(225, 29, 72, 0.5),
+    transparent
+  );
+  opacity: 0.35;
+  filter: blur(0.5px);
+  animation: streak-drift 12s ease-in-out infinite;
+}
+.light-streak-a {
+  left: 22%;
+  top: 18%;
+  animation-delay: -2s;
+}
+.light-streak-b {
+  right: 18%;
+  top: 35%;
+  height: 180px;
+  animation-delay: -6s;
+  opacity: 0.25;
+}
+
+@keyframes streak-drift {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-24px) scaleY(1.15);
+    opacity: 0.45;
+  }
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
@@ -208,8 +288,10 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .frame-3d {
-    animation: none;
+  .frame-3d,
+  .light-streak,
+  .splash-site-main {
+    animation: none !important;
   }
 }
 

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
+import { SplashScreen } from "@/components/SplashScreen";
 
 export function SiteChrome({
   children,
@@ -21,8 +22,9 @@ export function SiteChrome({
 
   return (
     <>
+      <SplashScreen />
       <Navbar logoUrl={logoUrl} />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1 splash-site-main">{children}</main>
       {footer}
     </>
   );

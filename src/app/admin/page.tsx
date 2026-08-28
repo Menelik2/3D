@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCmsClient } from "@/lib/cms";
+import { getContactConfig, getSocialConfig } from "@/lib/site-config";
 
 const PIPELINE = [
   "NEW",
@@ -40,6 +42,58 @@ type ProjectRow = {
   production_date: string | null;
 };
 
+type SiteSnapshot = {
+  email: string;
+  phone: string;
+  whatsapp: string;
+  address: string;
+  socialCount: number;
+};
+
+async function loadSiteSnapshot(): Promise<SiteSnapshot> {
+  const contact = getContactConfig();
+  const social = getSocialConfig();
+  let email = contact.email;
+  let phone = contact.phone;
+  let whatsapp = contact.whatsapp;
+  let address = contact.address;
+  let socialCount = [
+    social.instagram,
+    social.youtube,
+    social.tiktok,
+    social.facebook,
+    social.telegram,
+  ].filter(Boolean).length;
+
+  try {
+    const supabase = await getCmsClient();
+    const { data } = await supabase
+      .from("site_settings")
+      .select("key, value")
+      .in("key", ["contact", "social"]);
+
+    for (const row of data ?? []) {
+      if (row.key === "contact" && row.value && typeof row.value === "object") {
+        const v = row.value as Record<string, string>;
+        if (v.email?.trim()) email = v.email.trim();
+        if (v.phone?.trim()) phone = v.phone.trim();
+        if (v.whatsapp?.trim()) whatsapp = v.whatsapp.trim();
+        if (v.address?.trim()) address = v.address.trim();
+      }
+      if (row.key === "social" && row.value && typeof row.value === "object") {
+        const v = row.value as Record<string, string>;
+        socialCount = ["instagram", "youtube", "tiktok", "facebook", "telegram"]
+          .map((k) => v[k]?.trim())
+          .filter(Boolean).length;
+      }
+    }
+  } catch {
+    /* keep env defaults */
+  }
+
+  return { email, phone, whatsapp, address, socialCount };
+}
+
 async function loadDashboard() {
   try {
     const supabase = await createClient();
@@ -55,6 +109,7 @@ async function loadDashboard() {
       recentLeadsRes,
       consultsRes,
       projectsRes,
+      site,
     ] = await Promise.all([
       supabase.from("leads").select("*", { count: "exact", head: true }).eq("status", "NEW"),
       supabase.from("leads").select("*", { count: "exact", head: true }),
@@ -105,6 +160,7 @@ async function loadDashboard() {
         ])
         .order("updated_at", { ascending: false })
         .limit(5),
+      loadSiteSnapshot(),
     ]);
 
     const statusCounts: Record<string, number> = {};
@@ -127,6 +183,7 @@ async function loadDashboard() {
       recentLeads: (recentLeadsRes.data ?? []) as LeadRow[],
       consultations: (consultsRes.data ?? []) as ConsultRow[],
       projects: (projectsRes.data ?? []) as ProjectRow[],
+      site,
     };
   } catch {
     return {
@@ -143,6 +200,7 @@ async function loadDashboard() {
       recentLeads: [] as LeadRow[],
       consultations: [] as ConsultRow[],
       projects: [] as ProjectRow[],
+      site: await loadSiteSnapshot(),
     };
   }
 }
@@ -157,7 +215,8 @@ function statusLabel(s: string) {
 
 export default async function AdminDashboardPage() {
   const data = await loadDashboard();
-  const { counts, statusCounts, recentLeads, consultations, projects, connected } = data;
+  const { counts, statusCounts, recentLeads, consultations, projects, connected, site } =
+    data;
 
   const maxPipeline = Math.max(1, ...PIPELINE.map((s) => statusCounts[s] ?? 0));
 
@@ -208,7 +267,6 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="space-y-10">
-      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[10px] uppercase tracking-widest text-accent mb-2">Dashboard</p>
@@ -239,7 +297,40 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* KPI grid */}
+      {/* Saved site settings snapshot */}
+      <section className="border border-border bg-card/20 p-6">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 className="text-xs uppercase tracking-widest text-muted">Site contact (saved)</h2>
+          <Link
+            href="/admin/settings"
+            className="text-[10px] uppercase tracking-widest text-accent hover:underline"
+          >
+            Edit settings →
+          </Link>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 text-sm">
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted mb-1">Email</p>
+            <p className="text-foreground/90 break-all">{site.email || "—"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted mb-1">Phone</p>
+            <p className="text-foreground/90">{site.phone || "—"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted mb-1">WhatsApp</p>
+            <p className="text-foreground/90">{site.whatsapp || "—"}</p>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-widest text-muted mb-1">Social links</p>
+            <p className="text-foreground/90">{site.socialCount} configured</p>
+          </div>
+        </div>
+        {site.address ? (
+          <p className="mt-4 text-xs text-muted">{site.address}</p>
+        ) : null}
+      </section>
+
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {kpis.map((c) => (
           <Link
@@ -264,7 +355,6 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Pipeline + quick actions */}
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="lg:col-span-2 border border-border bg-card/20 p-6">
           <div className="mb-6 flex items-center justify-between">
@@ -324,7 +414,6 @@ export default async function AdminDashboardPage() {
         </section>
       </div>
 
-      {/* Recent leads */}
       <section>
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xs uppercase tracking-widest text-muted">Recent leads</h2>
@@ -405,7 +494,6 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      {/* Consultations + projects */}
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="border border-border bg-card/20 p-6">
           <div className="mb-4 flex items-center justify-between">
