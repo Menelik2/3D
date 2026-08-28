@@ -36,6 +36,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Amharic / Ethiopic script */
+.font-amharic,
+html[lang="am"],
+html[lang="am"] body {
+  font-family: var(--font-ethiopic), var(--font-sans), system-ui, sans-serif;
+}
+
+.font-amharic .uppercase,
+html[lang="am"] .uppercase {
+  letter-spacing: 0.06em;
+}
+
 /* App-like page entrance after splash */
 .splash-site-main {
   animation: site-reveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
