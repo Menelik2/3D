@@ -26,18 +26,20 @@ export function HeroContent({
             <MetaTitle3D />
           </h1>
 
-          <p className="hero-fade-in hero-delay-1 mb-2 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-muted">
+          <p className="hero-fade-in hero-delay-1 mb-3 text-[10px] sm:text-[11px] uppercase tracking-[0.35em] text-muted">
             Cinematic Film &amp; Media Production
           </p>
-          <p className="hero-fade-in hero-delay-2 text-lg sm:text-2xl md:text-3xl lg:text-[2.15rem] font-light tracking-[0.1em] text-foreground/90">
+
+          <p className="hero-fade-in hero-delay-2 text-xl sm:text-2xl md:text-3xl lg:text-[2.35rem] font-light tracking-[0.12em] uppercase text-foreground/95">
             Every frame has a story.
           </p>
-          <p className="hero-fade-in hero-delay-2 mx-auto mt-3 max-w-xl text-sm sm:text-[15px] text-muted/75 leading-relaxed">
-            Music videos, commercials, weddings, and documentaries — crafted with
-            intentional framing and emotional honesty.
+
+          <p className="hero-fade-in hero-delay-2 mx-auto mt-5 max-w-2xl text-sm sm:text-base md:text-[17px] text-muted/80 leading-relaxed">
+            We don&apos;t just film. We create cinema — for artists, brands,
+            businesses and the people whose stories deserve a frame.
           </p>
 
-          <div className="hero-fade-in hero-delay-3 mt-7 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="hero-fade-in hero-delay-3 mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="#showreel" className="btn-ghost min-w-[180px] sm:min-w-[200px]">
               Watch Showreel
             </Link>
