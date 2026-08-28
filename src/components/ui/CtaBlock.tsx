@@ -1,14 +1,18 @@
+"use client";
+
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n/context";
+import { getPageCopy } from "@/lib/i18n/pages";
 
 type Props = {
   title?: string;
   description?: string;
 };
 
-export function CtaBlock({
-  title = "Ready to tell your story?",
-  description = "Share your idea, timeline, and vision. We’ll shape it into cinema.",
-}: Props) {
+export function CtaBlock({ title, description }: Props) {
+  const { locale } = useI18n();
+  const p = getPageCopy(locale);
+
   return (
     <section className="relative mt-20 border-t border-border pt-16 md:pt-20 overflow-hidden">
       <div
@@ -19,14 +23,18 @@ export function CtaBlock({
         }}
       />
       <div className="relative mx-auto max-w-2xl px-4 text-center">
-        <h2 className="text-2xl sm:text-3xl font-light tracking-tight">{title}</h2>
-        <p className="mt-4 text-sm text-muted leading-relaxed">{description}</p>
+        <h2 className="text-2xl sm:text-3xl font-light tracking-tight">
+          {title ?? p.cta.title}
+        </h2>
+        <p className="mt-4 text-sm text-muted leading-relaxed">
+          {description ?? p.cta.description}
+        </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/start-a-project" className="btn-primary min-w-[180px]">
-            Start a Project
+            {p.cta.startProject}
           </Link>
           <Link href="/book-consultation" className="btn-ghost min-w-[180px]">
-            Book Consultation
+            {p.cta.bookConsultation}
           </Link>
         </div>
       </div>
