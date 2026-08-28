@@ -25,7 +25,7 @@ const notoEthiopic = Noto_Sans_Ethiopic({
 
 export const metadata: Metadata = {
   title: {
-    default: "META Pictures | Every Frame Has a Story",
+    default: "META Pictures | Beyond the Frame",
     template: "%s | META Pictures",
   },
   description:
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     "ፊልም",
   ],
   openGraph: {
-    title: "META Pictures | Every Frame Has a Story",
+    title: "META Pictures | Beyond the Frame",
     description:
       "Creative film and media production company. We don't just film. We create cinema.",
     type: "website",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "META Pictures | Every Frame Has a Story",
+    title: "META Pictures | Beyond the Frame",
     description:
       "Creative film and media production company transforming ideas into cinematic experiences.",
     images: ["/brand/og.jpg"],
@@ -81,6 +81,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <SiteChrome
           logoUrl={media.logoUrl}
+          social={social}
           footer={<Footer contact={contact} social={social} />}
         >
           {children}

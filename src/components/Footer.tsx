@@ -8,6 +8,7 @@ import {
   type SocialConfig,
 } from "@/lib/site-config";
 import { useT } from "@/lib/i18n/context";
+import { SocialIcons } from "@/components/SocialIcons";
 
 export function Footer({
   contact,
@@ -38,13 +39,13 @@ export function Footer({
     contact.phone ? { href: telLink(contact.phone), label: contact.phone } : null,
   ].filter(Boolean) as { href: string; label: string }[];
 
-  const socialLinks = [
-    social.instagram ? { href: social.instagram, label: "Instagram" } : null,
-    social.youtube ? { href: social.youtube, label: "YouTube" } : null,
-    social.tiktok ? { href: social.tiktok, label: "TikTok" } : null,
-    social.facebook ? { href: social.facebook, label: "Facebook" } : null,
-    social.telegram ? { href: social.telegram, label: "Telegram" } : null,
-  ].filter(Boolean) as { href: string; label: string }[];
+  const hasSocial = Boolean(
+    social.instagram ||
+      social.youtube ||
+      social.tiktok ||
+      social.facebook ||
+      social.telegram
+  );
 
   return (
     <footer className="border-t border-border bg-background">
@@ -80,6 +81,12 @@ export function Footer({
             {contact.address && (
               <p className="mt-5 text-xs text-muted/65">{contact.address}</p>
             )}
+            <SocialIcons
+              social={social}
+              showEmpty
+              className="mt-6"
+              iconClassName="border-border bg-card/40 text-muted hover:text-accent"
+            />
           </div>
 
           <div>
@@ -130,23 +137,17 @@ export function Footer({
             <h3 className="text-[10px] font-medium uppercase tracking-[0.25em] text-foreground mb-5">
               {t.footer.follow}
             </h3>
-            {socialLinks.length > 0 ? (
-              <ul className="space-y-2.5">
-                {socialLinks.map((link) => (
-                  <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-muted hover:text-foreground transition-colors"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            {hasSocial ? (
+              <SocialIcons social={social} iconClassName="border-border bg-card/40 text-muted hover:text-accent" />
             ) : (
-              <p className="text-xs text-muted/60">Social links: Admin → Settings</p>
+              <>
+                <SocialIcons
+                  social={social}
+                  showEmpty
+                  iconClassName="border-border bg-card/40 text-muted hover:text-accent"
+                />
+                <p className="mt-3 text-xs text-muted/60">Admin → Settings</p>
+              </>
             )}
           </div>
         </div>

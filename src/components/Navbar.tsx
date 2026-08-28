@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { SocialIcons } from "@/components/SocialIcons";
 import { useT } from "@/lib/i18n/context";
+import type { SocialConfig } from "@/lib/site-config";
 
 const iconHome = (
   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -42,7 +44,21 @@ const iconMail = (
   </svg>
 );
 
-export function Navbar({ logoUrl }: { logoUrl?: string }) {
+const emptySocial: SocialConfig = {
+  instagram: "",
+  youtube: "",
+  tiktok: "",
+  facebook: "",
+  telegram: "",
+};
+
+export function Navbar({
+  logoUrl,
+  social = emptySocial,
+}: {
+  logoUrl?: string;
+  social?: SocialConfig;
+}) {
   const pathname = usePathname();
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -247,6 +263,7 @@ export function Navbar({ logoUrl }: { logoUrl?: string }) {
         </nav>
 
         <div className="menu-footer mt-auto border-t border-white/[0.06] px-6 py-6">
+          <SocialIcons social={social} showEmpty size="sm" className="mb-5" />
           <p className="text-[9px] uppercase tracking-[0.18em] text-white/25 leading-relaxed">
             © {new Date().getFullYear()} META Pictures
             <br />
