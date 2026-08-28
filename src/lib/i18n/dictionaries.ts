@@ -91,7 +91,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     hero: {
       tagline: "Cinematic Film & Media Production",
-      headline: "Every frame has a story.",
+      headline: "Beyond the frame.",
       subtitle:
         "We don't just film. We create cinema — for artists, brands, businesses and the people whose stories deserve a frame.",
       watchShowreel: "Watch Showreel",
@@ -99,7 +99,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       scroll: "Scroll",
     },
     splash: {
-      tagline: "Every frame has a story.",
+      tagline: "Beyond the frame.",
     },
     home: {
       showreelLabel: "Showreel",
@@ -137,7 +137,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       nextProject: "Next project",
       readyWhen: "Ready when you are.",
       startProject: "Start a Project",
-      tagline: "Every frame has a story.",
+      tagline: "Beyond the frame.",
       blurb:
         "Cinematic film & media production for brands, artists, and real moments.",
       explore: "Explore",
@@ -175,7 +175,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     hero: {
       tagline: "ሲኒማቲክ ፊልም እና ሚዲያ ፕሮዳክሽን",
-      headline: "እያንዳንዱ ፍሬም ታሪክ አለው።",
+      headline: "ከፍሬም ባሻገር።",
       subtitle:
         "እኛ ብቻ አንቀረጽም። ለአርቲስቶች፣ ለብራንዶች፣ ለንግዶች እና ታሪካቸው ፍሬም የሚገባቸው ሰዎች ሲኒማ እንፈጥራለን።",
       watchShowreel: "ሾውሪል ይመልከቱ",
@@ -183,7 +183,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       scroll: "ሸብልል",
     },
     splash: {
-      tagline: "እያንዳንዱ ፍሬም ታሪክ አለው።",
+      tagline: "ከፍሬም ባሻገር።",
     },
     home: {
       showreelLabel: "ሾውሪል",
@@ -220,7 +220,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       nextProject: "ቀጣይ ፕሮጀክት",
       readyWhen: "እርስዎ ሲዘጋጁ እኛ ዝግጁ ነን።",
       startProject: "ፕሮጀክት ጀምር",
-      tagline: "እያንዳንዱ ፍሬም ታሪክ አለው።",
+      tagline: "ከፍሬም ባሻገር።",
       blurb: "ለብራንዶች፣ ለአርቲስቶች እና ለእውነተኛ ጊዜያት ሲኒማቲክ ፊልም እና ሚዲያ ፕሮዳክሽን።",
       explore: "ያስሱ",
       contact: "አግኙን",
