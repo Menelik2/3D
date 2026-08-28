@@ -6,7 +6,7 @@ import { useRef } from "react";
 type Props = {
   href: string;
   title: string;
-  category: string;
+  category: string | null;
   year: number | null;
   coverUrl: string | null;
 };
@@ -71,7 +71,7 @@ export function PerspectiveCard({
       <div className="absolute inset-0 flex items-end p-6">
         <div style={{ transform: "translateZ(40px)" }}>
           <p className="text-[10px] uppercase tracking-widest text-muted">
-            {category}
+            {category || "Project"}
             {year ? ` · ${year}` : ""}
           </p>
           <h3 className="mt-1 text-lg font-light text-foreground group-hover:text-accent transition-colors">
