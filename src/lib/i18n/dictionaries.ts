@@ -16,6 +16,7 @@ export type Dictionary = {
     work: string;
     journal: string;
     startProject: string;
+    bookConsultation: string;
   };
   hero: {
     tagline: string;
@@ -88,6 +89,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       work: "Work",
       journal: "Journal",
       startProject: "Start a Project",
+      bookConsultation: "Book Consultation",
     },
     hero: {
       tagline: "Cinematic Film & Media Production",
@@ -173,6 +175,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       work: "ስራዎች",
       journal: "ጆርናል",
       startProject: "ፕሮጀክት ጀምር",
+      bookConsultation: "ምክክር ይያዙ",
     },
     hero: {
       tagline: "ሲኒማቲክ ፊልም እና ሚዲያ ፕሮዳክሽን",
