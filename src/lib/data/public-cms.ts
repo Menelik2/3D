@@ -171,27 +171,66 @@ export async function getFeaturedPortfolio(
   return (fallback ?? []) as PortfolioListItem[];
 }
 
-/** Single published portfolio item by slug. */
+const PORTFOLIO_DETAIL_SELECT =
+  "id, title, slug, category, year, cover_image_url, is_featured, description, client_name, artist_name, director, cinematographer, location, video_url, video_poster_url, gallery, credits";
+
+function decodeSlugParam(slug: string): string {
+  let s = slug.trim();
+  try {
+    s = decodeURIComponent(s);
+  } catch {
+    /* keep raw */
+  }
+  return s;
+}
+
+/** Single published portfolio item by slug (or UUID id). */
 export async function getPortfolioBySlug(
   slug: string
 ): Promise<PortfolioDetail | null> {
   const supabase = publicSupabase();
   if (!supabase) return null;
 
-  const { data, error } = await supabase
-    .from("portfolio_items")
-    .select(
-      "id, title, slug, category, year, cover_image_url, is_featured, description, client_name, artist_name, director, cinematographer, location, video_url, video_poster_url, gallery, credits"
-    )
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .maybeSingle();
+  const decoded = decodeSlugParam(slug);
+  const candidates = Array.from(
+    new Set([decoded, slug.trim()].filter(Boolean))
+  );
 
-  if (error) {
-    console.error("[getPortfolioBySlug]", error.message);
-    return null;
+  for (const candidate of candidates) {
+    const { data, error } = await supabase
+      .from("portfolio_items")
+      .select(PORTFOLIO_DETAIL_SELECT)
+      .eq("slug", candidate)
+      .eq("is_published", true)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[getPortfolioBySlug]", error.message);
+      continue;
+    }
+    if (data) return data as PortfolioDetail;
   }
-  return data as PortfolioDetail | null;
+
+  const maybeId = decoded;
+  if (
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      maybeId
+    )
+  ) {
+    const { data, error } = await supabase
+      .from("portfolio_items")
+      .select(PORTFOLIO_DETAIL_SELECT)
+      .eq("id", maybeId)
+      .eq("is_published", true)
+      .maybeSingle();
+    if (error) {
+      console.error("[getPortfolioBySlug:id]", error.message);
+      return null;
+    }
+    if (data) return data as PortfolioDetail;
+  }
+
+  return null;
 }
 
 /** Published FAQs. */
@@ -240,12 +279,13 @@ export async function getJournalBySlug(
   const supabase = publicSupabase();
   if (!supabase) return null;
 
+  const decoded = decodeSlugParam(slug);
   const { data, error } = await supabase
     .from("journal_posts")
     .select(
       "id, title, slug, excerpt, category, cover_image_url, published_at, body, tags, seo_title, seo_description"
     )
-    .eq("slug", slug)
+    .eq("slug", decoded)
     .eq("is_published", true)
     .maybeSingle();
 
