@@ -6,6 +6,7 @@ import {
   getPublishedPortfolio,
   getPublishedPortfolioSlugs,
 } from "@/lib/data/public-cms";
+import { getVideoEmbed } from "@/lib/video";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -51,6 +52,10 @@ export default async function ProjectDetailPage({ params }: Props) {
     .slice(0, 3);
 
   const gallery = Array.isArray(item.gallery) ? item.gallery : [];
+  const embed = getVideoEmbed(item.video_url);
+  const cover =
+    item.cover_image_url ||
+    (embed && embed.kind === "youtube" ? embed.posterUrl : null);
 
   return (
     <div className="pt-24 md:pt-28 pb-24">
@@ -71,22 +76,35 @@ export default async function ProjectDetailPage({ params }: Props) {
         </header>
 
         <div className="relative aspect-video mb-16 overflow-hidden bg-card border border-border">
-          {item.video_url ? (
+          {embed?.kind === "file" ? (
+            <video
+              className="absolute inset-0 h-full w-full object-cover"
+              src={embed.embedUrl}
+              controls
+              playsInline
+              poster={cover || undefined}
+            />
+          ) : embed ? (
             <iframe
-              src={item.video_url}
+              src={embed.embedUrl}
               title={item.title}
               className="absolute inset-0 h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
             />
-          ) : item.cover_image_url ? (
+          ) : cover ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={item.cover_image_url}
+              src={cover}
               alt=""
               className="absolute inset-0 h-full w-full object-cover"
             />
-          ) : null}
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-widest text-muted">
+              No video
+            </div>
+          )}
         </div>
 
         {gallery.length > 0 && (
