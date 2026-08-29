@@ -27,15 +27,15 @@ const FIELDS: { key: keyof Media; label: string; env: string; placeholder: strin
   },
   {
     key: "showreelUrl",
-    label: "Showreel",
+    label: "Showreel video (homepage)",
     env: "NEXT_PUBLIC_SHOWREEL_URL",
-    placeholder: "https://youtube.com/embed/… or mp4 URL",
+    placeholder: "YouTube link or /brand/videos/showreel.mp4",
   },
   {
     key: "showreelPosterUrl",
-    label: "Showreel poster",
+    label: "Showreel poster image",
     env: "NEXT_PUBLIC_SHOWREEL_POSTER_URL",
-    placeholder: "https://…/poster.jpg",
+    placeholder: "Image shown before play (optional)",
   },
   {
     key: "ogImageUrl",
