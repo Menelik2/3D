@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminProjectsPage() {
@@ -17,7 +18,7 @@ export default async function AdminProjectsPage() {
       .from("projects")
       .select("id, title, status, category, production_date, budget")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(100);
     if (error) err = error.message;
     else rows = data ?? [];
   } catch {
@@ -26,11 +27,16 @@ export default async function AdminProjectsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-light tracking-tight">Projects</h1>
-        <p className="mt-1 text-sm text-muted">
-          Internal production projects (IDEA → FINAL DELIVERY).
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-light tracking-tight">Projects</h1>
+          <p className="mt-1 text-sm text-muted">
+            Internal production projects (IDEA → FINAL DELIVERY).
+          </p>
+        </div>
+        <Link href="/admin/projects/new" className="btn-primary self-start">
+          + New project
+        </Link>
       </div>
 
       {err && (
@@ -40,7 +46,7 @@ export default async function AdminProjectsPage() {
       )}
 
       <div className="overflow-x-auto border border-border">
-        <table className="w-full min-w-[560px] text-left text-sm">
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="border-b border-border bg-card/50 text-[10px] uppercase tracking-widest text-muted">
             <tr>
               <th className="px-4 py-3 font-medium">Title</th>
@@ -48,29 +54,44 @@ export default async function AdminProjectsPage() {
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Production</th>
               <th className="px-4 py-3 font-medium">Budget</th>
+              <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-16 text-center text-sm text-muted">
-                  No internal projects yet. Convert a confirmed lead into a project from the leads
-                  pipeline (coming next).
+                <td colSpan={6} className="px-4 py-16 text-center text-sm text-muted">
+                  No projects yet.{" "}
+                  <Link href="/admin/projects/new" className="text-accent hover:underline">
+                    Create one
+                  </Link>
                 </td>
               </tr>
             ) : (
-              rows.map((r) => (
-                <tr key={r.id} className="border-b border-border/60">
-                  <td className="px-4 py-3">{r.title}</td>
-                  <td className="px-4 py-3 text-muted text-xs">{r.category || "—"}</td>
+              rows.map((row) => (
+                <tr key={row.id} className="border-b border-border/60 hover:bg-white/[0.02]">
                   <td className="px-4 py-3">
-                    <span className="border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted">
-                      {r.status.replace(/_/g, " ")}
-                    </span>
+                    <Link href={`/admin/projects/${row.id}`} className="hover:text-accent">
+                      {row.title}
+                    </Link>
                   </td>
-                  <td className="px-4 py-3 text-xs text-muted">{r.production_date || "—"}</td>
+                  <td className="px-4 py-3 text-xs text-muted">{row.category || "—"}</td>
+                  <td className="px-4 py-3 text-xs uppercase tracking-wider text-muted">
+                    {row.status.replace(/_/g, " ")}
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted">
-                    {r.budget != null ? r.budget.toLocaleString() : "—"}
+                    {row.production_date || "—"}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-muted">
+                    {row.budget != null ? Number(row.budget).toLocaleString() : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/admin/projects/${row.id}`}
+                      className="text-[10px] uppercase tracking-widest text-muted hover:text-accent"
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))

@@ -31,7 +31,7 @@ export default async function AdminConsultationsPage() {
       <div>
         <h1 className="text-2xl font-light tracking-tight">Consultations</h1>
         <p className="mt-1 text-sm text-muted">
-          Booking requests from /book-consultation.
+          Booking requests from /book-consultation. Open a row to update status.
         </p>
       </div>
 
@@ -42,7 +42,7 @@ export default async function AdminConsultationsPage() {
       )}
 
       <div className="overflow-x-auto border border-border">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-border bg-card/50 text-[10px] uppercase tracking-widest text-muted">
             <tr>
               <th className="px-4 py-3 font-medium">Type</th>
@@ -51,12 +51,13 @@ export default async function AdminConsultationsPage() {
               <th className="px-4 py-3 font-medium">Preferred date</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Requested</th>
+              <th className="px-4 py-3 font-medium"></th>
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-16 text-center text-sm text-muted">
+                <td colSpan={7} className="px-4 py-16 text-center text-sm text-muted">
                   No consultations yet.{" "}
                   <Link href="/book-consultation" className="text-accent hover:underline">
                     Book form
@@ -65,18 +66,30 @@ export default async function AdminConsultationsPage() {
               </tr>
             ) : (
               rows.map((r) => (
-                <tr key={r.id} className="border-b border-border/60">
+                <tr key={r.id} className="border-b border-border/60 hover:bg-white/[0.02]">
                   <td className="px-4 py-3">{r.consultation_type}</td>
-                  <td className="px-4 py-3">{r.full_name}</td>
+                  <td className="px-4 py-3">
+                    <Link href={`/admin/consultations/${r.id}`} className="hover:text-accent">
+                      {r.full_name}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-xs text-muted">{r.email}</td>
                   <td className="px-4 py-3 text-xs text-muted">{r.preferred_date || "—"}</td>
                   <td className="px-4 py-3">
                     <span className="border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted">
-                      {r.status}
+                      {r.status.replace(/_/g, " ")}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-muted">
                     {new Date(r.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/admin/consultations/${r.id}`}
+                      className="text-[10px] uppercase tracking-widest text-muted hover:text-accent"
+                    >
+                      Manage
+                    </Link>
                   </td>
                 </tr>
               ))
