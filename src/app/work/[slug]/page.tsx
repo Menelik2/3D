@@ -11,6 +11,10 @@ import { VideoPlayer } from "@/components/ui/VideoPlayer";
 
 type Props = { params: Promise<{ slug: string }> };
 
+/** Live CMS: new slugs + edits without Vercel redeploy */
+export const dynamicParams = true;
+export const dynamic = "force-dynamic";
+
 export async function generateStaticParams() {
   const slugs = await getPublishedPortfolioSlugs();
   if (slugs.length === 0) {
