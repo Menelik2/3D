@@ -7,6 +7,9 @@ import { SiteChrome } from "@/components/SiteChrome";
 import { Footer } from "@/components/Footer";
 import { getPublicSiteConfig } from "@/lib/data/site-settings";
 
+/** Live CMS: always fetch fresh data (no redeploy needed after admin edits). */
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
