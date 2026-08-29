@@ -38,7 +38,7 @@ export default async function AdminPortfolioPage() {
           href="/admin/portfolio/new"
           className="inline-flex bg-accent px-5 py-2.5 text-xs uppercase tracking-widest text-white hover:bg-accent-hover"
         >
-          + New project
+          + New item
         </Link>
       </div>
 
