@@ -5,10 +5,11 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Team",
-  description: "The META Pictures creative team.",
+  description:
+    "The creative team behind META Pictures — directors, cinematographers, editors and producers.",
 };
 
 export default async function TeamPage() {
-  const team = await getPublishedTeam();
-  return <TeamContent team={team} />;
+  const members = await getPublishedTeam();
+  return <TeamContent members={members} />;
 }
