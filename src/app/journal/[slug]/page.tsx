@@ -9,6 +9,10 @@ import {
 
 type Props = { params: Promise<{ slug: string }> };
 
+/** Live CMS: new slugs + edits without Vercel redeploy */
+export const dynamicParams = true;
+export const dynamic = "force-dynamic";
+
 function formatDate(iso: string | null) {
   if (!iso) return null;
   try {
@@ -22,7 +26,6 @@ function formatDate(iso: string | null) {
   }
 }
 
-/** Cache Components require at least one param for build-time validation. */
 export async function generateStaticParams() {
   const slugs = await getPublishedJournalSlugs();
   if (slugs.length === 0) {
