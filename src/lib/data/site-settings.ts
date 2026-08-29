@@ -1,6 +1,6 @@
 /**
- * Public site config: env (deploy-time) + site_settings CMS (runtime).
- * Non-empty env values win; CMS fills gaps.
+ * Public site config: env defaults + site_settings CMS (runtime).
+ * Non-empty CMS values override defaults. Explicit env vars still win last.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -32,6 +32,35 @@ function mergeFilled<T extends Record<string, string>>(
     }
   }
   return next;
+}
+
+function explicitEnvContact(): Partial<ContactConfig> {
+  return {
+    phone: (process.env.NEXT_PUBLIC_CONTACT_PHONE || "").trim(),
+    whatsapp: (process.env.NEXT_PUBLIC_CONTACT_WHATSAPP || "").trim(),
+    email: (process.env.NEXT_PUBLIC_CONTACT_EMAIL || "").trim(),
+    address: (process.env.NEXT_PUBLIC_CONTACT_ADDRESS || "").trim(),
+  };
+}
+
+function explicitEnvSocial(): Partial<SocialConfig> {
+  return {
+    instagram: (process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM || "").trim(),
+    youtube: (process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE || "").trim(),
+    tiktok: (process.env.NEXT_PUBLIC_SOCIAL_TIKTOK || "").trim(),
+    facebook: (process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK || "").trim(),
+    telegram: (process.env.NEXT_PUBLIC_SOCIAL_TELEGRAM || "").trim(),
+  };
+}
+
+function explicitEnvMedia(): Partial<MediaConfig> {
+  return {
+    logoUrl: (process.env.NEXT_PUBLIC_LOGO_URL || "").trim(),
+    logoVideoUrl: (process.env.NEXT_PUBLIC_LOGO_VIDEO_URL || "").trim(),
+    showreelUrl: (process.env.NEXT_PUBLIC_SHOWREEL_URL || "").trim(),
+    showreelPosterUrl: (process.env.NEXT_PUBLIC_SHOWREEL_POSTER_URL || "").trim(),
+    ogImageUrl: (process.env.NEXT_PUBLIC_OG_IMAGE_URL || "").trim(),
+  };
 }
 
 function settingsClient() {
@@ -83,10 +112,9 @@ export async function getPublicSiteConfig(): Promise<PublicSiteConfig> {
     }
   }
 
-  // Env always wins when set (deploy-time override)
-  contact = mergeFilled(contact, getContactConfig());
-  social = mergeFilled(social, getSocialConfig());
-  media = mergeFilled(media, getMediaConfig());
+  contact = mergeFilled(contact, explicitEnvContact());
+  social = mergeFilled(social, explicitEnvSocial());
+  media = mergeFilled(media, explicitEnvMedia());
 
   return { contact, social, media };
 }
