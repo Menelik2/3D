@@ -66,6 +66,7 @@ export function WorkFilterGrid({ projects }: { projects: PortfolioListItem[] }) 
                 category={project.category}
                 year={project.year}
                 coverUrl={cover}
+                hasVideo={Boolean(embed)}
               />
             );
           })}
