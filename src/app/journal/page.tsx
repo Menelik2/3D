@@ -3,6 +3,7 @@ import { getPublishedJournal } from "@/lib/data/public-cms";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CtaBlock } from "@/components/ui/CtaBlock";
 import { JournalFilterGrid } from "@/components/JournalFilterGrid";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Journal",
@@ -19,7 +20,7 @@ export default async function JournalPage() {
         <PageHeader
           eyebrow="Notes from set"
           title="Journal"
-          description="Process, craft, and stories from META Pictures productions."
+          description="Cinematography, process, and stories from META Pictures productions."
         />
 
         {posts.length > 0 ? (
