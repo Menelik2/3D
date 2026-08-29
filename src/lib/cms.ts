@@ -14,13 +14,19 @@ export async function getCmsClient() {
 }
 
 export function slugify(input: string): string {
-  return input
-    .toLowerCase()
+  // Keep Latin + Unicode letters (e.g. Amharic) so non-English titles get real slugs
+  const s = input
+    .normalize("NFKC")
     .trim()
-    .replace(/['"]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
+    .toLowerCase()
+    .replace(/['"\u2018\u2019\u201c\u201d]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")
-    .slice(0, 80) || "item";
+    .replace(/-+/g, "-")
+    .slice(0, 80);
+  if (s) return s;
+  return `item-${Date.now().toString(36)}`;
 }
 
 export function parseBool(v: unknown, fallback = false): boolean {
