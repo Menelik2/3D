@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { PerspectiveCard } from "@/components/3d/PerspectiveCard";
+import { VideoPlayer } from "@/components/ui/VideoPlayer";
 import { useT } from "@/lib/i18n/context";
 
 type FeaturedProject = {
@@ -11,6 +12,7 @@ type FeaturedProject = {
   category: string | null;
   year: number | null;
   cover_image_url: string | null;
+  video_url?: string | null;
 };
 
 export function HomeSections({
@@ -38,40 +40,12 @@ export function HomeSections({
             <p className="mt-3 text-sm text-muted">{t.home.showreelDesc}</p>
           </div>
 
-          <div className="relative aspect-video overflow-hidden bg-card border border-border shadow-[0_0_80px_rgba(225,29,72,0.08)]">
-            {showreel ? (
-              showreel.includes("youtube.com") ||
-              showreel.includes("youtu.be") ||
-              showreel.includes("vimeo.com") ? (
-                <iframe
-                  src={showreel}
-                  title="META Pictures showreel"
-                  className="absolute inset-0 h-full w-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : (
-                <video
-                  className="absolute inset-0 h-full w-full object-cover"
-                  controls
-                  playsInline
-                  poster={poster || undefined}
-                  src={showreel}
-                />
-              )
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center px-6">
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/5">
-                    <svg className="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </div>
-                  <p className="text-sm text-muted">{t.home.showreelSoon}</p>
-                </div>
-              </div>
-            )}
-          </div>
+          <VideoPlayer
+            url={showreel}
+            title="META Pictures showreel"
+            posterUrl={poster}
+            className="shadow-[0_0_80px_rgba(225,29,72,0.08)]"
+          />
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-[11px] uppercase tracking-widest text-muted">
             <span>META Pictures</span>
@@ -112,6 +86,7 @@ export function HomeSections({
                   category={project.category}
                   year={project.year}
                   coverUrl={project.cover_image_url}
+                  hasVideo={Boolean(project.video_url)}
                 />
               ))}
             </div>
