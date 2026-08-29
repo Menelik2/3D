@@ -28,6 +28,7 @@ export type PortfolioListItem = {
   category: string;
   year: number | null;
   cover_image_url: string | null;
+  video_url: string | null;
   is_featured: boolean;
 };
 
@@ -38,7 +39,6 @@ export type PortfolioDetail = PortfolioListItem & {
   director: string | null;
   cinematographer: string | null;
   location: string | null;
-  video_url: string | null;
   video_poster_url: string | null;
   gallery: unknown;
   credits: unknown;
@@ -122,7 +122,7 @@ export async function getPublishedPortfolio(): Promise<PortfolioListItem[]> {
   const { data, error } = await supabase
     .from("portfolio_items")
     .select(
-      "id, title, slug, category, year, cover_image_url, is_featured"
+      "id, title, slug, category, year, cover_image_url, video_url, is_featured"
     )
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
@@ -145,7 +145,7 @@ export async function getFeaturedPortfolio(
   const { data, error } = await supabase
     .from("portfolio_items")
     .select(
-      "id, title, slug, category, year, cover_image_url, is_featured"
+      "id, title, slug, category, year, cover_image_url, video_url, is_featured"
     )
     .eq("is_published", true)
     .eq("is_featured", true)
@@ -162,7 +162,7 @@ export async function getFeaturedPortfolio(
   const { data: fallback } = await supabase
     .from("portfolio_items")
     .select(
-      "id, title, slug, category, year, cover_image_url, is_featured"
+      "id, title, slug, category, year, cover_image_url, video_url, is_featured"
     )
     .eq("is_published", true)
     .order("sort_order", { ascending: true })
