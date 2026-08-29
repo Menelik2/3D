@@ -73,6 +73,29 @@ export type PageCopy = {
     title: string;
     description: string;
   };
+  bookConsultation: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    typeLabel: string;
+    types: string[];
+    fullName: string;
+    email: string;
+    phone: string;
+    preferredDate: string;
+    projectNotes: string;
+    notesPlaceholder: string;
+    submit: string;
+    submitting: string;
+    selectTypeError: string;
+    submitError: string;
+    networkError: string;
+    successEyebrow: string;
+    successTitle: string;
+    successBody: string;
+    returnHome: string;
+    viewWork: string;
+  };
   cta: {
     title: string;
     description: string;
@@ -262,6 +285,37 @@ export const pageCopy = {
       title: "Journal",
       description: "Notes from set, process, and culture at META Pictures.",
     },
+    bookConsultation: {
+      eyebrow: "Meeting",
+      title: "Book a Consultation",
+      description:
+        "Choose a type, preferred date, and a short note about what you want to discuss.",
+      typeLabel: "Consultation type *",
+      types: [
+        "Creative Consultation",
+        "Production Planning",
+        "Commercial Meeting",
+        "Wedding Consultation",
+        "Music Video Consultation",
+      ],
+      fullName: "Full name *",
+      email: "Email *",
+      phone: "Phone",
+      preferredDate: "Preferred date",
+      projectNotes: "Project notes",
+      notesPlaceholder: "What would you like to discuss?",
+      submit: "Request Consultation",
+      submitting: "Submitting…",
+      selectTypeError: "Please select a consultation type.",
+      submitError: "Could not submit. Please try again.",
+      networkError: "Network error. Check your connection and try again.",
+      successEyebrow: "Received",
+      successTitle: "Consultation requested",
+      successBody:
+        "We have your request. META Pictures will confirm availability and contact you shortly.",
+      returnHome: "Return home",
+      viewWork: "View work",
+    },
     cta: {
       title: "Ready to tell your story?",
       description: "Share your idea, timeline, and vision. We'll shape it into cinema.",
@@ -446,6 +500,37 @@ export const pageCopy = {
       eyebrow: "ታሪኮች",
       title: "ጆርናል",
       description: "ከስብስብ፣ ከሂደት እና ከባህል በሜታ ፒክቸርስ ማስታወሻዎች።",
+    },
+    bookConsultation: {
+      eyebrow: "ስብሰባ",
+      title: "ምክክር ይያዙ",
+      description:
+        "ዓይነት፣ ተመራጭ ቀን እና ምን ማውያት እንደሚፈልጉ አጭር ማስታወሻ ይምረጡ።",
+      typeLabel: "የምክክር ዓይነት *",
+      types: [
+        "የፈጠራ ምክክር",
+        "የፕሮዳክሽን እቅድ",
+        "ኮሜርሻል ስብሰባ",
+        "የሰርግ ምክክር",
+        "የሙዚቃ ቪዲዮ ምክክር",
+      ],
+      fullName: "ሙሉ ስም *",
+      email: "ኢሜይል *",
+      phone: "ስልክ",
+      preferredDate: "ተመራጭ ቀን",
+      projectNotes: "የፕሮጀክት ማስታወሻዎች",
+      notesPlaceholder: "ምን ማውያት ይፈልጋሉ?",
+      submit: "ምክክር ይጠይቁ",
+      submitting: "በመላክ ላይ…",
+      selectTypeError: "እባክዎ የምክክር ዓይነት ይምረጡ።",
+      submitError: "መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
+      networkError: "የኔትወርክ ስህተት። ግንኙነትዎን ይፈትሹ እና እንደገና ይሞክሩ።",
+      successEyebrow: "ተቀብለናል",
+      successTitle: "ምክክር ተጠይቋል",
+      successBody:
+        "ጥያቄዎ ደርሶናል። ሜታ ፒክቸርስ ተገኝነትን ያረጋግጣል እና በቅርቡ ያገኝዎታል።",
+      returnHome: "ወደ መነሻ ተመለስ",
+      viewWork: "ስራዎችን ይመልከቱ",
     },
     cta: {
       title: "ታሪክዎን ለመንገር ዝግጁ ነዎት?",
