@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { getVideoEmbed } from "@/lib/video";
 
@@ -11,18 +11,16 @@ type Props = {
   className?: string;
   autoLoad?: boolean;
   startMuted?: boolean;
+  /** Eager poster load (above-the-fold). Default false = lazy. */
+  priority?: boolean;
 };
 
 /**
- * Browser autoplay policy (Chrome / Safari / Firefox):
- * - Autoplay WITH sound requires a transient user activation (click/tap)
- *   in the same call stack as the media starting.
- * - React setState is async → iframe mounts AFTER the gesture ends →
- *   unmuted autoplay is often blocked. flushSync keeps the mount inside
- *   the click handler so autoplay=1 is allowed.
- * - Autoplay MUTED is always allowed (use startMuted if needed).
- * - iframe must include allow="autoplay".
- * - Mobile Safari: playsinline=1 is required.
+ * Performance model:
+ * - Poster image only until user clicks Play (no YouTube/network until then)
+ * - MP4 src is not attached until Play
+ * - Below-fold posters use loading="lazy"
+ * - flushSync keeps autoplay inside the user-gesture turn
  */
 export function VideoPlayer({
   url,
@@ -31,9 +29,32 @@ export function VideoPlayer({
   className = "",
   autoLoad = false,
   startMuted = false,
+  priority = false,
 }: Props) {
   const embed = useMemo(() => getVideoEmbed(url), [url]);
   const [playing, setPlaying] = useState(autoLoad);
+  const [inView, setInView] = useState(priority);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (priority || playing) return;
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "200px 0px", threshold: 0.01 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [priority, playing]);
 
   const poster =
     posterUrl ||
@@ -41,16 +62,15 @@ export function VideoPlayer({
     null;
 
   const iframeSrc = useMemo(() => {
-    if (!embed) return "";
+    if (!embed || !playing) return "";
     if (embed.kind === "file") return embed.embedUrl;
 
     const u = new URL(embed.embedUrl);
-    if (playing) {
-      u.searchParams.set("autoplay", "1");
-      if (startMuted) u.searchParams.set("mute", "1");
-      else u.searchParams.delete("mute");
-    }
+    u.searchParams.set("autoplay", "1");
+    if (startMuted) u.searchParams.set("mute", "1");
+    else u.searchParams.delete("mute");
     u.searchParams.set("playsinline", "1");
+    u.searchParams.set("rel", "0");
     return u.toString();
   }, [playing, embed, startMuted]);
 
@@ -64,6 +84,7 @@ export function VideoPlayer({
     if (posterUrl) {
       return (
         <div
+          ref={rootRef}
           className={`relative aspect-video overflow-hidden bg-card border border-border ${className}`}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -71,12 +92,16 @@ export function VideoPlayer({
             src={posterUrl}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
+            fetchPriority={priority ? "high" : "auto"}
           />
         </div>
       );
     }
     return (
       <div
+        ref={rootRef}
         className={`relative aspect-video overflow-hidden bg-card border border-border flex items-center justify-center ${className}`}
       >
         <span className="text-xs uppercase tracking-widest text-muted">No video</span>
@@ -85,7 +110,7 @@ export function VideoPlayer({
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div ref={rootRef} className={`space-y-3 ${className}`}>
       <div className="relative aspect-video w-full overflow-hidden bg-black border border-border">
         {playing ? (
           embed.kind === "file" ? (
@@ -96,6 +121,7 @@ export function VideoPlayer({
               autoPlay
               playsInline
               muted={startMuted}
+              preload="auto"
               poster={poster || undefined}
             />
           ) : (
@@ -111,12 +137,15 @@ export function VideoPlayer({
           )
         ) : (
           <>
-            {poster ? (
+            {inView && poster ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={poster}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
+                loading={priority ? "eager" : "lazy"}
+                decoding="async"
+                fetchPriority={priority ? "high" : "auto"}
               />
             ) : (
               <div className="absolute inset-0 bg-zinc-900" />
