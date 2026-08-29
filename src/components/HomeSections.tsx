@@ -77,17 +77,23 @@ export function HomeSections({
           </div>
 
           {featured.length > 0 ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 [perspective:1200px]">
-              {featured.map((project) => (
-                <PerspectiveCard
+            <div className="work-stage grid gap-5 sm:grid-cols-2">
+              {featured.map((project, i) => (
+                <div
                   key={project.id}
-                  href={`/work/${project.slug}`}
-                  title={project.title}
-                  category={project.category}
-                  year={project.year}
-                  coverUrl={project.cover_image_url}
-                  hasVideo={Boolean(project.video_url)}
-                />
+                  className={i === 0 ? "sm:col-span-2" : undefined}
+                >
+                  <PerspectiveCard
+                    href={`/work/${project.slug}`}
+                    title={project.title}
+                    category={project.category}
+                    year={project.year}
+                    coverUrl={project.cover_image_url}
+                    hasVideo={Boolean(project.video_url)}
+                    featured={i === 0}
+                    index={i}
+                  />
+                </div>
               ))}
             </div>
           ) : (

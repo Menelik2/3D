@@ -13,8 +13,9 @@ export function WorkContent({ projects }: { projects: any[] }) {
   const p = getPageCopy(locale).work;
 
   return (
-    <div className="pt-24 md:pt-28 pb-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="relative pt-24 md:pt-28 pb-24 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 work-gallery-atmosphere" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <PageHeader eyebrow={p.eyebrow} title={p.title} description={p.description} />
 
         {projects.length > 0 ? (

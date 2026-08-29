@@ -10,7 +10,7 @@ type Props = {
 export function CategoryFilter({ categories, active, onChange, counts }: Props) {
   return (
     <div
-      className="mb-10 flex flex-wrap gap-2"
+      className="flex flex-wrap gap-2"
       role="tablist"
       aria-label="Filter by category"
     >
@@ -24,10 +24,10 @@ export function CategoryFilter({ categories, active, onChange, counts }: Props) 
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(cat)}
-            className={`border px-4 py-2 text-[11px] uppercase tracking-[0.15em] transition-colors ${
+            className={`min-h-11 border px-4 py-2 text-[11px] uppercase tracking-[0.15em] transition-[color,background-color,border-color,transform] duration-200 ease-out ${
               isActive
-                ? "border-accent bg-accent/15 text-foreground"
-                : "border-border text-muted hover:border-white/25 hover:text-foreground"
+                ? "border-accent bg-accent/15 text-foreground -translate-y-px"
+                : "border-border text-muted hover:border-white/25 hover:text-foreground hover:-translate-y-px"
             }`}
           >
             {cat}
@@ -58,7 +58,6 @@ export function buildCategoryOptions(
     .filter((k) => k !== "All")
     .sort((a, b) => a.localeCompare(b));
 
-  // Prefer data-driven categories; fall back to known labels if empty
   const categories =
     fromData.length > 0
       ? ["All", ...fromData]

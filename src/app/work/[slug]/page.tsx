@@ -8,6 +8,7 @@ import {
 } from "@/lib/data/public-cms";
 import { getVideoEmbed } from "@/lib/video";
 import { VideoPlayer } from "@/components/ui/VideoPlayer";
+import { PerspectiveCard } from "@/components/3d/PerspectiveCard";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -50,17 +51,19 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   const related = (await getPublishedPortfolio())
     .filter((p) => p.id !== item.id)
-    .slice(0, 3);
+    .slice(0, 4);
 
   const gallery = Array.isArray(item.gallery) ? item.gallery : [];
   const embed = getVideoEmbed(item.video_url);
   const cover =
     item.cover_image_url ||
+    item.video_poster_url ||
     (embed && embed.kind === "youtube" ? embed.posterUrl : null);
 
   return (
-    <div className="pt-24 md:pt-28 pb-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="relative pt-24 md:pt-28 pb-24 overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 work-gallery-atmosphere" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <header className="mb-12 max-w-3xl">
           <p className="text-xs uppercase tracking-widest text-muted mb-3">
             {item.category}
@@ -76,28 +79,33 @@ export default async function ProjectDetailPage({ params }: Props) {
           )}
         </header>
 
-        <div className="mb-16">
-          <VideoPlayer
-            url={item.video_url}
-            title={item.title}
-            posterUrl={cover}
-          />
+        <div className="work-stage mb-16">
+          <div className="work-cinema-frame">
+            <VideoPlayer
+              url={item.video_url}
+              title={item.title}
+              posterUrl={cover}
+              priority
+            />
+          </div>
         </div>
 
         {gallery.length > 0 && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-16">
+          <div className="work-stage grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-16">
             {gallery.map((src, i) =>
               typeof src === "string" ? (
                 <div
                   key={i}
-                  className="relative aspect-[4/3] overflow-hidden bg-card border border-border"
+                  className="work-card-enter work-still relative aspect-[4/3] overflow-hidden bg-card border border-border"
+                  style={{ animationDelay: `${i * 70}ms` }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={src}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-cover transition duration-700 hover:scale-105"
                   />
+                  <span className="work-card-glare pointer-events-none" aria-hidden />
                 </div>
               ) : null
             )}
@@ -172,27 +180,18 @@ export default async function ProjectDetailPage({ params }: Props) {
             <h2 className="text-xs uppercase tracking-widest text-muted mb-8">
               More from META Pictures
             </h2>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {related.map((p) => (
-                <Link
+            <div className="work-stage grid gap-5 sm:grid-cols-2">
+              {related.map((p, i) => (
+                <PerspectiveCard
                   key={p.id}
                   href={`/work/${p.slug}`}
-                  className="group block aspect-[4/5] bg-card border border-border relative overflow-hidden"
-                >
-                  {p.cover_image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={p.cover_image_url}
-                      alt=""
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                  )}
-                  <div className="absolute inset-0 flex items-end p-4 bg-gradient-to-t from-black/70 to-transparent">
-                    <span className="text-sm group-hover:text-accent transition-colors">
-                      {p.title}
-                    </span>
-                  </div>
-                </Link>
+                  title={p.title}
+                  category={p.category}
+                  year={p.year}
+                  coverUrl={p.cover_image_url}
+                  hasVideo={Boolean(p.video_url)}
+                  index={i}
+                />
               ))}
             </div>
           </section>
