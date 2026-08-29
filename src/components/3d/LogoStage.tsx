@@ -9,7 +9,8 @@ const VIDEO_CANDIDATES = [
 ];
 
 /**
- * Cinematic 3D logo stage — depth plane, orbit rings, soft spotlight, autoplay logo.
+ * Cinematic 3D logo stage — depth plane, orbit rings, soft spotlight.
+ * Video only plays when visible; reduced-motion users get static logo.
  */
 export function LogoStage({
   logoVideoUrl,
@@ -36,7 +37,36 @@ export function LogoStage({
     const el = videoRef.current;
     if (!el || !videoSrc) return;
     el.muted = true;
-    el.play()?.catch(() => {});
+
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setUseImage(true);
+      return;
+    }
+
+    let cancelled = false;
+    const playIfVisible = () => {
+      if (cancelled) return;
+      el.play()?.catch(() => {});
+    };
+
+    if (typeof IntersectionObserver === "undefined") {
+      playIfVisible();
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) playIfVisible();
+        else el.pause();
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(el);
+    return () => {
+      cancelled = true;
+      io.disconnect();
+    };
   }, [videoSrc]);
 
   useEffect(() => {
@@ -84,7 +114,7 @@ export function LogoStage({
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             poster={logo}
             onCanPlay={() => setReady(true)}
             onError={() => {
