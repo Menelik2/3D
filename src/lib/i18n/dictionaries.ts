@@ -104,7 +104,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     home: {
       showreelLabel: "Showreel",
       showreelTitle: "See what we see.",
-      showreelDesc: "A selection of cinematic work from META Pictures.",
+      showreelDesc:
+        "Every frame has a story — cinema for artists, brands, and businesses.",
       showreelSoon: "Showreel coming soon",
       viewAllWork: "View all work →",
       portfolioLabel: "Portfolio",
@@ -163,7 +164,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
   am: {
     nav: {
       home: "መነሻ",
-      about: "ስለ እኛ",
+      about: "ስለ እን",
       services: "አገልግሎቶች",
       showreel: "ሾውሪል",
       projects: "ፕሮጀክቶች",
@@ -177,7 +178,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       tagline: "ሲኒማቲክ ፊልም እና ሚዲያ ፕሮዳክሽን",
       headline: "ከፍሬም ባሻገር።",
       subtitle:
-        "የእኛ ስራ ዝም ብሎ መቅረፅ ብቻ አይደለም፤ ድንቅ የሲኒማ ጥበብን እንፈጥራለን — ለአርቲስቶች፣ ለድርጅቶች፣ ለንግድ ተቋማት፣ እንዲሁም ታሪካቸው በክብር ሊቀረፅ ለሚገባቸው ሰዎች",
+        "የእንዓ ስራ ዝም ብሎ መቅረጽ ብቻ አይደለም፣ ድንቅ የሲኒማ ጥበትን እንፈጥራለን — ለአርቲስቶች፣ ለድርጅቶች፣ ለንግድ ተ቉ማት፣ እንዲሁም ታሪካቸው በክብር ሊቀረጽ ለሚገባቸው ሰዎች",
       watchShowreel: "ሾውሪል ይመልከቱ",
       startProject: "ፕሮጀክት ጀምር",
       scroll: "ሸብልል",
@@ -187,26 +188,28 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     home: {
       showreelLabel: "ሾውሪል",
-      showreelTitle: "እኛ የምናየውን ይመልከቱ።",
-      showreelDesc: "ከሜታ ፒክቸርስ የተመረጡ ሲኒማቲክ ስራዎች።",
+      showreelTitle: "እንዓ የምናየውን ይመልከቱ።",
+      showreelDesc:
+        "እያንዳንዱ ፍሬም ታሪክ አለው — ለአርቲስቶች፣ ብራንዶች እና ንግዶች ሲኒማ።",
       showreelSoon: "ሾውሪል በቅርብ ይመጣል",
       viewAllWork: "ሁሉንም ስራዎች ይመልከቱ →",
       portfolioLabel: "ፖርትፎሊዮ",
       portfolioTitle: "የተመረጡ ስራዎች",
       portfolioDesc: "ሙዚቃ ቪዲዮ · ኮሜርሻል · ሰርግ · ዶኩመንታሪ",
-      browseWork: "ስራዎችን ያስሱ",
+      browseWork: "ስራbዎችን ያስሱ",
       featuredEmpty:
         "በስቱዲዮ ዳሽቦርድ ላይ ሲታተሙ እና እንደ ተለይተው ሲሰየሙ የተመረጡ ፕሮጀክቶች እዚህ ይታያሉ።",
       capabilitiesLabel: "ችሎታዎች",
       capabilitiesTitle: "የምንፈጥረው",
-      capabilitiesDesc: "ለብራንዶች፣ ለአርቲስቶች እና ለእውነተኛ ጊዜያት ሲኒማቲክ ታሪክ አተረጓጎም።",
+      capabilitiesDesc:
+        "ለብራንዶች፣ ለአርቲስቶች እና ለእውነተኛ ጊዜያት ሲኒማቲክ ታሪክ አተረጋጎም።",
       exploreServices: "አገልግሎቶችን ያስሱ",
       ctaTitle: "ታሪክዎን ለመንገር ዝግጁ ነዎት?",
       ctaDesc:
-        "ግልጽ ራዕይ ቢኖርዎት ወይም ሀሳብ ብቻ ቢኖርዎት — ወደ ሲኒማ እንድንቀርጽ እንረዳዎታለን።",
+        "ግልጽ ራዕይ ቢኖሮት ወይም ሃሳብ ብቻ ቢኖሮት — ወደ ሲኒማ እንድንቀርጵ እንረዳዎታለን።",
       bookConsultation: "ምክክር ይያዙ",
       services: [
-        "ሙዚቃ ቪዲዮዎች",
+        "ሙዚቃ ቪዲዮች",
         "ኮሜርሻል ፊልሞች",
         "የሰርግ ፊልሞች",
         "የዝግጅት ፕሮዳክሽን",
@@ -218,10 +221,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
     },
     footer: {
       nextProject: "ቀጣይ ፕሮጀክት",
-      readyWhen: "እርስዎ ሲዘጋጁ እኛ ዝግጁ ነን።",
+      readyWhen: "እርሶዎ ሲዘጋጁ እንዓ ዝግጁ ነን።",
       startProject: "ፕሮጀክት ጀምር",
       tagline: "ከፍሬም ባሻገር።",
-      blurb: "ለብራንዶች፣ ለአርቲስቶች እና ለእውነተኛ ጊዜያት ሲኒማቲክ ፊልም እና ሚዲያ ፕሮዳክሽን።",
+      blurb:
+        "ለብራንዶች፣ ለአርቲስቶች እና ለእውነተኛ ጊዜያት ሲኒማቲክ ፊልም እና ሚዲያ ፕሮዳክሽን።",
       explore: "ያስሱ",
       contact: "አግኙን",
       follow: "ተከተሉ",
@@ -231,7 +235,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       rights: "መብቱ በህግ የተጠበቀ ነው።",
       work: "ስራዎች",
       services: "አገልግሎቶች",
-      about: "ስለ እኛ",
+      about: "ስለ እን",
       team: "ቡድን",
       journal: "ጆርናል",
       faq: "ተደጋጋሚ ጥያቄዎች",
@@ -239,7 +243,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
     lang: {
       en: "EN",
       am: "አማ",
-      switchTo: "ቋንቋ",
+      switchTo: "቉ንቃ",
     },
   },
 };
