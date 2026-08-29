@@ -2,18 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n/context";
+import { getPageCopy } from "@/lib/i18n/pages";
 
-const STEPS = [
-  "Client",
-  "Project type",
-  "Details",
-  "Date & location",
-  "Budget",
-  "Files",
-  "Review",
-];
-
-const PROJECT_TYPES = [
+/** Stable English values stored in the database / admin */
+const PROJECT_TYPE_VALUES = [
   "Music Video",
   "Commercial",
   "Wedding Film",
@@ -23,16 +16,16 @@ const PROJECT_TYPES = [
   "Corporate Film",
   "Social Media Content",
   "Other",
-];
+] as const;
 
-const BUDGETS = [
+const BUDGET_VALUES = [
   "Under 10,000 ETB",
   "10,000–25,000 ETB",
   "25,000–50,000 ETB",
   "50,000–100,000 ETB",
   "100,000+ ETB",
   "Not sure / Need a quote",
-];
+] as const;
 
 const field =
   "w-full border border-border bg-background px-4 py-3 text-sm focus:border-accent outline-none transition-colors";
@@ -40,6 +33,9 @@ const label =
   "block text-[10px] uppercase tracking-[0.25em] text-muted mb-2";
 
 export default function StartProjectPage() {
+  const { locale } = useI18n();
+  const p = getPageCopy(locale).startProject;
+
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -68,19 +64,30 @@ export default function StartProjectPage() {
   });
 
   const set = (k: string, v: string | string[]) =>
-    setForm((p) => ({ ...p, [k]: v }));
-  const toggleType = (t: string) =>
-    setForm((p) => ({
-      ...p,
-      projectTypes: p.projectTypes.includes(t)
-        ? p.projectTypes.filter((x) => x !== t)
-        : [...p.projectTypes, t],
+    setForm((prev) => ({ ...prev, [k]: v }));
+
+  const toggleType = (value: string) =>
+    setForm((prev) => ({
+      ...prev,
+      projectTypes: prev.projectTypes.includes(value)
+        ? prev.projectTypes.filter((x) => x !== value)
+        : [...prev.projectTypes, value],
     }));
 
   function canContinue() {
     if (step === 0) return form.fullName.trim() && form.email.trim();
     if (step === 1) return form.projectTypes.length > 0;
     return true;
+  }
+
+  function typeLabel(value: string) {
+    const i = PROJECT_TYPE_VALUES.indexOf(value as (typeof PROJECT_TYPE_VALUES)[number]);
+    return i >= 0 ? p.projectTypes[i] : value;
+  }
+
+  function budgetLabel(value: string) {
+    const i = BUDGET_VALUES.indexOf(value as (typeof BUDGET_VALUES)[number]);
+    return i >= 0 ? p.budgets[i] : value;
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -95,14 +102,14 @@ export default function StartProjectPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Submission failed. Please try again.");
+        setError(data.error || p.submitError);
         setSubmitting(false);
         return;
       }
       setReferenceNumber(data.reference_number || data.reference || "");
       setSubmitted(true);
     } catch {
-      setError("Network error. Please check your connection and try again.");
+      setError(p.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -113,29 +120,26 @@ export default function StartProjectPage() {
       <div className="pt-28 pb-24 min-h-[70vh] flex items-center">
         <div className="mx-auto max-w-xl px-4 text-center">
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted mb-4">
-            Received
+            {p.successEyebrow}
           </p>
           <h1 className="text-3xl sm:text-4xl font-light tracking-tight">
-            Thank you
+            {p.successTitle}
           </h1>
           <p className="mt-3 text-lg text-muted font-light tracking-wide">
-            Your story starts here.
+            {p.successTagline}
           </p>
-          <p className="mt-6 text-sm text-muted leading-relaxed">
-            Your project request has been received. META Pictures will review
-            your information and contact you.
-          </p>
+          <p className="mt-6 text-sm text-muted leading-relaxed">{p.successBody}</p>
           {referenceNumber && (
             <p className="mt-4 font-mono text-[11px] text-muted/70">
-              Reference: {referenceNumber}
+              {p.reference}: {referenceNumber}
             </p>
           )}
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/work" className="btn-ghost">
-              View portfolio
+              {p.viewPortfolio}
             </Link>
             <Link href="/" className="btn-primary">
-              Back home
+              {p.backHome}
             </Link>
           </div>
         </div>
@@ -143,35 +147,34 @@ export default function StartProjectPage() {
     );
   }
 
+  const stepLabel = p.stepOf
+    .replace("{current}", String(step + 1))
+    .replace("{total}", String(p.steps.length));
+
   return (
     <div className="pt-24 md:pt-28 pb-24">
       <div className="mx-auto max-w-2xl px-4 sm:px-6">
         <header className="mb-12 text-center">
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted mb-4">
-            Inquiry
+            {p.eyebrow}
           </p>
-          <h1 className="text-3xl sm:text-4xl font-light tracking-tight">
-            Start a Project
-          </h1>
+          <h1 className="text-3xl sm:text-4xl font-light tracking-tight">{p.title}</h1>
           <p className="mt-4 text-sm text-muted max-w-md mx-auto leading-relaxed">
-            Tell us about your vision. We&apos;ll respond with next steps and a
-            clear production path.
+            {p.description}
           </p>
           <div className="mt-8 mx-auto h-px w-16 bg-accent/80" />
         </header>
 
         <div className="mb-10">
           <div className="flex justify-between text-[10px] uppercase tracking-[0.2em] text-muted mb-2">
-            <span>
-              Step {step + 1} of {STEPS.length}
-            </span>
-            <span>{STEPS[step]}</span>
+            <span>{stepLabel}</span>
+            <span>{p.steps[step]}</span>
           </div>
           <div className="h-0.5 bg-border overflow-hidden">
             <div
               className="h-full bg-accent transition-all duration-300"
               style={{
-                width: `${((step + 1) / STEPS.length) * 100}%`,
+                width: `${((step + 1) / p.steps.length) * 100}%`,
               }}
             />
           </div>
@@ -187,7 +190,7 @@ export default function StartProjectPage() {
           {step === 0 && (
             <div className="space-y-5">
               <div>
-                <label className={label}>Full name *</label>
+                <label className={label}>{p.fullName}</label>
                 <input
                   required
                   type="text"
@@ -197,7 +200,7 @@ export default function StartProjectPage() {
                 />
               </div>
               <div>
-                <label className={label}>Company / artist</label>
+                <label className={label}>{p.company}</label>
                 <input
                   type="text"
                   value={form.company}
@@ -206,7 +209,7 @@ export default function StartProjectPage() {
                 />
               </div>
               <div>
-                <label className={label}>Email *</label>
+                <label className={label}>{p.email}</label>
                 <input
                   required
                   type="email"
@@ -217,7 +220,7 @@ export default function StartProjectPage() {
               </div>
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label className={label}>Phone</label>
+                  <label className={label}>{p.phone}</label>
                   <input
                     type="tel"
                     value={form.phone}
@@ -226,7 +229,7 @@ export default function StartProjectPage() {
                   />
                 </div>
                 <div>
-                  <label className={label}>WhatsApp</label>
+                  <label className={label}>{p.whatsapp}</label>
                   <input
                     type="tel"
                     value={form.whatsapp}
@@ -240,18 +243,18 @@ export default function StartProjectPage() {
 
           {step === 1 && (
             <div className="grid gap-3 sm:grid-cols-2">
-              {PROJECT_TYPES.map((t) => (
+              {PROJECT_TYPE_VALUES.map((value, i) => (
                 <button
-                  key={t}
+                  key={value}
                   type="button"
-                  onClick={() => toggleType(t)}
+                  onClick={() => toggleType(value)}
                   className={`border px-4 py-3.5 text-left text-sm transition ${
-                    form.projectTypes.includes(t)
+                    form.projectTypes.includes(value)
                       ? "border-accent bg-accent/10 text-foreground"
                       : "border-border text-muted hover:border-white/25"
                   }`}
                 >
-                  {t}
+                  {p.projectTypes[i]}
                 </button>
               ))}
             </div>
@@ -260,7 +263,7 @@ export default function StartProjectPage() {
           {step === 2 && (
             <div className="space-y-5">
               <div>
-                <label className={label}>Project title</label>
+                <label className={label}>{p.projectTitle}</label>
                 <input
                   type="text"
                   value={form.title}
@@ -269,7 +272,7 @@ export default function StartProjectPage() {
                 />
               </div>
               <div>
-                <label className={label}>Description</label>
+                <label className={label}>{p.projectDescription}</label>
                 <textarea
                   rows={4}
                   value={form.description}
@@ -278,7 +281,7 @@ export default function StartProjectPage() {
                 />
               </div>
               <div>
-                <label className={label}>Creative idea</label>
+                <label className={label}>{p.creativeIdea}</label>
                 <textarea
                   rows={3}
                   value={form.creativeIdea}
@@ -293,7 +296,7 @@ export default function StartProjectPage() {
             <div className="space-y-5">
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <label className={label}>Preferred date</label>
+                  <label className={label}>{p.preferredDate}</label>
                   <input
                     type="date"
                     value={form.preferredDate}
@@ -302,7 +305,7 @@ export default function StartProjectPage() {
                   />
                 </div>
                 <div>
-                  <label className={label}>Alternative date</label>
+                  <label className={label}>{p.alternativeDate}</label>
                   <input
                     type="date"
                     value={form.alternativeDate}
@@ -312,7 +315,7 @@ export default function StartProjectPage() {
                 </div>
               </div>
               <div>
-                <label className={label}>City</label>
+                <label className={label}>{p.city}</label>
                 <input
                   type="text"
                   value={form.city}
@@ -321,7 +324,7 @@ export default function StartProjectPage() {
                 />
               </div>
               <div>
-                <label className={label}>Location / venue</label>
+                <label className={label}>{p.location}</label>
                 <input
                   type="text"
                   value={form.location}
@@ -334,18 +337,18 @@ export default function StartProjectPage() {
 
           {step === 4 && (
             <div className="space-y-2">
-              {BUDGETS.map((b) => (
+              {BUDGET_VALUES.map((value, i) => (
                 <button
-                  key={b}
+                  key={value}
                   type="button"
-                  onClick={() => set("budget", b)}
+                  onClick={() => set("budget", value)}
                   className={`w-full border px-4 py-3.5 text-left text-sm transition ${
-                    form.budget === b
+                    form.budget === value
                       ? "border-accent bg-accent/10 text-foreground"
                       : "border-border text-muted hover:border-white/25"
                   }`}
                 >
-                  {b}
+                  {p.budgets[i]}
                 </button>
               ))}
             </div>
@@ -353,10 +356,9 @@ export default function StartProjectPage() {
 
           {step === 5 && (
             <div className="border border-dashed border-border bg-card/10 p-10 text-center">
-              <p className="text-sm text-muted">Reference files (optional)</p>
+              <p className="text-sm text-muted">{p.filesTitle}</p>
               <p className="mt-2 text-xs text-muted/60 leading-relaxed max-w-sm mx-auto">
-                You can share links in the description for now. Secure file
-                upload to private storage will connect in a later release.
+                {p.filesHint}
               </p>
               <input
                 type="file"
@@ -371,19 +373,25 @@ export default function StartProjectPage() {
           {step === 6 && (
             <div className="space-y-4 text-sm border border-border p-6 md:p-8 bg-card/25">
               <p className="text-[10px] uppercase tracking-[0.25em] text-muted mb-2">
-                Summary
+                {p.summary}
               </p>
               {(
                 [
-                  ["Name", form.fullName],
-                  ["Email", form.email],
-                  ["Types", form.projectTypes.join(", ")],
-                  ["Budget", form.budget],
-                  ["City", form.city],
-                  ["Description", form.description],
+                  [p.summaryName, form.fullName],
+                  [p.summaryEmail, form.email],
+                  [
+                    p.summaryTypes,
+                    form.projectTypes.map(typeLabel).join(", "),
+                  ],
+                  [p.summaryBudget, form.budget ? budgetLabel(form.budget) : ""],
+                  [p.summaryCity, form.city],
+                  [p.summaryDescription, form.description],
                 ] as const
               ).map(([k, v]) => (
-                <div key={k} className="flex flex-col sm:flex-row sm:gap-4 border-b border-border/60 pb-3 last:border-0 last:pb-0">
+                <div
+                  key={k}
+                  className="flex flex-col sm:flex-row sm:gap-4 border-b border-border/60 pb-3 last:border-0 last:pb-0"
+                >
                   <span className="text-[10px] uppercase tracking-widest text-muted sm:w-28 shrink-0 pt-0.5">
                     {k}
                   </span>
@@ -402,18 +410,18 @@ export default function StartProjectPage() {
               disabled={step === 0}
               className="text-[11px] uppercase tracking-widest text-muted disabled:opacity-30 hover:text-foreground transition-colors"
             >
-              ← Back
+              {p.back}
             </button>
-            {step < STEPS.length - 1 ? (
+            {step < p.steps.length - 1 ? (
               <button
                 type="button"
                 disabled={!canContinue()}
                 onClick={() =>
-                  setStep((s) => Math.min(STEPS.length - 1, s + 1))
+                  setStep((s) => Math.min(p.steps.length - 1, s + 1))
                 }
                 className="btn-primary disabled:opacity-40"
               >
-                Continue →
+                {p.continue}
               </button>
             ) : (
               <button
@@ -421,7 +429,7 @@ export default function StartProjectPage() {
                 disabled={submitting}
                 className="btn-primary disabled:opacity-50"
               >
-                {submitting ? "Submitting…" : "Submit request"}
+                {submitting ? p.submitting : p.submit}
               </button>
             )}
           </div>
