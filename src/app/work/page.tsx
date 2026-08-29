@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getPublishedPortfolio } from "@/lib/data/public-cms";
 import { WorkContent } from "@/components/pages/WorkContent";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Work",

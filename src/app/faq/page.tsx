@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getPublishedFaqs } from "@/lib/data/public-cms";
 import { FaqContent } from "@/components/pages/FaqContent";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "FAQ",

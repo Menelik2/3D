@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { getPublishedTeam } from "@/lib/data/public-cms";
 import { TeamContent } from "@/components/pages/TeamContent";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Team",
-  description:
-    "The creative team behind META Pictures — directors, cinematographers, editors and producers.",
+  description: "The META Pictures creative team.",
 };
 
 export default async function TeamPage() {
-  const members = await getPublishedTeam();
-  return <TeamContent members={members} />;
+  const team = await getPublishedTeam();
+  return <TeamContent team={team} />;
 }

@@ -2,6 +2,7 @@ import { getFeaturedPortfolio } from "@/lib/data/public-cms";
 import { getPublicSiteConfig } from "@/lib/data/site-settings";
 import { HeroContent } from "@/components/3d/HeroContent";
 import { HomeSections } from "@/components/HomeSections";
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [featured, { media }] = await Promise.all([

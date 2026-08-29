@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getPublishedTeam } from "@/lib/data/public-cms";
 import { AboutContent } from "@/components/pages/AboutContent";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "About",
