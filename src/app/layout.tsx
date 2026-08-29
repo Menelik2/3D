@@ -81,6 +81,11 @@ export default async function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${notoEthiopic.variable} h-full antialiased`}
     >
+      <head>
+        <link rel="preconnect" href="https://i.ytimg.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://i.ytimg.com" />
+        <link rel="dns-prefetch" href="https://www.youtube.com" />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <SiteChrome
           logoUrl={media.logoUrl}
