@@ -9,6 +9,7 @@ type Props = {
   category: string | null;
   year: number | null;
   coverUrl: string | null;
+  hasVideo?: boolean;
 };
 
 export function PerspectiveCard({
@@ -17,6 +18,7 @@ export function PerspectiveCard({
   category,
   year,
   coverUrl,
+  hasVideo = false,
 }: Props) {
   const ref = useRef<HTMLAnchorElement>(null);
 
@@ -68,11 +70,28 @@ export function PerspectiveCard({
             "radial-gradient(circle at 50% 80%, rgba(225,29,72,0.25), transparent 55%)",
         }}
       />
-      <div className="absolute inset-0 flex items-end p-6">
+
+      {hasVideo && (
+        <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-black/45 text-white backdrop-blur-sm transition duration-300 group-hover:scale-110 group-hover:bg-accent/90 group-hover:border-accent/50 group-hover:shadow-[0_0_32px_rgba(225,29,72,0.4)]">
+            <svg
+              className="h-6 w-6 ml-0.5"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden
+            >
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </span>
+        </div>
+      )}
+
+      <div className="absolute inset-0 flex items-end p-6 z-[6]">
         <div style={{ transform: "translateZ(40px)" }}>
           <p className="text-[10px] uppercase tracking-widest text-muted">
             {category || "Project"}
             {year ? ` · ${year}` : ""}
+            {hasVideo ? " · Video" : ""}
           </p>
           <h3 className="mt-1 text-lg font-light text-foreground group-hover:text-accent transition-colors">
             {title}
