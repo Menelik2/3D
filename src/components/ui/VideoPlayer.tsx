@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { getVideoEmbed } from "@/lib/video";
 
 type Props = {
@@ -9,14 +10,27 @@ type Props = {
   posterUrl?: string | null;
   className?: string;
   autoLoad?: boolean;
+  startMuted?: boolean;
 };
 
+/**
+ * Browser autoplay policy (Chrome / Safari / Firefox):
+ * - Autoplay WITH sound requires a transient user activation (click/tap)
+ *   in the same call stack as the media starting.
+ * - React setState is async → iframe mounts AFTER the gesture ends →
+ *   unmuted autoplay is often blocked. flushSync keeps the mount inside
+ *   the click handler so autoplay=1 is allowed.
+ * - Autoplay MUTED is always allowed (use startMuted if needed).
+ * - iframe must include allow="autoplay".
+ * - Mobile Safari: playsinline=1 is required.
+ */
 export function VideoPlayer({
   url,
   title = "Video",
   posterUrl,
   className = "",
   autoLoad = false,
+  startMuted = false,
 }: Props) {
   const embed = useMemo(() => getVideoEmbed(url), [url]);
   const [playing, setPlaying] = useState(autoLoad);
@@ -28,11 +42,23 @@ export function VideoPlayer({
 
   const iframeSrc = useMemo(() => {
     if (!embed) return "";
-    if (!playing) return embed.embedUrl;
     if (embed.kind === "file") return embed.embedUrl;
-    const join = embed.embedUrl.includes("?") ? "&" : "?";
-    return `${embed.embedUrl}${join}autoplay=1`;
-  }, [playing, embed]);
+
+    const u = new URL(embed.embedUrl);
+    if (playing) {
+      u.searchParams.set("autoplay", "1");
+      if (startMuted) u.searchParams.set("mute", "1");
+      else u.searchParams.delete("mute");
+    }
+    u.searchParams.set("playsinline", "1");
+    return u.toString();
+  }, [playing, embed, startMuted]);
+
+  function handlePlay() {
+    flushSync(() => {
+      setPlaying(true);
+    });
+  }
 
   if (!embed) {
     if (posterUrl) {
@@ -69,6 +95,7 @@ export function VideoPlayer({
               controls
               autoPlay
               playsInline
+              muted={startMuted}
               poster={poster || undefined}
             />
           ) : (
@@ -97,7 +124,7 @@ export function VideoPlayer({
             <div className="absolute inset-0 bg-black/40" />
             <button
               type="button"
-              onClick={() => setPlaying(true)}
+              onClick={handlePlay}
               className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 group cursor-pointer"
               aria-label={`Play ${title}`}
             >
