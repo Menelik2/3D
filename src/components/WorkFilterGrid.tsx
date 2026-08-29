@@ -9,6 +9,7 @@ import {
   matchesCategory,
 } from "@/components/ui/CategoryFilter";
 import { CategoryTagCloud } from "@/components/ui/CategoryTagCloud";
+import { getVideoEmbed } from "@/lib/video";
 
 const FALLBACK = [
   "Music Videos",
@@ -52,16 +53,22 @@ export function WorkFilterGrid({ projects }: { projects: PortfolioListItem[] }) 
 
       {filtered.length > 0 ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 [perspective:1200px]">
-          {filtered.map((project) => (
-            <PerspectiveCard
-              key={project.id}
-              href={`/work/${project.slug}`}
-              title={project.title}
-              category={project.category}
-              year={project.year}
-              coverUrl={project.cover_image_url}
-            />
-          ))}
+          {filtered.map((project) => {
+            const embed = getVideoEmbed(project.video_url);
+            const cover =
+              project.cover_image_url ||
+              (embed && embed.kind === "youtube" ? embed.posterUrl : null);
+            return (
+              <PerspectiveCard
+                key={project.id}
+                href={`/work/${project.slug}`}
+                title={project.title}
+                category={project.category}
+                year={project.year}
+                coverUrl={cover}
+              />
+            );
+          })}
         </div>
       ) : (
         <div className="border border-border bg-card/20 px-8 py-16 text-center">
