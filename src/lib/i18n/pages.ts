@@ -96,6 +96,49 @@ export type PageCopy = {
     returnHome: string;
     viewWork: string;
   };
+  startProject: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    steps: string[];
+    stepOf: string;
+    fullName: string;
+    company: string;
+    email: string;
+    phone: string;
+    whatsapp: string;
+    projectTypes: string[];
+    projectTitle: string;
+    projectDescription: string;
+    creativeIdea: string;
+    preferredDate: string;
+    alternativeDate: string;
+    city: string;
+    location: string;
+    budgets: string[];
+    filesTitle: string;
+    filesHint: string;
+    summary: string;
+    summaryName: string;
+    summaryEmail: string;
+    summaryTypes: string;
+    summaryBudget: string;
+    summaryCity: string;
+    summaryDescription: string;
+    back: string;
+    continue: string;
+    submit: string;
+    submitting: string;
+    submitError: string;
+    networkError: string;
+    successEyebrow: string;
+    successTitle: string;
+    successTagline: string;
+    successBody: string;
+    reference: string;
+    viewPortfolio: string;
+    backHome: string;
+  };
   cta: {
     title: string;
     description: string;
@@ -316,6 +359,77 @@ export const pageCopy = {
       returnHome: "Return home",
       viewWork: "View work",
     },
+    startProject: {
+      eyebrow: "Inquiry",
+      title: "Start a Project",
+      description:
+        "Tell us about your vision. We'll respond with next steps and a clear production path.",
+      steps: [
+        "Client",
+        "Project type",
+        "Details",
+        "Date & location",
+        "Budget",
+        "Files",
+        "Review",
+      ],
+      stepOf: "Step {current} of {total}",
+      fullName: "Full name *",
+      company: "Company / artist",
+      email: "Email *",
+      phone: "Phone",
+      whatsapp: "WhatsApp",
+      projectTypes: [
+        "Music Video",
+        "Commercial",
+        "Wedding Film",
+        "Event Coverage",
+        "Photography",
+        "Documentary",
+        "Corporate Film",
+        "Social Media Content",
+        "Other",
+      ],
+      projectTitle: "Project title",
+      projectDescription: "Description",
+      creativeIdea: "Creative idea",
+      preferredDate: "Preferred date",
+      alternativeDate: "Alternative date",
+      city: "City",
+      location: "Location / venue",
+      budgets: [
+        "Under 10,000 ETB",
+        "10,000–25,000 ETB",
+        "25,000–50,000 ETB",
+        "50,000–100,000 ETB",
+        "100,000+ ETB",
+        "Not sure / Need a quote",
+      ],
+      filesTitle: "Reference files (optional)",
+      filesHint:
+        "You can share links in the description for now. Secure file upload to private storage will connect in a later release.",
+      summary: "Summary",
+      summaryName: "Name",
+      summaryEmail: "Email",
+      summaryTypes: "Types",
+      summaryBudget: "Budget",
+      summaryCity: "City",
+      summaryDescription: "Description",
+      back: "← Back",
+      continue: "Continue →",
+      submit: "Submit request",
+      submitting: "Submitting…",
+      submitError: "Submission failed. Please try again.",
+      networkError: "Network error. Please check your connection and try again.",
+      successEyebrow: "Received",
+      successTitle: "Thank you",
+      successTagline: "Your story starts here.",
+      successBody:
+        "Your project request has been received. META Pictures will review your information and contact you.",
+      reference: "Reference",
+      viewPortfolio: "View portfolio",
+      backHome: "Back home",
+    },
     cta: {
       title: "Ready to tell your story?",
       description: "Share your idea, timeline, and vision. We'll shape it into cinema.",
@@ -531,6 +645,77 @@ export const pageCopy = {
         "ጥያቄዎ ደርሶናል። ሜታ ፒክቸርስ ተገኝነትን ያረጋግጣል እና በቅርቡ ያገኝዎታል።",
       returnHome: "ወደ መነሻ ተመለስ",
       viewWork: "ስራዎችን ይመልከቱ",
+    },
+    startProject: {
+      eyebrow: "ጥያቄ",
+      title: "ፕሮጀክት ጀምር",
+      description:
+        "ስለ ራዕይዎ ይንገሩን። ቀጣይ እርምጃዎችን እና ግልጽ የፕሮዳክሽን መንገድ እንመልሳለን።",
+      steps: [
+        "ደንበኛ",
+        "የፕሮጀክት ዓይነት",
+        "ዝርዝሮች",
+        "ቀን እና ቦታ",
+        "በጀት",
+        "ፋይሎች",
+        "ግምገማ",
+      ],
+      stepOf: "ደረጃ {current} ከ {total}",
+      fullName: "ሙሉ ስም *",
+      company: "ኩባንያ / አርቲስት",
+      email: "ኢሜይል *",
+      phone: "ስልክ",
+      whatsapp: "ዋትስአፕ",
+      projectTypes: [
+        "ሙዚቃ ቪዲዮ",
+        "ኮሜርሻል",
+        "የሰርግ ፊልም",
+        "የዝግጅት ሽፋን",
+        "ፎቶግራፊ",
+        "ዶኩመንታሪ",
+        "ኮርፖሬት ፊልም",
+        "የማህበራዊ ሚዲያ ይዘት",
+        "ሌላ",
+      ],
+      projectTitle: "የፕሮጀክት ርዕስ",
+      projectDescription: "መግለጫ",
+      creativeIdea: "የፈጠራ ሀሳብ",
+      preferredDate: "ተመራጭ ቀን",
+      alternativeDate: "አማራጭ ቀን",
+      city: "ከተማ",
+      location: "ቦታ / ቬኑ",
+      budgets: [
+        "ከ 10,000 ብር በታች",
+        "10,000–25,000 ብር",
+        "25,000–50,000 ብር",
+        "50,000–100,000 ብር",
+        "100,000+ ብር",
+        "እርግጠኛ አይደለሁም / ጥቅስ እፈልጋለሁ",
+      ],
+      filesTitle: "የማጣቀሻ ፋይሎች (አማራጭ)",
+      filesHint:
+        "ለአሁን አገናኞችን በመግለጫው ውስጥ ማጋራት ይችላሉ። ደህንነቱ የተጠበቀ የፋይል መጫን በኋላ ይገናኛል።",
+      summary: "ማጠቃለያ",
+      summaryName: "ስም",
+      summaryEmail: "ኢሜይል",
+      summaryTypes: "ዓይነቶች",
+      summaryBudget: "በጀት",
+      summaryCity: "ከተማ",
+      summaryDescription: "መግለጫ",
+      back: "← ተመለስ",
+      continue: "ቀጥል →",
+      submit: "ጥያቄ ላክ",
+      submitting: "በመላክ ላይ…",
+      submitError: "መላክ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
+      networkError: "የኔትወርክ ስህተት። ግንኙነትዎን ይፈትሹ እና እንደገና ይሞክሩ።",
+      successEyebrow: "ተቀብለናል",
+      successTitle: "አመሰግናለን",
+      successTagline: "ታሪክዎ እዚህ ይጀምራል።",
+      successBody:
+        "የፕሮጀክት ጥያቄዎ ተቀብሏል። ሜታ ፒክቸርስ መረጃዎን ይገመግማል እና ያገኝዎታል።",
+      reference: "ማጣቀሻ",
+      viewPortfolio: "ፖርትፎሊዮ ይመልከቱ",
+      backHome: "ወደ መነሻ",
     },
     cta: {
       title: "ታሪክዎን ለመንገር ዝግጁ ነዎት?",
