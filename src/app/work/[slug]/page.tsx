@@ -7,13 +7,10 @@ import {
   getPublishedPortfolioSlugs,
 } from "@/lib/data/public-cms";
 import { getVideoEmbed } from "@/lib/video";
+import { VideoPlayer } from "@/components/ui/VideoPlayer";
 
 type Props = { params: Promise<{ slug: string }> };
 
-/**
- * Prerender known published projects at build; others ISR on first visit.
- * Cache Components require at least one param for build-time validation.
- */
 export async function generateStaticParams() {
   const slugs = await getPublishedPortfolioSlugs();
   if (slugs.length === 0) {
@@ -75,36 +72,12 @@ export default async function ProjectDetailPage({ params }: Props) {
           )}
         </header>
 
-        <div className="relative aspect-video mb-16 overflow-hidden bg-card border border-border">
-          {embed?.kind === "file" ? (
-            <video
-              className="absolute inset-0 h-full w-full object-cover"
-              src={embed.embedUrl}
-              controls
-              playsInline
-              poster={cover || undefined}
-            />
-          ) : embed ? (
-            <iframe
-              src={embed.embedUrl}
-              title={item.title}
-              className="absolute inset-0 h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              referrerPolicy="strict-origin-when-cross-origin"
-            />
-          ) : cover ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={cover}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-widest text-muted">
-              No video
-            </div>
-          )}
+        <div className="mb-16">
+          <VideoPlayer
+            url={item.video_url}
+            title={item.title}
+            posterUrl={cover}
+          />
         </div>
 
         {gallery.length > 0 && (
