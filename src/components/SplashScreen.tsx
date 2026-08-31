@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { META_SPLASH_LOGO } from "@/lib/logo-data";
 import { useT } from "@/lib/i18n/context";
 
-const SPLASH_MS = 2600;
-const FADE_MS = 750;
+const SPLASH_MS = 3200;
+const FADE_MS = 900;
 
 /**
- * App-style splash: flash brand logo, then open the site.
- * Skips on /admin and when user prefers reduced motion.
+ * Cinematic splash: animated brand mark, ambient light, frame corners,
+ * then fade into the site. Skips on /admin and reduced-motion.
  */
 export function SplashScreen() {
   const t = useT();
@@ -63,12 +63,26 @@ export function SplashScreen() {
       aria-hidden
       role="presentation"
     >
+      <div className="splash-bg" />
+      <div className="splash-orb splash-orb--a" />
+      <div className="splash-orb splash-orb--b" />
+      <div className="splash-orb splash-orb--c" />
+      <div className="splash-rays" />
+      <div className="splash-scan" />
       <div className="splash-vignette" />
       <div className="splash-grain" />
-      <div className="splash-pulse" />
+
+      <div className="splash-frame" aria-hidden>
+        <span className="splash-corner splash-corner--tl" />
+        <span className="splash-corner splash-corner--tr" />
+        <span className="splash-corner splash-corner--bl" />
+        <span className="splash-corner splash-corner--br" />
+      </div>
 
       <div className="splash-center">
         <div className="splash-logo-wrap">
+          <div className="splash-logo-ring" />
+          <div className="splash-logo-flash" />
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={META_SPLASH_LOGO}
