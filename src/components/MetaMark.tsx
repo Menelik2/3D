@@ -1,4 +1,4 @@
-/** META Pictures monogram — red geometric + white M, transparent background */
+/** META Pictures monogram — red geometric + white M, transparent (no black plate) */
 export function MetaMark({
   className = "",
   title = "META Pictures",
@@ -8,34 +8,50 @@ export function MetaMark({
 }) {
   return (
     <svg
-      viewBox="0 0 120 100"
+      viewBox="0 0 100 100"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
       role="img"
       aria-label={title}
     >
       <title>{title}</title>
-      {/* Red geometric mark */}
+      {/* Red geometric mark — tall stem + upper triangle + lower wing */}
       <path
         fill="#e11d48"
-        d="M8 78 L8 42 L32 18 L48 38 L32 52 L32 78 Z"
+        d="M28 88
+           L28 18
+           L52 2
+           L72 28
+           L48 48
+           L48 58
+           L68 78
+           L48 96
+           L28 88
+           Z"
       />
       <path
         fill="#e11d48"
-        d="M32 18 L58 2 L78 28 L52 48 L32 52 Z"
-      />
-      <path
-        fill="#e11d48"
-        d="M8 78 L32 52 L52 48 L70 68 L48 92 L32 78 Z"
-      />
-      <path
-        fill="#e11d48"
-        d="M2 62 L8 52 L8 78 L22 78 Z"
+        d="M8 72
+           L28 48
+           L28 88
+           L40 88
+           L18 96
+           Z"
       />
       {/* White M */}
       <path
         fill="#ffffff"
-        d="M62 92 L62 38 L84 68 L106 28 L106 92 L94 92 L94 52 L84 68 L74 52 L74 92 Z"
+        d="M58 96
+           L58 42
+           L74 68
+           L90 32
+           L90 96
+           L80 96
+           L80 56
+           L74 68
+           L68 56
+           L68 96
+           Z"
       />
     </svg>
   );
