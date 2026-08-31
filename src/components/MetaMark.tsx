@@ -1,6 +1,6 @@
 import { META_NAV_MARK } from "@/lib/meta-nav-mark";
 
-/** Exact META mark from your brand photo — transparent, no black plate */
+/** Exact META mark — optimized transparent WebP (~3KB) */
 export function MetaMark({
   className = "",
   title = "META Pictures",
@@ -14,8 +14,8 @@ export function MetaMark({
       src={META_NAV_MARK}
       alt={title}
       className={className}
-      width={132}
-      height={120}
+      width={83}
+      height={80}
       draggable={false}
       decoding="async"
     />
