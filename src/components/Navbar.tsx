@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { SocialIcons } from "@/components/SocialIcons";
+import { MetaMark } from "@/components/MetaMark";
 import { useT } from "@/lib/i18n/context";
 import type { SocialConfig } from "@/lib/site-config";
 
@@ -68,7 +69,6 @@ export function Navbar({
   const t = useT();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const logo = logoUrl?.trim() || "/brand/meta-logo.jpg";
 
   const sideNav = [
     { href: "/", label: t.nav.home, icon: iconHome },
@@ -131,19 +131,7 @@ export function Navbar({
             className="group flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-90"
             onClick={() => setOpen(false)}
           >
-            <picture>
-              <source srcSet="/brand/meta-logo-sm.webp" type="image/webp" />
-              <source srcSet="/brand/meta-logo-sm.jpg" type="image/jpeg" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={logo}
-                alt="META Pictures"
-                width={120}
-                height={68}
-                className="h-8 w-auto md:h-9 object-contain transition-transform duration-300 group-hover:scale-[1.02]"
-                decoding="async"
-              />
-            </picture>
+            <MetaMark className="h-8 w-auto md:h-9 transition-transform duration-300 group-hover:scale-[1.04]" />
             <span className="sr-only">META Pictures</span>
           </Link>
 
@@ -224,11 +212,7 @@ export function Navbar({
 
         <div className="menu-logo flex items-center justify-between gap-3 px-6 pt-8 pb-6">
           <Link href="/" onClick={() => setOpen(false)} className="block">
-            <picture>
-              <source srcSet="/brand/meta-logo-sm.webp" type="image/webp" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={logo} alt="META Pictures" width={140} height={80} className="h-11 w-auto object-contain" />
-            </picture>
+            <MetaMark className="h-11 w-auto" />
           </Link>
           <LanguageSwitcher compact />
         </div>
