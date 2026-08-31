@@ -190,6 +190,12 @@
   position: relative;
   width: min(400px, 86vw);
   animation: splash-logo-in 1.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Soft red glow behind mark — no rectangular box */
+  background: radial-gradient(
+    ellipse 70% 55% at 50% 50%,
+    rgba(225, 29, 72, 0.14) 0%,
+    transparent 70%
+  );
 }
 
 /* Soft ring behind logo */
@@ -212,15 +218,19 @@
   pointer-events: none;
 }
 
-/* Brief white/red flash on logo appear */
+/* Brief circular flash on logo appear (not a rectangle) */
 .splash-logo-flash {
   position: absolute;
-  inset: -8%;
-  border-radius: 8px;
+  left: 50%;
+  top: 50%;
+  width: 90%;
+  height: 90%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
   background: radial-gradient(
     circle at center,
-    rgba(255, 255, 255, 0.35) 0%,
-    rgba(225, 29, 72, 0.2) 35%,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(225, 29, 72, 0.22) 35%,
     transparent 70%
   );
   opacity: 0;
@@ -228,6 +238,10 @@
   animation: splash-flash 0.85s ease-out 0.25s both;
 }
 
+/*
+ * JPEG logo has a solid black plate. mix-blend-mode: screen
+ * knocks pure black out so only the mark sits on the splash.
+ */
 .splash-logo-img {
   position: relative;
   z-index: 1;
@@ -237,8 +251,7 @@
   object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
-  filter: drop-shadow(0 0 28px rgba(225, 29, 72, 0.35))
-    drop-shadow(0 0 60px rgba(225, 29, 72, 0.12));
+  mix-blend-mode: screen;
   animation: splash-logo-float 3s ease-in-out 1.1s infinite;
 }
 
@@ -307,14 +320,14 @@
 @keyframes splash-flash {
   0% {
     opacity: 0;
-    transform: scale(0.7);
+    transform: translate(-50%, -50%) scale(0.7);
   }
   25% {
     opacity: 0.85;
   }
   100% {
     opacity: 0;
-    transform: scale(1.15);
+    transform: translate(-50%, -50%) scale(1.2);
   }
 }
 
