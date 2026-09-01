@@ -45,6 +45,9 @@ export function HomeSections({
             title="META Pictures showreel"
             posterUrl={poster}
             className="shadow-[0_0_80px_rgba(225,29,72,0.08)]"
+            desktopAutoplay
+            startMuted
+            priority
           />
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-[11px] uppercase tracking-widest text-muted">
