@@ -13,14 +13,35 @@ type Props = {
   startMuted?: boolean;
   /** Eager poster load (above-the-fold). Default false = lazy. */
   priority?: boolean;
+  /**
+   * On desktop (min-width 768px), start muted playback when the player
+   * enters the viewport. Mobile keeps click-to-play (autoplay policies).
+   */
+  desktopAutoplay?: boolean;
 };
+
+function useIsDesktop(minWidth = 768) {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia(`(min-width: ${minWidth}px)`);
+    const apply = () => setIsDesktop(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, [minWidth]);
+
+  return isDesktop;
+}
 
 /**
  * Performance model:
- * - Poster image only until user clicks Play (no YouTube/network until then)
- * - MP4 src is not attached until Play
+ * - Poster image only until Play (or desktop autoplay in view)
+ * - MP4 src is not attached until play
  * - Below-fold posters use loading="lazy"
- * - flushSync keeps autoplay inside the user-gesture turn
+ * - flushSync keeps click autoplay inside the user-gesture turn
+ * - Desktop autoplay is muted (browser-compatible)
  */
 export function VideoPlayer({
   url,
@@ -30,31 +51,58 @@ export function VideoPlayer({
   autoLoad = false,
   startMuted = false,
   priority = false,
+  desktopAutoplay = false,
 }: Props) {
   const embed = useMemo(() => getVideoEmbed(url), [url]);
   const [playing, setPlaying] = useState(autoLoad);
   const [inView, setInView] = useState(priority);
+  const [muted, setMuted] = useState(startMuted || desktopAutoplay);
   const rootRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const isDesktop = useIsDesktop(768);
+  const autoplayArmed = desktopAutoplay && isDesktop;
 
+  // Observe visibility for poster + desktop autoplay
   useEffect(() => {
-    if (priority || playing) return;
     const el = rootRef.current;
-    if (!el || typeof IntersectionObserver === "undefined") {
+    if (!el) return;
+
+    if (typeof IntersectionObserver === "undefined") {
       setInView(true);
+      if (autoplayArmed && !playing) setPlaying(true);
       return;
     }
+
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) {
+        if (!entry) return;
+        if (entry.isIntersecting) {
           setInView(true);
-          io.disconnect();
+          if (autoplayArmed && !playing) {
+            setMuted(true);
+            setPlaying(true);
+          }
         }
       },
-      { rootMargin: "200px 0px", threshold: 0.01 }
+      { rootMargin: "120px 0px", threshold: 0.25 }
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [priority, playing]);
+  }, [autoplayArmed, playing]);
+
+  // Ensure native <video> tries play after mount (desktop autoplay)
+  useEffect(() => {
+    if (!playing || !autoplayArmed) return;
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = true;
+    const p = v.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(() => {
+        /* Autoplay blocked — keep poster/play UI via controls */
+      });
+    }
+  }, [playing, autoplayArmed, url]);
 
   const poster =
     posterUrl ||
@@ -67,15 +115,18 @@ export function VideoPlayer({
 
     const u = new URL(embed.embedUrl);
     u.searchParams.set("autoplay", "1");
-    if (startMuted) u.searchParams.set("mute", "1");
+    // Muted required for reliable desktop autoplay
+    if (muted || startMuted || autoplayArmed) u.searchParams.set("mute", "1");
     else u.searchParams.delete("mute");
     u.searchParams.set("playsinline", "1");
     u.searchParams.set("rel", "0");
     return u.toString();
-  }, [playing, embed, startMuted]);
+  }, [playing, embed, muted, startMuted, autoplayArmed]);
 
   function handlePlay() {
     flushSync(() => {
+      // User gesture: allow sound unless they started muted intentionally
+      if (!startMuted && !autoplayArmed) setMuted(false);
       setPlaying(true);
     });
   }
@@ -115,12 +166,14 @@ export function VideoPlayer({
         {playing ? (
           embed.kind === "file" ? (
             <video
+              ref={videoRef}
               className="absolute inset-0 h-full w-full"
               src={iframeSrc}
               controls
               autoPlay
               playsInline
-              muted={startMuted}
+              muted={muted || startMuted || autoplayArmed}
+              loop={autoplayArmed}
               preload="auto"
               poster={poster || undefined}
             />
