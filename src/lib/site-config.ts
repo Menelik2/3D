@@ -63,7 +63,10 @@ export function getMediaConfig(): MediaConfig {
       "NEXT_PUBLIC_LOGO_VIDEO_URL",
       "/brand/brand-optimized/meta-logo.mp4"
     ),
-    showreelUrl: env("NEXT_PUBLIC_SHOWREEL_URL"),
+    showreelUrl: env(
+      "NEXT_PUBLIC_SHOWREEL_URL",
+      "/brand/brand-optimized/meta-logo.mp4"
+    ),
     showreelPosterUrl: env(
       "NEXT_PUBLIC_SHOWREEL_POSTER_URL",
       "/brand/meta-logo-poster.jpg"
