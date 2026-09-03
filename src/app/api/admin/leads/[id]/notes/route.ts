@@ -1,17 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-
-async function getWriteClient() {
-  try {
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return createAdminClient();
-    }
-  } catch {
-    /* fall through */
-  }
-  return createClient();
-}
+import { getCmsClient } from "@/lib/cms";
 
 export async function POST(
   request: Request,
@@ -26,9 +15,8 @@ export async function POST(
       return NextResponse.json({ error: "Note body is required." }, { status: 400 });
     }
 
-    const supabase = await getWriteClient();
+    const supabase = await getCmsClient();
 
-    // Optional author from session
     let authorId: string | null = null;
     try {
       const sessionClient = await createClient();

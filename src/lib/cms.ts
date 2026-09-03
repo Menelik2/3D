@@ -1,15 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 
 /** Prefer service role for CMS writes; fall back to user session. */
 export async function getCmsClient() {
-  try {
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return createAdminClient();
-    }
-  } catch {
-    /* fall through */
-  }
+  const admin = tryCreateAdminClient();
+  if (admin) return admin;
   return createClient();
 }
 

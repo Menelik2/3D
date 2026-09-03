@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { sendLeadNotification } from "@/lib/email";
 
 /** Empty strings break Postgres DATE columns — normalize to null. */
@@ -26,6 +27,19 @@ function generateLeadReference(): string {
   return `MP-${yy}${mm}${dd}-${rand}`;
 }
 
+type InsertError = { message: string; code?: string } | null;
+
+async function insertLead(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  client: { from: (table: string) => { insert: (row: Record<string, unknown>) => PromiseLike<{ error: InsertError }> } },
+  row: Record<string, unknown>
+): Promise<InsertError> {
+  // Do NOT .select() / RETURNING. Anon INSERT is allowed, anon SELECT is not —
+  // PostgREST then reports an RLS violation even though the row was written.
+  const { error } = await client.from("leads").insert(row);
+  return error ?? null;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -46,8 +60,6 @@ export async function POST(request: Request) {
 
     const projectTypes = body.projectTypes || body.project_types || [];
 
-    const supabase = await createClient();
-
     const company = optionalText(body.company);
     const phone = optionalText(body.phone);
     const whatsapp = optionalText(body.whatsapp);
@@ -67,7 +79,7 @@ export async function POST(request: Request) {
     const source = optionalText(body.source) || "website";
     const typesArr = Array.isArray(projectTypes) ? projectTypes : [];
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       full_name: fullName,
       company,
       email,
@@ -86,38 +98,41 @@ export async function POST(request: Request) {
       ),
       city,
       location,
-      indoor_outdoor: optionalText(
-        body.indoorOutdoor || body.indoor_outdoor
-      ),
+      indoor_outdoor: optionalText(body.indoorOutdoor || body.indoor_outdoor),
       expected_duration: optionalText(body.duration || body.expected_duration),
       budget_range: budgetRange,
       source,
-      status: "NEW" as const,
+      status: "NEW",
     };
 
-    // Anon may INSERT leads, but has no SELECT policy. `.insert().select()`
-    // (RETURNING) is then rejected as an RLS violation even though the write
-    // is allowed. Insert without RETURNING and mint the reference here.
-    let referenceNumber = "";
-    let insertError: { message: string; code?: string } | null = null;
+    const clients = [];
+    const admin = tryCreateAdminClient();
+    if (admin) clients.push(admin);
+    clients.push(await createClient());
 
-    for (let attempt = 0; attempt < 3; attempt++) {
-      referenceNumber = generateLeadReference();
-      const { error } = await supabase.from("leads").insert({
-        ...payload,
-        reference_number: referenceNumber,
-      });
-      if (!error) {
-        insertError = null;
-        break;
+    let referenceNumber = "";
+    let insertError: InsertError = null;
+    let saved = false;
+
+    for (const client of clients) {
+      if (saved) break;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        referenceNumber = generateLeadReference();
+        insertError = await insertLead(client, {
+          ...payload,
+          reference_number: referenceNumber,
+        });
+        if (!insertError) {
+          saved = true;
+          break;
+        }
+        // Unique reference collision — retry with a new number.
+        if (insertError.code !== "23505") break;
       }
-      insertError = error;
-      // Unique reference collision — retry with a new number.
-      if (error.code !== "23505") break;
     }
 
-    if (insertError) {
-      console.error("Lead insert error:", insertError.message);
+    if (!saved) {
+      console.error("Lead insert error:", insertError?.message, insertError?.code);
       return NextResponse.json(
         {
           error:
@@ -127,7 +142,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Fire-and-forget email — never block the client on mail failures
     void sendLeadNotification({
       reference: referenceNumber,
       fullName,

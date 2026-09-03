@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getCmsClient } from "@/lib/cms";
 
 const STATUSES = [
   "NEW",
@@ -28,7 +28,7 @@ export default async function AdminLeadsPage() {
   let errorMsg: string | null = null;
 
   try {
-    const supabase = await createClient();
+    const supabase = await getCmsClient();
     const { data, error } = await supabase
       .from("leads")
       .select(
