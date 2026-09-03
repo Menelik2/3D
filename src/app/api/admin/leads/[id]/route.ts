@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getCmsClient } from "@/lib/cms";
 
 const ALLOWED_STATUSES = new Set([
   "NEW",
@@ -14,18 +13,6 @@ const ALLOWED_STATUSES = new Set([
   "CANCELLED",
   "ARCHIVED",
 ]);
-
-async function getWriteClient() {
-  // Prefer service role for reliable staff writes when configured
-  try {
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return createAdminClient();
-    }
-  } catch {
-    /* fall through */
-  }
-  return createClient();
-}
 
 export async function PATCH(
   request: Request,
@@ -59,7 +46,7 @@ export async function PATCH(
       return NextResponse.json({ error: "No updates provided." }, { status: 400 });
     }
 
-    const supabase = await getWriteClient();
+    const supabase = await getCmsClient();
     const { data, error } = await supabase
       .from("leads")
       .update(updates)

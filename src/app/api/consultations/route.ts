@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { sendConsultationNotification } from "@/lib/email";
 
 function optionalDate(v: unknown): string | null {
@@ -36,12 +37,7 @@ export async function POST(request: Request) {
     const preferredTime = optionalText(body.time || body.preferredTime);
     const notes = optionalText(body.notes);
 
-    const supabase = await createClient();
-
-    // Anon may INSERT consultations, but has no SELECT policy. `.insert().select()`
-    // (RETURNING) is then rejected as an RLS violation even though the write
-    // is allowed. Insert without RETURNING.
-    const { error } = await supabase.from("consultations").insert({
+    const row = {
       consultation_type: consultationType,
       full_name: fullName,
       email,
@@ -49,11 +45,30 @@ export async function POST(request: Request) {
       preferred_date: preferredDate,
       preferred_time: preferredTime,
       notes,
-      status: "PENDING",
-    });
+      status: "PENDING" as const,
+    };
 
-    if (error) {
-      console.error("Consultation insert error:", error.message);
+    const clients = [];
+    const admin = tryCreateAdminClient();
+    if (admin) clients.push(admin);
+    clients.push(await createClient());
+
+    let insertError: { message: string } | null = null;
+    let saved = false;
+
+    for (const client of clients) {
+      // Anon may INSERT, but has no SELECT policy. Never .select() / RETURNING.
+      const { error } = await client.from("consultations").insert(row);
+      if (!error) {
+        saved = true;
+        insertError = null;
+        break;
+      }
+      insertError = error;
+    }
+
+    if (!saved) {
+      console.error("Consultation insert error:", insertError?.message);
       return NextResponse.json(
         { error: "Could not save consultation request." },
         { status: 500 }
