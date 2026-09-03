@@ -49,10 +49,18 @@ export default async function AdminLeadsPage() {
         <div>
           <h1 className="text-2xl font-light tracking-tight">Leads</h1>
           <p className="mt-1 text-sm text-muted">
-            Project inquiries. Click a row to update status and add notes.
+            Project inquiries. Click a row to view, edit, update status, or add notes.
           </p>
         </div>
-        <p className="text-xs text-muted">{leads.length} shown</p>
+        <div className="flex items-center gap-4">
+          <p className="text-xs text-muted">{leads.length} shown</p>
+          <Link
+            href="/admin/leads/new"
+            className="bg-accent px-4 py-2.5 text-[10px] uppercase tracking-widest text-white hover:bg-accent-hover"
+          >
+            New lead
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -93,7 +101,11 @@ export default async function AdminLeadsPage() {
                   <Link href="/start-a-project" className="text-accent hover:underline">
                     Start a Project
                   </Link>{" "}
-                  appear here after the schema is applied and keys are set.
+                  or{" "}
+                  <Link href="/admin/leads/new" className="text-accent hover:underline">
+                    add one manually
+                  </Link>
+                  .
                 </td>
               </tr>
             ) : (
