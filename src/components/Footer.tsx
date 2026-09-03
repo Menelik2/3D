@@ -146,7 +146,7 @@ export function Footer({
                   showEmpty
                   iconClassName="border-border bg-card/40 text-muted hover:text-accent"
                 />
-                <p className="mt-3 text-xs text-muted/60">Admin → Settings</p>
+                
               </>
             )}
           </div>
