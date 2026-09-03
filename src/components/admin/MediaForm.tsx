@@ -17,31 +17,31 @@ const FIELDS: { key: keyof Media; label: string; env: string; placeholder: strin
     key: "logoUrl",
     label: "Logo URL",
     env: "NEXT_PUBLIC_LOGO_URL",
-    placeholder: "https://…/logo.png",
+    placeholder: "/brand/meta-logo.jpg",
   },
   {
     key: "logoVideoUrl",
     label: "Logo video",
     env: "NEXT_PUBLIC_LOGO_VIDEO_URL",
-    placeholder: "https://…/logo.mp4",
+    placeholder: "/brand/brand-optimized/meta-logo.mp4",
   },
   {
     key: "showreelUrl",
     label: "Showreel video (homepage)",
     env: "NEXT_PUBLIC_SHOWREEL_URL",
-    placeholder: "YouTube link or /brand/videos/showreel.mp4",
+    placeholder: "YouTube link or /brand/brand-optimized/meta-logo.mp4",
   },
   {
     key: "showreelPosterUrl",
     label: "Showreel poster image",
     env: "NEXT_PUBLIC_SHOWREEL_POSTER_URL",
-    placeholder: "Image shown before play (optional)",
+    placeholder: "/brand/meta-logo-poster.jpg",
   },
   {
     key: "ogImageUrl",
     label: "OG image",
     env: "NEXT_PUBLIC_OG_IMAGE_URL",
-    placeholder: "https://…/og.jpg",
+    placeholder: "/brand/og.jpg",
   },
 ];
 
@@ -55,25 +55,31 @@ export function MediaForm({ media }: { media: Media }) {
     ogImageUrl: media.ogImageUrl || "",
   });
   const [msg, setMsg] = useState<string | null>(null);
+  const [msgOk, setMsgOk] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function save() {
     setSaving(true);
     setMsg(null);
+    setMsgOk(false);
     try {
       const res = await fetch("/api/cms/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "media", value: m }),
       });
-      const data = await res.json();
-      if (!res.ok) setMsg(data.error || "Save failed");
-      else {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setMsg(data.error || "Save failed");
+        setMsgOk(false);
+      } else {
         setMsg("Media settings saved");
+        setMsgOk(true);
         router.refresh();
       }
     } catch {
       setMsg("Network error");
+      setMsgOk(false);
     } finally {
       setSaving(false);
     }
@@ -81,7 +87,11 @@ export function MediaForm({ media }: { media: Media }) {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      {msg && <p className="text-sm text-muted">{msg}</p>}
+      {msg && (
+        <p className={`text-sm ${msgOk ? "text-emerald-500/90" : "text-red-400"}`}>
+          {msg}
+        </p>
+      )}
 
       <section className="space-y-4 border border-border p-6 bg-card/20">
         {FIELDS.map(({ key, label, env, placeholder }) => (

@@ -53,18 +53,18 @@ export async function PATCH(request: Request) {
 
     const supabase = await getCmsClient();
 
-    const { data, error } = await supabase
-      .from("site_settings")
-      .upsert(
-        {
-          key,
-          value: normalized,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "key" }
-      )
-      .select("key, value, updated_at")
-      .single();
+    // Do NOT chain .select() / RETURNING. If the client is the user session
+    // (service role missing/invalid), staff may be allowed to UPDATE/INSERT
+    // but not always to SELECT the row back — PostgREST then reports RLS
+    // failure even though the write succeeded. Same pattern as /api/leads.
+    const { error } = await supabase.from("site_settings").upsert(
+      {
+        key,
+        value: normalized,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "key" }
+    );
 
     if (error) {
       console.error("[cms/settings] upsert error:", error.message);
@@ -79,7 +79,7 @@ export async function PATCH(request: Request) {
     }
 
     revalidateCms("settings");
-    return NextResponse.json({ ok: true, key: data.key, value: data.value });
+    return NextResponse.json({ ok: true, key, value: normalized });
   } catch (e) {
     console.error("[cms/settings]", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
