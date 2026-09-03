@@ -38,20 +38,19 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    const { data, error } = await supabase
-      .from("consultations")
-      .insert({
-        consultation_type: consultationType,
-        full_name: fullName,
-        email,
-        phone,
-        preferred_date: preferredDate,
-        preferred_time: preferredTime,
-        notes,
-        status: "PENDING",
-      })
-      .select("id")
-      .single();
+    // Anon may INSERT consultations, but has no SELECT policy. `.insert().select()`
+    // (RETURNING) is then rejected as an RLS violation even though the write
+    // is allowed. Insert without RETURNING.
+    const { error } = await supabase.from("consultations").insert({
+      consultation_type: consultationType,
+      full_name: fullName,
+      email,
+      phone,
+      preferred_date: preferredDate,
+      preferred_time: preferredTime,
+      notes,
+      status: "PENDING",
+    });
 
     if (error) {
       console.error("Consultation insert error:", error.message);
@@ -62,7 +61,6 @@ export async function POST(request: Request) {
     }
 
     void sendConsultationNotification({
-      id: data.id,
       fullName,
       email,
       phone,
@@ -72,7 +70,7 @@ export async function POST(request: Request) {
       notes,
     });
 
-    return NextResponse.json({ ok: true, id: data.id });
+    return NextResponse.json({ ok: true });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Server error." }, { status: 500 });
