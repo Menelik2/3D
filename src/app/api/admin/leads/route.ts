@@ -37,6 +37,9 @@ const ALLOWED_STATUSES = new Set([
   "ARCHIVED",
 ]);
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -123,6 +126,65 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, lead: data });
   } catch (e) {
     console.error("[admin/leads]", e);
+    return NextResponse.json({ error: "Server error." }, { status: 500 });
+  }
+}
+
+/**
+ * Bulk hard-delete leads from the database.
+ * Body: { ids: string[] }
+ * lead_notes are removed via ON DELETE CASCADE.
+ */
+export async function DELETE(request: Request) {
+  try {
+    const body = await request.json().catch(() => ({}));
+    const raw = Array.isArray(body.ids) ? body.ids : [];
+    const ids = [
+      ...new Set(
+        raw
+          .map((id: unknown) => String(id).trim())
+          .filter((id: string) => UUID_RE.test(id))
+      ),
+    ];
+
+    if (ids.length === 0) {
+      return NextResponse.json(
+        { error: "Provide at least one valid lead id in ids[]." },
+        { status: 400 }
+      );
+    }
+
+    if (ids.length > 100) {
+      return NextResponse.json(
+        { error: "Maximum 100 leads per bulk delete." },
+        { status: 400 }
+      );
+    }
+
+    const supabase = await getCmsClient();
+
+    // Hard delete — rows are removed from the database permanently.
+    // lead_notes cascade via FK ON DELETE CASCADE.
+    const { error, count } = await supabase
+      .from("leads")
+      .delete({ count: "exact" })
+      .in("id", ids);
+
+    if (error) {
+      console.error("[admin/leads] bulk delete error:", error.message);
+      return NextResponse.json(
+        { error: error.message || "Bulk delete failed." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      deleted: count ?? ids.length,
+      ids,
+    });
+  } catch (e) {
+    console.error("[admin/leads] bulk delete", e);
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

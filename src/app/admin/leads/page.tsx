@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCmsClient } from "@/lib/cms";
+import { LeadsTable } from "@/components/admin/LeadsTable";
 
 const STATUSES = [
   "NEW",
@@ -49,7 +50,7 @@ export default async function AdminLeadsPage() {
         <div>
           <h1 className="text-2xl font-light tracking-tight">Leads</h1>
           <p className="mt-1 text-sm text-muted">
-            Project inquiries. Click a row to view, edit, update status, or add notes.
+            Project inquiries. Select rows to bulk-delete permanently from the database.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -80,66 +81,7 @@ export default async function AdminLeadsPage() {
         </div>
       )}
 
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full min-w-[720px] text-left text-sm">
-          <thead className="border-b border-border bg-card/50 text-[10px] uppercase tracking-widest text-muted">
-            <tr>
-              <th className="px-4 py-3 font-medium">Reference</th>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Types</th>
-              <th className="px-4 py-3 font-medium">Budget</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-16 text-center text-sm text-muted">
-                  No leads yet. Submissions from{" "}
-                  <Link href="/start-a-project" className="text-accent hover:underline">
-                    Start a Project
-                  </Link>{" "}
-                  or{" "}
-                  <Link href="/admin/leads/new" className="text-accent hover:underline">
-                    add one manually
-                  </Link>
-                  .
-                </td>
-              </tr>
-            ) : (
-              leads.map((lead) => (
-                <tr key={lead.id} className="border-b border-border/60 hover:bg-white/[0.02]">
-                  <td className="px-4 py-3 font-mono text-xs">
-                    <Link href={`/admin/leads/${lead.id}`} className="hover:text-accent">
-                      {lead.reference_number}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link href={`/admin/leads/${lead.id}`} className="text-foreground/90 hover:text-accent">
-                      {lead.full_name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-muted text-xs">{lead.email}</td>
-                  <td className="px-4 py-3 text-xs text-muted">
-                    {lead.project_types?.slice(0, 2).join(", ") || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted">{lead.budget_range || "—"}</td>
-                  <td className="px-4 py-3">
-                    <span className="border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted">
-                      {lead.status.replace(/_/g, " ")}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted">
-                    {new Date(lead.created_at).toLocaleString()}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <LeadsTable leads={leads} />
     </div>
   );
 }
