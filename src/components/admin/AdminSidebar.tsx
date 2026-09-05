@@ -17,7 +17,13 @@ const nav = [
   { href: "/admin/settings", label: "Settings" },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({
+  open = false,
+  onClose,
+}: {
+  open?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -28,21 +34,48 @@ export function AdminSidebar() {
     } catch {
       /* ignore */
     }
+    onClose?.();
     router.replace("/admin/login");
     router.refresh();
   }
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-56 flex-col border-r border-border bg-card">
-      <div className="flex h-16 items-center border-b border-border px-5">
+    <aside
+      className={`fixed left-0 top-0 z-50 flex h-full max-h-dvh w-[min(100%,16rem)] flex-col border-r border-border bg-card transition-transform duration-200 ease-out md:translate-x-0 md:z-40 ${
+        open ? "translate-x-0" : "-translate-x-full"
+      }`}
+      aria-label="Admin navigation"
+    >
+      <div className="flex h-14 sm:h-16 items-center justify-between border-b border-border px-4 sm:px-5 shrink-0">
         <Link
           href="/admin"
+          onClick={() => onClose?.()}
           className="text-xs font-semibold uppercase tracking-cinematic text-foreground"
         >
           META Admin
         </Link>
+        {/* Close — mobile only */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="md:hidden flex h-8 w-8 items-center justify-center text-muted hover:text-foreground"
+          aria-label="Close menu"
+        >
+          <svg
+            className="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            aria-hidden
+          >
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
       </div>
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
+
+      <nav className="flex-1 space-y-0.5 overflow-y-auto overscroll-contain p-3">
         {nav.map((item) => {
           const active = item.exact
             ? pathname === item.href
@@ -51,6 +84,7 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => onClose?.()}
               className={`block rounded-sm px-3 py-2.5 text-xs uppercase tracking-widest transition-colors ${
                 active
                   ? "bg-accent/15 text-accent"
@@ -62,9 +96,11 @@ export function AdminSidebar() {
           );
         })}
       </nav>
-      <div className="border-t border-border p-4 space-y-2">
+
+      <div className="border-t border-border p-4 space-y-2 shrink-0 safe-area-pb">
         <Link
           href="/"
+          onClick={() => onClose?.()}
           className="block text-[10px] uppercase tracking-widest text-muted hover:text-foreground"
         >
           ← View site
