@@ -15,6 +15,10 @@ export type LeadRow = {
   created_at: string;
 };
 
+function statusLabel(s: string) {
+  return s.replace(/_/g, " ");
+}
+
 export function LeadsTable({ leads }: { leads: LeadRow[] }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -36,11 +40,8 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
   }
 
   function toggleAll() {
-    if (allSelected) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(allIds));
-    }
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(allIds));
   }
 
   async function bulkDelete() {
@@ -79,57 +80,122 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
 
   if (leads.length === 0) {
     return (
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full min-w-[720px] text-left text-sm">
-          <tbody>
-            <tr>
-              <td className="px-4 py-16 text-center text-sm text-muted">
-                No leads yet. Submissions from{" "}
-                <Link href="/start-a-project" className="text-accent hover:underline">
-                  Start a Project
-                </Link>{" "}
-                or{" "}
-                <Link href="/admin/leads/new" className="text-accent hover:underline">
-                  add one manually
-                </Link>
-                .
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="border border-border px-4 py-16 text-center text-sm text-muted">
+        No leads yet. Submissions from{" "}
+        <Link href="/start-a-project" className="text-accent hover:underline">
+          Start a Project
+        </Link>{" "}
+        or{" "}
+        <Link href="/admin/leads/new" className="text-accent hover:underline">
+          add one manually
+        </Link>
+        .
       </div>
     );
   }
 
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-3">
+  const toolbar = (
+    <div className="flex flex-wrap items-center gap-3">
+      <button
+        type="button"
+        disabled={!someSelected || busy}
+        onClick={bulkDelete}
+        className="border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-[10px] uppercase tracking-widest text-red-300 hover:bg-red-500/20 disabled:opacity-40"
+      >
+        {busy
+          ? "Deleting…"
+          : `Delete selected${someSelected ? ` (${selected.size})` : ""}`}
+      </button>
+      {someSelected && !busy && (
         <button
           type="button"
-          disabled={!someSelected || busy}
-          onClick={bulkDelete}
-          className="border border-red-500/40 bg-red-500/10 px-4 py-2 text-[10px] uppercase tracking-widest text-red-300 hover:bg-red-500/20 disabled:opacity-40"
+          onClick={() => setSelected(new Set())}
+          className="text-[10px] uppercase tracking-widest text-muted hover:text-foreground"
         >
-          {busy
-            ? "Deleting…"
-            : `Delete selected${someSelected ? ` (${selected.size})` : ""}`}
+          Clear selection
         </button>
-        {someSelected && !busy && (
-          <button
-            type="button"
-            onClick={() => setSelected(new Set())}
-            className="text-[10px] uppercase tracking-widest text-muted hover:text-foreground"
-          >
-            Clear selection
-          </button>
-        )}
-        {message && (
-          <p className="text-xs text-muted">{message}</p>
-        )}
+      )}
+      {message && <p className="text-xs text-muted">{message}</p>}
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      {toolbar}
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-2">
+        <label className="flex items-center gap-2 px-1 text-[10px] uppercase tracking-widest text-muted">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={toggleAll}
+            className="h-4 w-4 accent-[var(--accent,#e11d48)]"
+          />
+          Select all
+        </label>
+        {leads.map((lead) => {
+          const isOn = selected.has(lead.id);
+          return (
+            <div
+              key={lead.id}
+              className={`border border-border bg-card/20 p-4 ${
+                isOn ? "border-accent/40 bg-accent/5" : ""
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={isOn}
+                  onChange={() => toggleOne(lead.id)}
+                  aria-label={`Select ${lead.full_name}`}
+                  className="mt-1 h-4 w-4 shrink-0 accent-[var(--accent,#e11d48)]"
+                />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <Link
+                      href={`/admin/leads/${lead.id}`}
+                      className="text-sm font-medium text-foreground/95 hover:text-accent break-words"
+                    >
+                      {lead.full_name}
+                    </Link>
+                    <span
+                      className={`shrink-0 border px-2 py-0.5 text-[10px] uppercase tracking-wider ${
+                        lead.status === "NEW"
+                          ? "border-accent/40 text-accent"
+                          : "border-border text-muted"
+                      }`}
+                    >
+                      {statusLabel(lead.status)}
+                    </span>
+                  </div>
+                  <p className="font-mono text-[11px] text-muted">
+                    {lead.reference_number}
+                  </p>
+                  <p className="text-xs text-muted break-all">{lead.email}</p>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted">
+                    {lead.project_types?.length ? (
+                      <span>{lead.project_types.slice(0, 2).join(", ")}</span>
+                    ) : null}
+                    {lead.budget_range ? <span>{lead.budget_range}</span> : null}
+                    <span>{new Date(lead.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <Link
+                    href={`/admin/leads/${lead.id}`}
+                    className="inline-block pt-1 text-[10px] uppercase tracking-widest text-accent"
+                  >
+                    Open →
+                  </Link>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full min-w-[760px] text-left text-sm">
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto border border-border">
+        <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-border bg-card/50 text-[10px] uppercase tracking-widest text-muted">
             <tr>
               <th className="px-3 py-3 w-10">
@@ -194,7 +260,7 @@ export function LeadsTable({ leads }: { leads: LeadRow[] }) {
                   </td>
                   <td className="px-4 py-3">
                     <span className="border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted">
-                      {lead.status.replace(/_/g, " ")}
+                      {statusLabel(lead.status)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-xs text-muted">

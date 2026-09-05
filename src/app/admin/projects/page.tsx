@@ -45,60 +45,94 @@ export default async function AdminProjectsPage() {
         </div>
       )}
 
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full min-w-[640px] text-left text-sm">
-          <thead className="border-b border-border bg-card/50 text-[10px] uppercase tracking-widest text-muted">
-            <tr>
-              <th className="px-4 py-3 font-medium">Title</th>
-              <th className="px-4 py-3 font-medium">Category</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Production</th>
-              <th className="px-4 py-3 font-medium">Budget</th>
-              <th className="px-4 py-3 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-16 text-center text-sm text-muted">
-                  No projects yet.{" "}
-                  <Link href="/admin/projects/new" className="text-accent hover:underline">
-                    Create one
-                  </Link>
-                </td>
-              </tr>
-            ) : (
-              rows.map((row) => (
-                <tr key={row.id} className="border-b border-border/60 hover:bg-white/[0.02]">
-                  <td className="px-4 py-3">
-                    <Link href={`/admin/projects/${row.id}`} className="hover:text-accent">
-                      {row.title}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted">{row.category || "—"}</td>
-                  <td className="px-4 py-3 text-xs uppercase tracking-wider text-muted">
+      {rows.length === 0 ? (
+        <div className="border border-border px-4 py-16 text-center text-sm text-muted">
+          No projects yet.{" "}
+          <Link href="/admin/projects/new" className="text-accent hover:underline">
+            Create one
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="md:hidden space-y-2">
+            {rows.map((row) => (
+              <Link
+                key={row.id}
+                href={`/admin/projects/${row.id}`}
+                className="block border border-border bg-card/20 p-4 hover:border-accent/30"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-medium break-words">{row.title}</p>
+                  <span className="shrink-0 text-[10px] uppercase tracking-wider text-muted">
                     {row.status.replace(/_/g, " ")}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted">
-                    {row.production_date || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-muted">
-                    {row.budget != null ? Number(row.budget).toLocaleString() : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link
-                      href={`/admin/projects/${row.id}`}
-                      className="text-[10px] uppercase tracking-widest text-muted hover:text-accent"
-                    >
-                      Edit
-                    </Link>
-                  </td>
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-x-3 text-[11px] text-muted">
+                  {row.category ? <span>{row.category}</span> : null}
+                  {row.production_date ? <span>{row.production_date}</span> : null}
+                  {row.budget != null ? (
+                    <span>{Number(row.budget).toLocaleString()}</span>
+                  ) : null}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="hidden md:block overflow-x-auto border border-border">
+            <table className="w-full min-w-[640px] text-left text-sm">
+              <thead className="border-b border-border bg-card/50 text-[10px] uppercase tracking-widest text-muted">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Title</th>
+                  <th className="px-4 py-3 font-medium">Category</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Production</th>
+                  <th className="px-4 py-3 font-medium">Budget</th>
+                  <th className="px-4 py-3 font-medium"></th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="border-b border-border/60 hover:bg-white/[0.02]"
+                  >
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/admin/projects/${row.id}`}
+                        className="hover:text-accent"
+                      >
+                        {row.title}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted">
+                      {row.category || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-xs uppercase tracking-wider text-muted">
+                      {row.status.replace(/_/g, " ")}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted">
+                      {row.production_date || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted">
+                      {row.budget != null
+                        ? Number(row.budget).toLocaleString()
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link
+                        href={`/admin/projects/${row.id}`}
+                        className="text-[10px] uppercase tracking-widest text-muted hover:text-accent"
+                      >
+                        Edit
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

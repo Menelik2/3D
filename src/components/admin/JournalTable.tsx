@@ -92,7 +92,7 @@ export function JournalTable({ posts }: { posts: JournalRow[] }) {
           type="button"
           disabled={!someSelected || busy}
           onClick={bulkDelete}
-          className="border border-red-500/40 bg-red-500/10 px-4 py-2 text-[10px] uppercase tracking-widest text-red-300 hover:bg-red-500/20 disabled:opacity-40"
+          className="border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-[10px] uppercase tracking-widest text-red-300 hover:bg-red-500/20 disabled:opacity-40"
         >
           {busy
             ? "Deleting…"
@@ -110,7 +110,73 @@ export function JournalTable({ posts }: { posts: JournalRow[] }) {
         {message && <p className="text-xs text-muted">{message}</p>}
       </div>
 
-      <div className="overflow-x-auto border border-border">
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-2">
+        <label className="flex items-center gap-2 px-1 text-[10px] uppercase tracking-widest text-muted">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={toggleAll}
+            className="h-4 w-4 accent-[var(--accent,#e11d48)]"
+          />
+          Select all
+        </label>
+        {posts.map((p) => {
+          const isOn = selected.has(p.id);
+          const dateStr = p.published_at || p.created_at;
+          return (
+            <div
+              key={p.id}
+              className={`border border-border bg-card/20 p-4 ${
+                isOn ? "border-accent/40 bg-accent/5" : ""
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={isOn}
+                  onChange={() => toggleOne(p.id)}
+                  aria-label={`Select ${p.title}`}
+                  className="mt-1 h-4 w-4 shrink-0 accent-[var(--accent,#e11d48)]"
+                />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Link
+                    href={`/admin/journal/${p.id}`}
+                    className="block text-sm font-medium text-foreground/95 hover:text-accent break-words"
+                  >
+                    {p.title}
+                  </Link>
+                  <p className="font-mono text-[11px] text-muted truncate">
+                    /{p.slug}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted">
+                    {p.category ? <span>{p.category}</span> : null}
+                    {dateStr ? (
+                      <span>{new Date(dateStr).toLocaleDateString()}</span>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <PublishToggle
+                      endpoint={`/api/cms/journal/${p.id}`}
+                      initial={p.is_published}
+                      labels={["Published", "Draft"]}
+                    />
+                    <Link
+                      href={`/admin/journal/${p.id}`}
+                      className="text-[10px] uppercase tracking-widest text-accent"
+                    >
+                      Edit →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto border border-border">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-border bg-card/50 text-[10px] uppercase tracking-widest text-muted">
             <tr>
