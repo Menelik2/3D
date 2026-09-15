@@ -9,6 +9,7 @@ import {
   type TouchEvent as ReactTouchEvent,
 } from "react";
 import { prefetchImages } from "@/components/ui/LazyImage";
+import { ClientGalleryUpload } from "@/components/gallery/ClientGalleryUpload";
 import "@/app/gallery-3d.css";
 
 export type GalleryPhoto = {
@@ -285,12 +286,17 @@ function GalleryTile({
 export function ClientGalleryViewer({
   title,
   clientName,
-  photos,
+  photos: initialPhotos,
+  token,
+  allowUpload = false,
 }: {
   title: string;
   clientName?: string | null;
   photos: GalleryPhoto[];
+  token?: string;
+  allowUpload?: boolean;
 }) {
+  const [photos, setPhotos] = useState(initialPhotos);
   const [index, setIndex] = useState<number | null>(null);
   const [swapDir, setSwapDir] = useState<"next" | "prev" | "open">("open");
   const [swapKey, setSwapKey] = useState(0);
@@ -299,6 +305,10 @@ export function ClientGalleryViewer({
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const filmRef = useRef<HTMLDivElement>(null);
   const zoomedRef = useRef(false);
+
+  useEffect(() => {
+    setPhotos(initialPhotos);
+  }, [initialPhotos]);
 
   const open = index !== null;
   const current = index !== null ? photos[index] : null;
@@ -461,9 +471,29 @@ export function ClientGalleryViewer({
       </header>
 
       <main className="g3d-stage">
+        {allowUpload && token ? (
+          <div className="mb-5">
+            <ClientGalleryUpload
+              token={token}
+              onAdded={(items) => {
+                setPhotos((prev) => [
+                  ...prev,
+                  ...items.map((i) => ({
+                    id: i.id,
+                    image_url: i.image_url,
+                    caption: i.caption,
+                  })),
+                ]);
+              }}
+            />
+          </div>
+        ) : null}
+
         {photos.length === 0 ? (
-          <p className="py-24 text-center text-sm text-white/40">
-            No photos in this gallery yet.
+          <p className="py-16 text-center text-sm text-white/40">
+            {allowUpload
+              ? "No photos yet — tap Add photos to upload."
+              : "No photos in this gallery yet."}
           </p>
         ) : (
           <div className="g3d-grid">
@@ -491,7 +521,6 @@ export function ClientGalleryViewer({
             else setChromeHidden(true);
           }}
         >
-          {/* Back — always on top, closes lightbox → grid */}
           <button
             type="button"
             className="g3d-back-btn"

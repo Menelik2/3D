@@ -115,6 +115,99 @@
   }
 }
 
+/* Customer self-upload */
+.g3d-upload {
+  margin-bottom: 0.25rem;
+}
+
+.g3d-upload-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(225, 29, 72, 0.35);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.g3d-upload-toggle:hover,
+.g3d-upload-toggle:active {
+  background: rgba(225, 29, 72, 0.55);
+  border-color: rgba(225, 29, 72, 0.7);
+}
+
+.g3d-upload-toggle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.g3d-upload-panel {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
+}
+
+.g3d-upload-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.g3d-upload-input {
+  display: block;
+  width: 100%;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.g3d-upload-input::file-selector-button {
+  margin-right: 0.75rem;
+  border: 0;
+  padding: 0.5rem 0.9rem;
+  background: #e11d48;
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.g3d-upload-progress {
+  margin: 0.65rem 0 0;
+  font-size: 0.75rem;
+  color: #fb7185;
+  animation: g3d-pulse 1.2s ease infinite;
+}
+
+.g3d-upload-ok {
+  margin: 0.65rem 0 0;
+  font-size: 0.75rem;
+  color: #34d399;
+}
+
+.g3d-upload-err {
+  margin: 0.65rem 0 0;
+  font-size: 0.75rem;
+  color: #f87171;
+}
+
+@keyframes g3d-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
 .g3d-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -284,7 +377,6 @@
   }
 }
 
-/* Clear Back control — no logo conflict */
 .g3d-back-btn {
   position: absolute;
   top: max(0.85rem, env(safe-area-inset-top));
