@@ -68,8 +68,32 @@ export function extractVimeoId(url: string): string | null {
   return m?.[1] ?? null;
 }
 
+/** Official YouTube thumbnail URLs (highest quality first). */
+export function youtubeThumbnailUrls(videoId: string): string[] {
+  const id = videoId.trim();
+  if (!id) return [];
+  return [
+    `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`,
+    `https://i.ytimg.com/vi/${id}/sddefault.jpg`,
+    `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
+    `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
+    `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+  ];
+}
+
+export function youtubePoster(videoId: string): string {
+  return youtubeThumbnailUrls(videoId)[0]!;
+}
+
 export type EmbedInfo =
-  | { kind: "youtube"; embedUrl: string; watchUrl: string; posterUrl: string; id: string }
+  | {
+      kind: "youtube";
+      embedUrl: string;
+      watchUrl: string;
+      posterUrl: string;
+      posterCandidates: string[];
+      id: string;
+    }
   | { kind: "vimeo"; embedUrl: string; watchUrl: string; posterUrl: null; id: string }
   | { kind: "file"; embedUrl: string; watchUrl: string; posterUrl: null }
   | { kind: "unknown"; embedUrl: string; watchUrl: string; posterUrl: null };
@@ -89,12 +113,14 @@ export function getVideoEmbed(raw: string | null | undefined): EmbedInfo | null 
       controls: "1",
       fs: "1",
     });
+    const candidates = youtubeThumbnailUrls(yt);
     return {
       kind: "youtube",
       id: yt,
       embedUrl: `https://www.youtube.com/embed/${yt}?${params.toString()}`,
       watchUrl: `https://www.youtube.com/watch?v=${yt}`,
-      posterUrl: `https://i.ytimg.com/vi/${yt}/hqdefault.jpg`,
+      posterUrl: candidates[0]!,
+      posterCandidates: candidates,
     };
   }
 

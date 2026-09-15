@@ -59,41 +59,25 @@ export function WorkFilterGrid({ projects }: { projects: PortfolioListItem[] }) 
       {filtered.length > 0 && featured ? (
         <div className="work-stage">
           <div className="mb-5">
-            <PerspectiveCard
-              href={`/work/${featured.slug}`}
-              title={featured.title}
-              category={featured.category}
-              year={featured.year}
-              coverUrl={coverFor(featured)}
-              hasVideo={Boolean(getVideoEmbed(featured.video_url))}
-              featured
+            <FeaturedCard
+              project={featured}
               index={0}
-              onPlay={
-                featured.video_url ? () => setPlaying(featured) : undefined
-              }
+              onPlay={() => setPlaying(featured)}
             />
           </div>
 
           {rest.length > 0 && (
             <div className="grid gap-5 sm:grid-cols-2">
-              {rest.map((project, i) => {
-                const embed = getVideoEmbed(project.video_url);
-                return (
-                  <PerspectiveCard
-                    key={project.id}
-                    href={`/work/${project.slug}`}
-                    title={project.title}
-                    category={project.category}
-                    year={project.year}
-                    coverUrl={coverFor(project)}
-                    hasVideo={Boolean(embed)}
-                    index={i + 1}
-                    onPlay={
-                      project.video_url ? () => setPlaying(project) : undefined
-                    }
-                  />
-                );
-              })}
+              {rest.map((project, i) => (
+                <FeaturedCard
+                  key={project.id}
+                  project={project}
+                  index={i + 1}
+                  onPlay={
+                    project.video_url ? () => setPlaying(project) : undefined
+                  }
+                />
+              ))}
             </div>
           )}
         </div>
@@ -117,10 +101,40 @@ export function WorkFilterGrid({ projects }: { projects: PortfolioListItem[] }) 
   );
 }
 
-function coverFor(project: PortfolioListItem) {
+function FeaturedCard({
+  project,
+  index,
+  onPlay,
+  featured,
+}: {
+  project: PortfolioListItem;
+  index: number;
+  onPlay?: () => void;
+  featured?: boolean;
+}) {
   const embed = getVideoEmbed(project.video_url);
+  const ytId = embed?.kind === "youtube" ? embed.id : null;
+  const candidates =
+    embed?.kind === "youtube" ? embed.posterCandidates : null;
+  // Prefer YouTube official thumb; only use custom cover if set and non-empty
+  const custom =
+    project.cover_image_url && project.cover_image_url.trim()
+      ? project.cover_image_url.trim()
+      : null;
+
   return (
-    project.cover_image_url ||
-    (embed && embed.kind === "youtube" ? embed.posterUrl : null)
+    <PerspectiveCard
+      href={`/work/${project.slug}`}
+      title={project.title}
+      category={project.category}
+      year={project.year}
+      coverUrl={ytId ? null : custom}
+      youtubeId={ytId}
+      posterCandidates={candidates}
+      hasVideo={Boolean(embed)}
+      featured={featured ?? index === 0}
+      index={index}
+      onPlay={project.video_url ? onPlay : undefined}
+    />
   );
 }

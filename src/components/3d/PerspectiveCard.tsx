@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef } from "react";
+import { YoutubeThumb } from "@/components/ui/YoutubeThumb";
 
 type Props = {
   href: string;
@@ -9,6 +10,10 @@ type Props = {
   category: string | null;
   year: number | null;
   coverUrl: string | null;
+  /** YouTube video id — drives official thumbnail */
+  youtubeId?: string | null;
+  /** Thumbnail URL candidates (YouTube quality ladder) */
+  posterCandidates?: string[] | null;
   hasVideo?: boolean;
   featured?: boolean;
   aspect?: "cinema" | "poster";
@@ -22,6 +27,8 @@ export function PerspectiveCard({
   category,
   year,
   coverUrl,
+  youtubeId = null,
+  posterCandidates = null,
   hasVideo = false,
   featured = false,
   aspect = "cinema",
@@ -69,6 +76,12 @@ export function PerspectiveCard({
       ? "aspect-[4/5]"
       : "aspect-video";
 
+  const hasThumb = Boolean(
+    youtubeId ||
+      (posterCandidates && posterCandidates.length > 0) ||
+      (coverUrl && coverUrl.trim())
+  );
+
   return (
     <div
       className="work-card-enter"
@@ -81,14 +94,14 @@ export function PerspectiveCard({
         onMouseLeave={reset}
         className={`work-card group relative block overflow-hidden bg-card ${aspectClass}`}
       >
-        {coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={coverUrl}
+        {hasThumb ? (
+          <YoutubeThumb
+            videoId={youtubeId}
+            coverUrl={coverUrl}
+            candidates={posterCandidates}
             alt=""
-            className="work-card-media absolute inset-0 h-full w-full object-cover"
             loading={featured || index < 2 ? "eager" : "lazy"}
-            decoding="async"
+            className="work-card-media absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 bg-zinc-900" />
@@ -123,9 +136,7 @@ export function PerspectiveCard({
                 </svg>
               </button>
             ) : (
-              <span
-                className="work-play flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-black/50 text-white backdrop-blur-sm md:h-16 md:w-16"
-              >
+              <span className="work-play flex h-14 w-14 items-center justify-center rounded-full border border-white/25 bg-black/50 text-white backdrop-blur-sm md:h-16 md:w-16">
                 <svg
                   className="ml-0.5 h-6 w-6 md:h-7 md:w-7"
                   viewBox="0 0 24 24"
