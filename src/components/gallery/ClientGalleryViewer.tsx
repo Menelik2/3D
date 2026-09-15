@@ -7,7 +7,6 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import Image from "next/image";
 import { LazyImage, prefetchImages } from "@/components/ui/LazyImage";
 import "@/app/gallery-3d.css";
 
@@ -16,21 +15,6 @@ export type GalleryPhoto = {
   image_url: string;
   caption: string | null;
 };
-
-function canOptimize(src: string): boolean {
-  if (!src) return false;
-  if (src.startsWith("/") && !src.startsWith("//")) return true;
-  try {
-    const h = new URL(src).hostname;
-    return (
-      h.endsWith(".supabase.co") ||
-      h === "images.unsplash.com" ||
-      h.endsWith(".cloudinary.com")
-    );
-  } catch {
-    return false;
-  }
-}
 
 function GalleryTile({
   photo,
@@ -42,7 +26,7 @@ function GalleryTile({
   onOpen: () => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
-  const priority = index < 6;
+  const priority = index < 9;
 
   function onPointerMove(e: ReactPointerEvent<HTMLButtonElement>) {
     const el = ref.current;
@@ -161,7 +145,6 @@ export function ClientGalleryViewer({
       photos[index]?.image_url,
       photos[(index + 1) % n]?.image_url,
       photos[(index - 1 + n) % n]?.image_url,
-      photos[(index + 2) % n]?.image_url,
     ]);
   }, [index, photos]);
 
@@ -249,7 +232,7 @@ export function ClientGalleryViewer({
             <p className="text-[10px] uppercase tracking-[0.28em] text-white/40">
               META Pictures
             </p>
-            <h1 className="mt-1 truncate text-lg font-light tracking-tight text-white sm:text-xl hero-title-3d">
+            <h1 className="mt-1 truncate text-lg font-light tracking-tight text-white sm:text-xl">
               {title}
             </h1>
             {clientName ? (
@@ -324,16 +307,14 @@ export function ClientGalleryViewer({
 
             <div key={swapKey} className={`g3d-lb-frame ${swapClass}`}>
               <div className="relative h-[100dvh] w-[100vw]">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={current.image_url}
                   alt={current.caption || ""}
-                  fill
-                  sizes="100vw"
-                  quality={90}
-                  priority
-                  unoptimized={!canOptimize(current.image_url)}
-                  className="object-contain"
+                  className="absolute inset-0 h-full w-full object-contain"
                   draggable={false}
+                  decoding="async"
+                  fetchPriority="high"
                 />
               </div>
             </div>
@@ -386,7 +367,7 @@ export function ClientGalleryViewer({
                     <LazyImage
                       src={p.image_url}
                       alt=""
-                      priority={Math.abs(i - index) <= 3}
+                      priority={Math.abs(i - index) <= 4}
                       wrapperClassName="absolute inset-0"
                       sizes="56px"
                       quality={60}

@@ -1,39 +1,32 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image, { type ImageProps } from "next/image";
+import Image from "next/image";
 
 type Props = {
   src: string;
   alt?: string;
-  /** Above-the-fold: skip lazy, high fetch priority */
   priority?: boolean;
   className?: string;
   wrapperClassName?: string;
-  /** Responsive sizes hint for next/image (default gallery tile) */
   sizes?: string;
-  /** Object-fit style via class; default cover for fill layout */
   objectFit?: "cover" | "contain";
   quality?: number;
-  onLoad?: ImageProps["onLoad"];
-  onError?: ImageProps["onError"];
 };
 
-/** Hosts we optimize through the Next.js image pipeline. */
+function isRemote(src: string): boolean {
+  return /^https?:\/\//i.test(src);
+}
+
 function canOptimize(src: string): boolean {
   if (!src) return false;
-  // Local / public assets
   if (src.startsWith("/") && !src.startsWith("//")) return true;
   try {
-    const u = new URL(src);
-    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
-    const h = u.hostname;
+    const h = new URL(src).hostname;
     return (
       h.endsWith(".supabase.co") ||
       h === "images.unsplash.com" ||
-      h.endsWith(".cloudinary.com") ||
-      h === "localhost" ||
-      h === "127.0.0.1"
+      h.endsWith(".cloudinary.com")
     );
   } catch {
     return false;
@@ -41,9 +34,8 @@ function canOptimize(src: string): boolean {
 }
 
 /**
- * Lazy-loading image via next/image.
- * Uses fill layout; parent must be position:relative with size.
- * Non-allowlisted remote URLs fall back to unoptimized (still lazy).
+ * Gallery-safe image: next/image when possible, native <img> fallback.
+ * Never stays invisible if the file loads.
  */
 export function LazyImage({
   src,
@@ -54,30 +46,55 @@ export function LazyImage({
   sizes = "(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw",
   objectFit = "cover",
   quality = 80,
-  onLoad,
-  onError,
 }: Props) {
+  const [useNative, setUseNative] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const optimize = useMemo(() => canOptimize(src), [src]);
+  const optimize = useMemo(() => canOptimize(src) && !useNative, [src, useNative]);
+  const fitClass = objectFit === "contain" ? "object-contain" : "object-cover";
 
   if (!src) {
     return (
       <span
-        className={`relative block overflow-hidden bg-white/[0.04] ${wrapperClassName}`}
+        className={`relative block overflow-hidden bg-zinc-900 ${wrapperClassName}`}
         aria-hidden
       />
     );
   }
 
+  // Native path — most reliable for arbitrary storage URLs
+  if (useNative || !optimize) {
+    return (
+      <span
+        className={`lazy-img-wrap relative block overflow-hidden bg-zinc-900 ${wrapperClassName}`}
+      >
+        {!loaded && (
+          <span
+            className="absolute inset-0 animate-pulse bg-white/[0.05]"
+            aria-hidden
+          />
+        )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={alt}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          fetchPriority={priority ? "high" : "auto"}
+          className={`absolute inset-0 h-full w-full ${fitClass} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-90"} ${className}`}
+          onLoad={() => setLoaded(true)}
+          onError={() => setLoaded(true)}
+        />
+      </span>
+    );
+  }
+
   return (
     <span
-      className={`lazy-img-wrap relative block overflow-hidden ${wrapperClassName}`}
-      data-loaded={loaded ? "true" : "false"}
+      className={`lazy-img-wrap relative block overflow-hidden bg-zinc-900 ${wrapperClassName}`}
     >
-      {!loaded && !failed && (
+      {!loaded && (
         <span
-          className="absolute inset-0 animate-pulse bg-white/[0.06]"
+          className="absolute inset-0 animate-pulse bg-white/[0.05]"
           aria-hidden
         />
       )}
@@ -88,24 +105,20 @@ export function LazyImage({
         sizes={sizes}
         quality={quality}
         priority={priority}
-        loading={priority ? "eager" : "lazy"}
-        unoptimized={!optimize}
-        className={`transition-opacity duration-500 ease-out ${loaded ? "opacity-100" : "opacity-0"} ${objectFit === "contain" ? "object-contain" : "object-cover"} ${className}`}
-        onLoad={(e) => {
-          setLoaded(true);
-          onLoad?.(e);
-        }}
-        onError={(e) => {
-          setFailed(true);
-          setLoaded(true);
-          onError?.(e);
+        // Remote gallery hosts: skip optimizer if anything fails — still use Image API
+        unoptimized={isRemote(src)}
+        className={`${fitClass} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-90"} ${className}`}
+        onLoad={() => setLoaded(true)}
+        onError={() => {
+          // Fall back to plain <img> on next render
+          setUseNative(true);
+          setLoaded(false);
         }}
       />
     </span>
   );
 }
 
-/** Prefetch full-resolution images for smoother lightbox navigation. */
 export function prefetchImages(urls: (string | null | undefined)[]) {
   if (typeof window === "undefined") return;
   for (const url of urls) {
