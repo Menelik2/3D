@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
+  type TouchEvent as ReactTouchEvent,
 } from "react";
 import { prefetchImages } from "@/components/ui/LazyImage";
 import "@/app/gallery-3d.css";
@@ -15,6 +16,210 @@ export type GalleryPhoto = {
   image_url: string;
   caption: string | null;
 };
+
+const MIN_SCALE = 1;
+const MAX_SCALE = 4;
+const DOUBLE_TAP_MS = 280;
+const DOUBLE_TAP_ZOOM = 2.5;
+
+function dist(
+  a: { clientX: number; clientY: number },
+  b: { clientX: number; clientY: number }
+) {
+  const dx = a.clientX - b.clientX;
+  const dy = a.clientY - b.clientY;
+  return Math.hypot(dx, dy);
+}
+
+function mid(
+  a: { clientX: number; clientY: number },
+  b: { clientX: number; clientY: number }
+) {
+  return {
+    x: (a.clientX + b.clientX) / 2,
+    y: (a.clientY + b.clientY) / 2,
+  };
+}
+
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
+
+/** Pinch / double-tap / pan zoom for mobile fullscreen photos. */
+function ZoomablePhoto({
+  src,
+  alt,
+  onZoomChange,
+}: {
+  src: string;
+  alt: string;
+  onZoomChange?: (zoomed: boolean) => void;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const scaleRef = useRef(1);
+  const txRef = useRef(0);
+  const tyRef = useRef(0);
+  const [transform, setTransform] = useState({ s: 1, x: 0, y: 0 });
+
+  // Gesture bookkeeping
+  const modeRef = useRef<"none" | "pinch" | "pan">("none");
+  const startDistRef = useRef(0);
+  const startScaleRef = useRef(1);
+  const startTxRef = useRef(0);
+  const startTyRef = useRef(0);
+  const startMidRef = useRef({ x: 0, y: 0 });
+  const panStartRef = useRef({ x: 0, y: 0 });
+  const lastTapRef = useRef(0);
+  const lastTapPosRef = useRef({ x: 0, y: 0 });
+
+  const apply = useCallback(
+    (s: number, x: number, y: number) => {
+      scaleRef.current = s;
+      txRef.current = x;
+      tyRef.current = y;
+      setTransform({ s, x, y });
+      onZoomChange?.(s > 1.02);
+    },
+    [onZoomChange]
+  );
+
+  const reset = useCallback(() => {
+    apply(1, 0, 0);
+  }, [apply]);
+
+  // Reset when src changes
+  useEffect(() => {
+    reset();
+  }, [src, reset]);
+
+  function onTouchStart(e: ReactTouchEvent) {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      modeRef.current = "pinch";
+      const t0 = e.touches[0]!;
+      const t1 = e.touches[1]!;
+      startDistRef.current = dist(t0, t1) || 1;
+      startScaleRef.current = scaleRef.current;
+      startTxRef.current = txRef.current;
+      startTyRef.current = tyRef.current;
+      startMidRef.current = mid(t0, t1);
+      return;
+    }
+
+    if (e.touches.length === 1) {
+      const t = e.touches[0]!;
+      const now = Date.now();
+      const dt = now - lastTapRef.current;
+      const dx = t.clientX - lastTapPosRef.current.x;
+      const dy = t.clientY - lastTapPosRef.current.y;
+      const near = Math.hypot(dx, dy) < 36;
+
+      if (dt < DOUBLE_TAP_MS && near) {
+        e.preventDefault();
+        lastTapRef.current = 0;
+        if (scaleRef.current > 1.15) {
+          apply(1, 0, 0);
+        } else {
+          // Zoom toward tap point
+          const rect = wrapRef.current?.getBoundingClientRect();
+          if (rect) {
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const target = DOUBLE_TAP_ZOOM;
+            const nx = (cx - t.clientX) * (target - 1);
+            const ny = (cy - t.clientY) * (target - 1);
+            apply(target, nx, ny);
+          } else {
+            apply(DOUBLE_TAP_ZOOM, 0, 0);
+          }
+        }
+        modeRef.current = "none";
+        return;
+      }
+
+      lastTapRef.current = now;
+      lastTapPosRef.current = { x: t.clientX, y: t.clientY };
+
+      if (scaleRef.current > 1.02) {
+        modeRef.current = "pan";
+        panStartRef.current = { x: t.clientX, y: t.clientY };
+        startTxRef.current = txRef.current;
+        startTyRef.current = tyRef.current;
+      } else {
+        modeRef.current = "none";
+      }
+    }
+  }
+
+  function onTouchMove(e: ReactTouchEvent) {
+    if (modeRef.current === "pinch" && e.touches.length === 2) {
+      e.preventDefault();
+      const t0 = e.touches[0]!;
+      const t1 = e.touches[1]!;
+      const d = dist(t0, t1) || 1;
+      const next = clamp(
+        startScaleRef.current * (d / startDistRef.current),
+        MIN_SCALE,
+        MAX_SCALE
+      );
+      const m = mid(t0, t1);
+      // Keep zoom centered near pinch midpoint
+      const dx = m.x - startMidRef.current.x;
+      const dy = m.y - startMidRef.current.y;
+      apply(next, startTxRef.current + dx, startTyRef.current + dy);
+      return;
+    }
+
+    if (modeRef.current === "pan" && e.touches.length === 1) {
+      e.preventDefault();
+      const t = e.touches[0]!;
+      const dx = t.clientX - panStartRef.current.x;
+      const dy = t.clientY - panStartRef.current.y;
+      apply(scaleRef.current, startTxRef.current + dx, startTyRef.current + dy);
+    }
+  }
+
+  function onTouchEnd(e: ReactTouchEvent) {
+    if (e.touches.length === 0) {
+      modeRef.current = "none";
+      // Snap back if barely zoomed
+      if (scaleRef.current < 1.05) {
+        apply(1, 0, 0);
+      }
+    } else if (e.touches.length === 1 && modeRef.current === "pinch") {
+      // One finger left after pinch → switch to pan
+      modeRef.current = "pan";
+      const t = e.touches[0]!;
+      panStartRef.current = { x: t.clientX, y: t.clientY };
+      startTxRef.current = txRef.current;
+      startTyRef.current = tyRef.current;
+    }
+  }
+
+  return (
+    <div
+      ref={wrapRef}
+      className="g3d-zoom-wrap"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        draggable={false}
+        decoding="async"
+        fetchPriority="high"
+        className="g3d-zoom-img"
+        style={{
+          transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.s})`,
+        }}
+      />
+    </div>
+  );
+}
 
 function GalleryTile({
   photo,
@@ -97,8 +302,10 @@ export function ClientGalleryViewer({
   const [swapDir, setSwapDir] = useState<"next" | "prev" | "open">("open");
   const [swapKey, setSwapKey] = useState(0);
   const [chromeHidden, setChromeHidden] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const filmRef = useRef<HTMLDivElement>(null);
+  const zoomedRef = useRef(false);
 
   const open = index !== null;
   const current = index !== null ? photos[index] : null;
@@ -112,6 +319,8 @@ export function ClientGalleryViewer({
   const close = useCallback(() => {
     setIndex(null);
     setChromeHidden(false);
+    setZoomed(false);
+    zoomedRef.current = false;
     if (hideTimer.current) clearTimeout(hideTimer.current);
   }, []);
 
@@ -123,6 +332,8 @@ export function ClientGalleryViewer({
         return (i + dir + photos.length) % photos.length;
       });
       setSwapKey((k) => k + 1);
+      setZoomed(false);
+      zoomedRef.current = false;
       bumpChrome();
     },
     [photos.length, bumpChrome]
@@ -133,6 +344,8 @@ export function ClientGalleryViewer({
       setSwapDir("open");
       setIndex(i);
       setSwapKey((k) => k + 1);
+      setZoomed(false);
+      zoomedRef.current = false;
       bumpChrome();
     },
     [bumpChrome]
@@ -167,16 +380,26 @@ export function ClientGalleryViewer({
     };
   }, [open, close, go, bumpChrome]);
 
+  // Swipe between photos only when not zoomed
   useEffect(() => {
     if (!open) return;
     let startX = 0;
     let startY = 0;
+    let tracking = false;
+
     function onStart(e: TouchEvent) {
+      if (zoomedRef.current || e.touches.length !== 1) return;
       startX = e.touches[0]?.clientX ?? 0;
       startY = e.touches[0]?.clientY ?? 0;
+      tracking = true;
       bumpChrome();
     }
     function onEnd(e: TouchEvent) {
+      if (!tracking || zoomedRef.current) {
+        tracking = false;
+        return;
+      }
+      tracking = false;
       const endX = e.changedTouches[0]?.clientX ?? 0;
       const endY = e.changedTouches[0]?.clientY ?? 0;
       const dx = endX - startX;
@@ -266,11 +489,12 @@ export function ClientGalleryViewer({
 
       {open && current && index !== null && (
         <div
-          className={`g3d-lightbox${chromeHidden ? " is-chrome-hidden" : ""}`}
+          className={`g3d-lightbox${chromeHidden ? " is-chrome-hidden" : ""}${zoomed ? " is-zoomed" : ""}`}
           role="dialog"
           aria-modal="true"
           aria-label="Full screen photo"
           onClick={() => {
+            if (zoomed) return;
             if (chromeHidden) bumpChrome();
             else setChromeHidden(true);
           }}
@@ -325,17 +549,14 @@ export function ClientGalleryViewer({
             </button>
 
             <div key={swapKey} className={`g3d-lb-frame ${swapClass}`}>
-              <div className="relative h-[100dvh] w-[100vw]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={current.image_url}
-                  alt={current.caption || ""}
-                  className="absolute inset-0 h-full w-full object-contain"
-                  draggable={false}
-                  decoding="async"
-                  fetchPriority="high"
-                />
-              </div>
+              <ZoomablePhoto
+                src={current.image_url}
+                alt={current.caption || ""}
+                onZoomChange={(z) => {
+                  zoomedRef.current = z;
+                  setZoomed(z);
+                }}
+              />
             </div>
 
             <button
@@ -359,7 +580,11 @@ export function ClientGalleryViewer({
               <p className="text-center text-sm text-white/75 px-2">
                 {current.caption}
               </p>
-            ) : null}
+            ) : (
+              <p className="g3d-zoom-hint">
+                Pinch to zoom · double-tap · swipe
+              </p>
+            )}
 
             {photos.length > 1 && (
               <div ref={filmRef} className="g3d-filmstrip">
@@ -374,6 +599,8 @@ export function ClientGalleryViewer({
                       setSwapDir(i > index ? "next" : "prev");
                       setIndex(i);
                       setSwapKey((k) => k + 1);
+                      setZoomed(false);
+                      zoomedRef.current = false;
                       bumpChrome();
                     }}
                     aria-label={`Go to photo ${i + 1}`}
