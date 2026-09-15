@@ -7,7 +7,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { LazyImage, prefetchImages } from "@/components/ui/LazyImage";
+import { prefetchImages } from "@/components/ui/LazyImage";
 import "@/app/gallery-3d.css";
 
 export type GalleryPhoto = {
@@ -68,7 +68,6 @@ function GalleryTile({
       onPointerLeave={onPointerLeave}
       aria-label={photo.caption || `Photo ${index + 1}`}
     >
-      {/* Direct img — proven working in lightbox */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photo.image_url}
@@ -276,21 +275,41 @@ export function ClientGalleryViewer({
             else setChromeHidden(true);
           }}
         >
+          {/* Always-visible Back — returns to gallery grid */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              close();
+            }}
+            className="g3d-back-btn"
+            aria-label="Back to gallery"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            <span>Back</span>
+          </button>
+
           <div
             className="g3d-lb-chrome g3d-lb-chrome-top"
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={close}
-              className="flex h-11 min-w-[48px] items-center justify-center rounded-full px-3 text-sm text-white/95 hover:bg-white/10"
-            >
-              Close
-            </button>
+            <span className="w-[5.5rem]" aria-hidden />
             <p className="text-[11px] tabular-nums text-white/55">
               {index + 1} / {photos.length}
             </p>
-            <span className="w-12" />
+            <span className="w-[5.5rem]" aria-hidden />
           </div>
 
           <div className="g3d-lb-stage">
@@ -343,7 +362,7 @@ export function ClientGalleryViewer({
               </p>
             ) : (
               <p className="text-center text-[10px] uppercase tracking-widest text-white/35">
-                Tap photo · swipe · arrows · Esc
+                Back · swipe · arrows · Esc
               </p>
             )}
 

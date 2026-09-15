@@ -135,7 +135,6 @@
   overflow: hidden;
   cursor: pointer;
   border-radius: 2px;
-  /* Avoid preserve-3d on mobile — breaks nested absolute images in some browsers */
   transition:
     transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -177,7 +176,6 @@
   outline-offset: 3px;
 }
 
-/* Media inside card — works for next/image fill AND native img */
 .g3d-card-media {
   transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -277,6 +275,42 @@
   }
 }
 
+/* Always on top — does not hide with chrome */
+.g3d-back-btn {
+  position: absolute;
+  top: max(0.65rem, env(safe-area-inset-top));
+  left: max(0.65rem, env(safe-area-inset-left));
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0.55rem 0.95rem 0.55rem 0.7rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.g3d-back-btn:hover {
+  background: rgba(225, 29, 72, 0.55);
+  border-color: rgba(225, 29, 72, 0.7);
+}
+
+.g3d-back-btn:active {
+  transform: scale(0.96);
+}
+
 .g3d-lb-chrome {
   position: absolute;
   left: 0;
@@ -297,7 +331,8 @@
   top: 0;
   padding-top: max(0.75rem, env(safe-area-inset-top));
   padding-bottom: 0.75rem;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.65), transparent);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
 }
 
 .g3d-lb-chrome-bottom {
@@ -322,6 +357,12 @@
   transform: translateY(8px);
 }
 
+/* Back stays visible when other chrome hides */
+.g3d-lightbox.is-chrome-hidden .g3d-back-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .g3d-lb-stage {
   position: relative;
   flex: 1;
@@ -341,11 +382,6 @@
   align-items: center;
   justify-content: center;
   animation: g3d-lb-frame 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.g3d-lb-frame img,
-.g3d-lb-frame span {
-  display: block;
 }
 
 @keyframes g3d-lb-frame {
