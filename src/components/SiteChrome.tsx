@@ -19,8 +19,10 @@ export function SiteChrome({
 }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
+  // Private client galleries — standalone experience (no site nav/logo)
+  const isClientGallery = pathname?.startsWith("/g/");
 
-  if (isAdmin) {
+  if (isAdmin || isClientGallery) {
     return <>{children}</>;
   }
 

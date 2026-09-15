@@ -45,7 +45,6 @@ function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
 
-/** Pinch / double-tap / pan zoom for mobile fullscreen photos. */
 function ZoomablePhoto({
   src,
   alt,
@@ -61,7 +60,6 @@ function ZoomablePhoto({
   const tyRef = useRef(0);
   const [transform, setTransform] = useState({ s: 1, x: 0, y: 0 });
 
-  // Gesture bookkeeping
   const modeRef = useRef<"none" | "pinch" | "pan">("none");
   const startDistRef = useRef(0);
   const startScaleRef = useRef(1);
@@ -87,7 +85,6 @@ function ZoomablePhoto({
     apply(1, 0, 0);
   }, [apply]);
 
-  // Reset when src changes
   useEffect(() => {
     reset();
   }, [src, reset]);
@@ -120,7 +117,6 @@ function ZoomablePhoto({
         if (scaleRef.current > 1.15) {
           apply(1, 0, 0);
         } else {
-          // Zoom toward tap point
           const rect = wrapRef.current?.getBoundingClientRect();
           if (rect) {
             const cx = rect.left + rect.width / 2;
@@ -163,7 +159,6 @@ function ZoomablePhoto({
         MAX_SCALE
       );
       const m = mid(t0, t1);
-      // Keep zoom centered near pinch midpoint
       const dx = m.x - startMidRef.current.x;
       const dy = m.y - startMidRef.current.y;
       apply(next, startTxRef.current + dx, startTyRef.current + dy);
@@ -182,12 +177,10 @@ function ZoomablePhoto({
   function onTouchEnd(e: ReactTouchEvent) {
     if (e.touches.length === 0) {
       modeRef.current = "none";
-      // Snap back if barely zoomed
       if (scaleRef.current < 1.05) {
         apply(1, 0, 0);
       }
     } else if (e.touches.length === 1 && modeRef.current === "pinch") {
-      // One finger left after pinch → switch to pan
       modeRef.current = "pan";
       const t = e.touches[0]!;
       panStartRef.current = { x: t.clientX, y: t.clientY };
@@ -380,7 +373,6 @@ export function ClientGalleryViewer({
     };
   }, [open, close, go, bumpChrome]);
 
-  // Swipe between photos only when not zoomed
   useEffect(() => {
     if (!open) return;
     let startX = 0;
@@ -499,27 +491,33 @@ export function ClientGalleryViewer({
             else setChromeHidden(true);
           }}
         >
+          {/* Back — always on top, closes lightbox → grid */}
           <button
             type="button"
+            className="g3d-back-btn"
+            aria-label="Back to gallery"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+            }}
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               close();
             }}
-            className="g3d-back-btn"
-            aria-label="Back to gallery"
           >
             <svg
-              width="16"
-              height="16"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2.2"
+              strokeWidth="2.4"
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden
             >
-              <path d="M15 18l-6-6 6-6" />
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
             </svg>
             <span>Back</span>
           </button>
@@ -528,11 +526,11 @@ export function ClientGalleryViewer({
             className="g3d-lb-chrome g3d-lb-chrome-top"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="w-[5.5rem]" aria-hidden />
+            <span className="w-[6.5rem]" aria-hidden />
             <p className="g3d-lb-counter">
               {index + 1} / {photos.length}
             </p>
-            <span className="w-[5.5rem]" aria-hidden />
+            <span className="w-[6.5rem]" aria-hidden />
           </div>
 
           <div className="g3d-lb-stage">
