@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import {
   compressImages,
   formatBytes,
-  type CompressResult,
 } from "@/lib/image-compress";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { fieldClass, labelClass } from "./CmsFormFields";
 
 type Img = {
@@ -225,23 +225,23 @@ export function GalleryImagesManager({
         </p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-          {images.map((img) => (
+          {images.map((img, i) => (
             <div
               key={img.id}
               className="group relative aspect-square overflow-hidden border border-border bg-black/40"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <LazyImage
                 src={img.image_url}
                 alt={img.caption || ""}
+                priority={i < 4}
                 className="h-full w-full object-cover"
-                loading="lazy"
+                wrapperClassName="absolute inset-0"
               />
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => removeImage(img.id)}
-                className="absolute right-2 top-2 bg-black/70 px-2 py-1 text-[10px] uppercase tracking-widest text-red-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
+                className="absolute right-2 top-2 z-10 bg-black/70 px-2 py-1 text-[10px] uppercase tracking-widest text-red-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
               >
                 Remove
               </button>
@@ -260,6 +260,3 @@ function safeName(name: string): string {
     .replace(/-+/g, "-")
     .slice(0, 80);
 }
-
-// silence unused type export if tree-shaken
-void (0 as unknown as CompressResult);

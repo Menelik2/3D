@@ -7,6 +7,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { LazyImage, prefetchImages } from "@/components/ui/LazyImage";
 import "@/app/gallery-3d.css";
 
 export type GalleryPhoto = {
@@ -25,6 +26,7 @@ function GalleryTile({
   onOpen: () => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
+  const priority = index < 6;
 
   function onPointerMove(e: ReactPointerEvent<HTMLButtonElement>) {
     const el = ref.current;
@@ -66,13 +68,12 @@ function GalleryTile({
       onPointerLeave={onPointerLeave}
       aria-label={photo.caption || `Photo ${index + 1}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <LazyImage
         src={photo.image_url}
         alt={photo.caption || ""}
+        priority={priority}
         className="g3d-card-media"
-        loading={index < 12 ? "eager" : "lazy"}
-        decoding="async"
+        wrapperClassName="absolute inset-0"
       />
       <span className="g3d-card-depth" aria-hidden />
       <span className="g3d-card-rim" aria-hidden />
@@ -135,7 +136,18 @@ export function ClientGalleryViewer({
     [bumpChrome]
   );
 
-  // Keyboard + body lock
+  // Prefetch current + neighbors when lightbox is open
+  useEffect(() => {
+    if (index === null || photos.length === 0) return;
+    const n = photos.length;
+    prefetchImages([
+      photos[index]?.image_url,
+      photos[(index + 1) % n]?.image_url,
+      photos[(index - 1 + n) % n]?.image_url,
+      photos[(index + 2) % n]?.image_url,
+    ]);
+  }, [index, photos]);
+
   useEffect(() => {
     if (!open) return;
 
@@ -155,7 +167,6 @@ export function ClientGalleryViewer({
     };
   }, [open, close, go, bumpChrome]);
 
-  // Touch swipe
   useEffect(() => {
     if (!open) return;
     let startX = 0;
@@ -182,13 +193,16 @@ export function ClientGalleryViewer({
     };
   }, [open, go, bumpChrome]);
 
-  // Scroll active thumb into view
   useEffect(() => {
     if (!open || index === null || !filmRef.current) return;
     const thumb = filmRef.current.querySelector(
       `[data-thumb="${index}"]`
     ) as HTMLElement | null;
-    thumb?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    thumb?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
   }, [open, index]);
 
   useEffect(() => {
@@ -261,7 +275,6 @@ export function ClientGalleryViewer({
             else setChromeHidden(true);
           }}
         >
-          {/* Top chrome */}
           <div
             className="g3d-lb-chrome g3d-lb-chrome-top"
             onClick={(e) => e.stopPropagation()}
@@ -279,7 +292,6 @@ export function ClientGalleryViewer({
             <span className="w-12" />
           </div>
 
-          {/* Full-viewport stage */}
           <div className="g3d-lb-stage">
             <button
               type="button"
@@ -294,11 +306,14 @@ export function ClientGalleryViewer({
             </button>
 
             <div key={swapKey} className={`g3d-lb-frame ${swapClass}`}>
+              {/* Fullscreen: priority load current */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={current.image_url}
                 alt={current.caption || ""}
                 draggable={false}
+                decoding="async"
+                fetchPriority="high"
               />
             </div>
 
@@ -315,7 +330,6 @@ export function ClientGalleryViewer({
             </button>
           </div>
 
-          {/* Bottom chrome + filmstrip */}
           <div
             className="g3d-lb-chrome g3d-lb-chrome-bottom"
             onClick={(e) => e.stopPropagation()}
@@ -348,8 +362,14 @@ export function ClientGalleryViewer({
                     aria-label={`Go to photo ${i + 1}`}
                     aria-current={i === index}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={p.image_url} alt="" loading="lazy" />
+                    <LazyImage
+                      src={p.image_url}
+                      alt=""
+                      priority={Math.abs(i - index) <= 3}
+                      className="h-full w-full object-cover"
+                      wrapperClassName="absolute inset-0 h-full w-full"
+                      rootMargin="100px"
+                    />
                   </button>
                 ))}
               </div>
