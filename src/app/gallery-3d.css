@@ -35,7 +35,7 @@
 
 @media (max-width: 767px) {
   .g3d-frame {
-    display: none; /* keep mobile clean like a focused desktop gallery */
+    display: none;
   }
 }
 
@@ -73,7 +73,6 @@
   }
 }
 
-/* Header — same density mobile + desktop */
 .g3d-header {
   position: sticky;
   top: 0;
@@ -116,7 +115,6 @@
   }
 }
 
-/* Desktop-style grid on all sizes: equal gaps, clean cards */
 .g3d-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -261,7 +259,7 @@
   }
 }
 
-/* ========== LIGHTBOX — desktop chrome on mobile too ========== */
+/* ========== LIGHTBOX ========== */
 
 .g3d-lightbox {
   position: fixed;
@@ -445,21 +443,21 @@
   }
 }
 
-/* Desktop-style arrows — also on mobile */
+/* ‹ › arrows — desktop only (phones use swipe + filmstrip) */
 .g3d-nav-btn {
+  display: none;
   position: absolute;
   top: 50%;
   z-index: 15;
-  display: flex;
-  height: 2.75rem;
-  width: 2.75rem;
+  height: 3.25rem;
+  width: 3.25rem;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(0, 0, 0, 0.55);
   color: #fff;
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   line-height: 1;
   backdrop-filter: blur(12px);
   transform: translateY(-50%);
@@ -471,11 +469,9 @@
     opacity 200ms ease;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .g3d-nav-btn {
-    height: 3.25rem;
-    width: 3.25rem;
-    font-size: 1.5rem;
+    display: flex;
   }
 }
 
@@ -487,10 +483,10 @@
 }
 
 .g3d-nav-prev {
-  left: max(0.35rem, env(safe-area-inset-left));
+  left: max(0.5rem, env(safe-area-inset-left));
 }
 .g3d-nav-next {
-  right: max(0.35rem, env(safe-area-inset-right));
+  right: max(0.5rem, env(safe-area-inset-right));
 }
 
 .g3d-lightbox.is-chrome-hidden .g3d-nav-btn {
@@ -498,7 +494,6 @@
   pointer-events: none;
 }
 
-/* Filmstrip — desktop density on mobile */
 .g3d-filmstrip {
   display: flex;
   justify-content: center;
