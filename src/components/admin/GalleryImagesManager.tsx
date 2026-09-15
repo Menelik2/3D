@@ -31,6 +31,7 @@ export function GalleryImagesManager({
   const [progress, setProgress] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   async function registerUrls(urls: string[]) {
     const res = await fetch(`/api/cms/galleries/${galleryId}/images`, {
@@ -148,22 +149,56 @@ export function GalleryImagesManager({
     }
   }
 
-  async function removeImage(imageId: string) {
-    if (!confirm("Remove this photo from the gallery?")) return;
+  /** Hard-delete from database + storage */
+  async function removeImages(ids: string[]) {
+    if (ids.length === 0) return;
+    const label =
+      ids.length === 1
+        ? "Delete this photo permanently from the gallery and database?"
+        : `Delete ${ids.length} photos permanently from the gallery and database?`;
+    if (!confirm(label)) return;
+
     setBusy(true);
+    setErr(null);
+    setMsg(null);
     try {
       const res = await fetch(`/api/cms/galleries/${galleryId}/images`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image_id: imageId }),
+        body: JSON.stringify(
+          ids.length === 1 ? { image_id: ids[0] } : { image_ids: ids }
+        ),
       });
-      if (res.ok) {
-        setImages((prev) => prev.filter((i) => i.id !== imageId));
-        router.refresh();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Delete failed");
       }
+      setImages((prev) => prev.filter((i) => !ids.includes(i.id)));
+      setSelected((prev) => {
+        const next = new Set(prev);
+        for (const id of ids) next.delete(id);
+        return next;
+      });
+      setMsg(
+        ids.length === 1
+          ? "Photo deleted from database"
+          : `${data.deleted ?? ids.length} photos deleted from database`
+      );
+      router.refresh();
+    } catch (ex) {
+      setErr(ex instanceof Error ? ex.message : "Delete failed");
     } finally {
       setBusy(false);
     }
+  }
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   return (
@@ -221,31 +256,70 @@ export function GalleryImagesManager({
           No photos yet. Upload files or paste URLs above.
         </p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
-          {images.map((img, i) => (
-            <div
-              key={img.id}
-              className="group relative aspect-square overflow-hidden border border-border bg-black/40"
-            >
-              <LazyImage
-                src={img.image_url}
-                alt={img.caption || ""}
-                priority={i < 4}
-                wrapperClassName="absolute inset-0"
-                sizes="(max-width: 640px) 50vw, 25vw"
-                quality={70}
-              />
+        <>
+          {selected.size > 0 && (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-xs text-muted">{selected.size} selected</p>
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => removeImage(img.id)}
-                className="absolute right-2 top-2 z-10 bg-black/70 px-2 py-1 text-[10px] uppercase tracking-widest text-red-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition"
+                onClick={() => removeImages([...selected])}
+                className="bg-red-600/90 px-4 py-2 text-[10px] uppercase tracking-widest text-white hover:bg-red-600 disabled:opacity-50"
               >
-                Remove
+                Delete selected permanently
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setSelected(new Set())}
+                className="text-[10px] uppercase tracking-widest text-muted hover:text-foreground"
+              >
+                Clear selection
               </button>
             </div>
-          ))}
-        </div>
+          )}
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+            {images.map((img, i) => {
+              const isSel = selected.has(img.id);
+              return (
+                <div
+                  key={img.id}
+                  className={`group relative aspect-square overflow-hidden border bg-black/40 ${
+                    isSel ? "border-accent ring-1 ring-accent" : "border-border"
+                  }`}
+                >
+                  <LazyImage
+                    src={img.image_url}
+                    alt={img.caption || ""}
+                    priority={i < 4}
+                    wrapperClassName="absolute inset-0"
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    quality={70}
+                  />
+                  <label className="absolute left-2 top-2 z-10 flex h-7 w-7 cursor-pointer items-center justify-center bg-black/70">
+                    <input
+                      type="checkbox"
+                      checked={isSel}
+                      disabled={busy}
+                      onChange={() => toggleSelect(img.id)}
+                      className="h-3.5 w-3.5 accent-accent"
+                      aria-label="Select photo"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => removeImages([img.id])}
+                    className="absolute right-2 top-2 z-10 bg-black/70 px-2 py-1 text-[10px] uppercase tracking-widest text-red-300 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );
