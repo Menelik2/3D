@@ -3,10 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import {
-  compressImages,
-  formatBytes,
-} from "@/lib/image-compress";
+import { compressImages, formatBytes } from "@/lib/image-compress";
 import { LazyImage } from "@/components/ui/LazyImage";
 import { fieldClass, labelClass } from "./CmsFormFields";
 
@@ -234,8 +231,9 @@ export function GalleryImagesManager({
                 src={img.image_url}
                 alt={img.caption || ""}
                 priority={i < 4}
-                className="h-full w-full object-cover"
                 wrapperClassName="absolute inset-0"
+                sizes="(max-width: 640px) 50vw, 25vw"
+                quality={70}
               />
               <button
                 type="button"

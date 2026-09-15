@@ -1,70 +1,74 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ImgHTMLAttributes,
-} from "react";
+import { useMemo, useState } from "react";
+import Image, { type ImageProps } from "next/image";
 
-type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "loading"> & {
-  /** Force immediate load (above-the-fold). Default: lazy via IO + native. */
+type Props = {
+  src: string;
+  alt?: string;
+  /** Above-the-fold: skip lazy, high fetch priority */
   priority?: boolean;
-  /** Root margin for IntersectionObserver (default 200px). */
-  rootMargin?: string;
-  /** Extra class on the wrapper (skeleton box). */
+  className?: string;
   wrapperClassName?: string;
+  /** Responsive sizes hint for next/image (default gallery tile) */
+  sizes?: string;
+  /** Object-fit style via class; default cover for fill layout */
+  objectFit?: "cover" | "contain";
+  quality?: number;
+  onLoad?: ImageProps["onLoad"];
+  onError?: ImageProps["onError"];
 };
 
+/** Hosts we optimize through the Next.js image pipeline. */
+function canOptimize(src: string): boolean {
+  if (!src) return false;
+  // Local / public assets
+  if (src.startsWith("/") && !src.startsWith("//")) return true;
+  try {
+    const u = new URL(src);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
+    const h = u.hostname;
+    return (
+      h.endsWith(".supabase.co") ||
+      h === "images.unsplash.com" ||
+      h.endsWith(".cloudinary.com") ||
+      h === "localhost" ||
+      h === "127.0.0.1"
+    );
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Lazy-loads images when near the viewport.
- * Shows a subtle skeleton until decoded, then fades in.
+ * Lazy-loading image via next/image.
+ * Uses fill layout; parent must be position:relative with size.
+ * Non-allowlisted remote URLs fall back to unoptimized (still lazy).
  */
 export function LazyImage({
   src,
   alt = "",
   priority = false,
-  rootMargin = "200px 0px",
   className = "",
   wrapperClassName = "",
+  sizes = "(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw",
+  objectFit = "cover",
+  quality = 80,
   onLoad,
   onError,
-  ...rest
 }: Props) {
-  const imgRef = useRef<HTMLImageElement>(null);
-  const [inView, setInView] = useState(priority);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const optimize = useMemo(() => canOptimize(src), [src]);
 
-  useEffect(() => {
-    if (priority || inView) return;
-    const el = imgRef.current;
-    if (!el) return;
-
-    if (typeof IntersectionObserver === "undefined") {
-      setInView(true);
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setInView(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin, threshold: 0.01 }
+  if (!src) {
+    return (
+      <span
+        className={`relative block overflow-hidden bg-white/[0.04] ${wrapperClassName}`}
+        aria-hidden
+      />
     );
-
-    io.observe(el);
-    return () => io.disconnect();
-  }, [priority, inView, rootMargin]);
-
-  // Reset when src changes
-  useEffect(() => {
-    setLoaded(false);
-    setFailed(false);
-  }, [src]);
+  }
 
   return (
     <span
@@ -73,20 +77,20 @@ export function LazyImage({
     >
       {!loaded && !failed && (
         <span
-          className="lazy-img-skeleton absolute inset-0 animate-pulse bg-white/[0.06]"
+          className="absolute inset-0 animate-pulse bg-white/[0.06]"
           aria-hidden
         />
       )}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        ref={imgRef}
-        src={inView && src ? src : undefined}
-        data-src={src}
+      <Image
+        src={src}
         alt={alt}
+        fill
+        sizes={sizes}
+        quality={quality}
+        priority={priority}
         loading={priority ? "eager" : "lazy"}
-        decoding="async"
-        fetchPriority={priority ? "high" : "auto"}
-        className={`lazy-img transition-opacity duration-500 ease-out ${loaded ? "opacity-100" : "opacity-0"} ${className}`}
+        unoptimized={!optimize}
+        className={`transition-opacity duration-500 ease-out ${loaded ? "opacity-100" : "opacity-0"} ${objectFit === "contain" ? "object-contain" : "object-cover"} ${className}`}
         onLoad={(e) => {
           setLoaded(true);
           onLoad?.(e);
@@ -96,7 +100,6 @@ export function LazyImage({
           setLoaded(true);
           onError?.(e);
         }}
-        {...rest}
       />
     </span>
   );

@@ -7,6 +7,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import Image from "next/image";
 import { LazyImage, prefetchImages } from "@/components/ui/LazyImage";
 import "@/app/gallery-3d.css";
 
@@ -15,6 +16,21 @@ export type GalleryPhoto = {
   image_url: string;
   caption: string | null;
 };
+
+function canOptimize(src: string): boolean {
+  if (!src) return false;
+  if (src.startsWith("/") && !src.startsWith("//")) return true;
+  try {
+    const h = new URL(src).hostname;
+    return (
+      h.endsWith(".supabase.co") ||
+      h === "images.unsplash.com" ||
+      h.endsWith(".cloudinary.com")
+    );
+  } catch {
+    return false;
+  }
+}
 
 function GalleryTile({
   photo,
@@ -72,8 +88,10 @@ function GalleryTile({
         src={photo.image_url}
         alt={photo.caption || ""}
         priority={priority}
-        className="g3d-card-media"
+        className="g3d-card-media !relative"
         wrapperClassName="absolute inset-0"
+        sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
+        quality={75}
       />
       <span className="g3d-card-depth" aria-hidden />
       <span className="g3d-card-rim" aria-hidden />
@@ -136,7 +154,6 @@ export function ClientGalleryViewer({
     [bumpChrome]
   );
 
-  // Prefetch current + neighbors when lightbox is open
   useEffect(() => {
     if (index === null || photos.length === 0) return;
     const n = photos.length;
@@ -306,15 +323,19 @@ export function ClientGalleryViewer({
             </button>
 
             <div key={swapKey} className={`g3d-lb-frame ${swapClass}`}>
-              {/* Fullscreen: priority load current */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={current.image_url}
-                alt={current.caption || ""}
-                draggable={false}
-                decoding="async"
-                fetchPriority="high"
-              />
+              <div className="relative h-[100dvh] w-[100vw]">
+                <Image
+                  src={current.image_url}
+                  alt={current.caption || ""}
+                  fill
+                  sizes="100vw"
+                  quality={90}
+                  priority
+                  unoptimized={!canOptimize(current.image_url)}
+                  className="object-contain"
+                  draggable={false}
+                />
+              </div>
             </div>
 
             <button
@@ -351,7 +372,7 @@ export function ClientGalleryViewer({
                     key={p.id}
                     type="button"
                     data-thumb={i}
-                    className={`g3d-thumb${i === index ? " is-active" : ""}`}
+                    className={`g3d-thumb relative${i === index ? " is-active" : ""}`}
                     onClick={() => {
                       if (i === index) return;
                       setSwapDir(i > index ? "next" : "prev");
@@ -366,9 +387,10 @@ export function ClientGalleryViewer({
                       src={p.image_url}
                       alt=""
                       priority={Math.abs(i - index) <= 3}
-                      className="h-full w-full object-cover"
-                      wrapperClassName="absolute inset-0 h-full w-full"
-                      rootMargin="100px"
+                      className=""
+                      wrapperClassName="absolute inset-0"
+                      sizes="56px"
+                      quality={60}
                     />
                   </button>
                 ))}
