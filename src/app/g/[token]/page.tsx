@@ -42,12 +42,37 @@ export default async function PublicGalleryPage({ params }: Props) {
   const supabase = publicClient();
   if (!supabase) notFound();
 
-  const { data: gallery } = await supabase
-    .from("client_galleries")
-    .select("id, title, client_name, is_published")
-    .eq("token", token)
-    .eq("is_published", true)
-    .maybeSingle();
+  // allow_client_upload may be missing until SQL migration runs
+  let gallery: {
+    id: string;
+    title: string;
+    client_name: string | null;
+    is_published: boolean;
+    allow_client_upload?: boolean | null;
+  } | null = null;
+
+  {
+    const { data, error } = await supabase
+      .from("client_galleries")
+      .select("id, title, client_name, is_published, allow_client_upload")
+      .eq("token", token)
+      .eq("is_published", true)
+      .maybeSingle();
+
+    if (error && /allow_client_upload/i.test(error.message || "")) {
+      const retry = await supabase
+        .from("client_galleries")
+        .select("id, title, client_name, is_published")
+        .eq("token", token)
+        .eq("is_published", true)
+        .maybeSingle();
+      gallery = retry.data
+        ? { ...retry.data, allow_client_upload: true }
+        : null;
+    } else {
+      gallery = data;
+    }
+  }
 
   if (!gallery) notFound();
 
@@ -57,11 +82,15 @@ export default async function PublicGalleryPage({ params }: Props) {
     .eq("gallery_id", gallery.id)
     .order("sort_order", { ascending: true });
 
+  const allowUpload = gallery.allow_client_upload !== false;
+
   return (
     <ClientGalleryViewer
       title={gallery.title}
       clientName={gallery.client_name}
       photos={images ?? []}
+      token={token}
+      allowUpload={allowUpload}
     />
   );
 }

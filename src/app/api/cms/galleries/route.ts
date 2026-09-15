@@ -18,9 +18,22 @@ export async function GET() {
     const { data, error } = await supabase
       .from("client_galleries")
       .select(
-        "id, token, title, client_name, client_email, cover_image_url, is_published, created_at, updated_at"
+        "id, token, title, client_name, client_email, cover_image_url, is_published, allow_client_upload, created_at, updated_at"
       )
       .order("created_at", { ascending: false });
+
+    if (error && /allow_client_upload/i.test(error.message)) {
+      const retry = await supabase
+        .from("client_galleries")
+        .select(
+          "id, token, title, client_name, client_email, cover_image_url, is_published, created_at, updated_at"
+        )
+        .order("created_at", { ascending: false });
+      if (retry.error) {
+        return NextResponse.json({ error: retry.error.message }, { status: 500 });
+      }
+      return NextResponse.json({ items: retry.data ?? [] });
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -44,19 +57,21 @@ export async function POST(request: Request) {
     let data: { id: string; token: string } | null = null;
     let lastError: string | null = null;
 
+    const baseRow = {
+      title,
+      client_name: optionalText(body.client_name),
+      client_email: optionalText(body.client_email),
+      cover_image_url: optionalText(body.cover_image_url),
+      notes: optionalText(body.notes),
+      is_published: parseBool(body.is_published, true),
+      allow_client_upload: parseBool(body.allow_client_upload, true),
+    };
+
     for (let i = 0; i < 3; i++) {
       token = generateToken();
       const { data: row, error } = await supabase
         .from("client_galleries")
-        .insert({
-          token,
-          title,
-          client_name: optionalText(body.client_name),
-          client_email: optionalText(body.client_email),
-          cover_image_url: optionalText(body.cover_image_url),
-          notes: optionalText(body.notes),
-          is_published: parseBool(body.is_published, true),
-        })
+        .insert({ token, ...baseRow })
         .select("id, token")
         .single();
 
@@ -65,6 +80,22 @@ export async function POST(request: Request) {
         break;
       }
       lastError = error?.message || "Insert failed";
+
+      // Column missing — retry without allow_client_upload
+      if (error && /allow_client_upload/i.test(error.message)) {
+        const { allow_client_upload: _, ...without } = baseRow;
+        const retry = await supabase
+          .from("client_galleries")
+          .insert({ token, ...without })
+          .select("id, token")
+          .single();
+        if (!retry.error && retry.data) {
+          data = retry.data;
+          break;
+        }
+        lastError = retry.error?.message || lastError;
+      }
+
       if (error?.code !== "23505") break;
     }
 

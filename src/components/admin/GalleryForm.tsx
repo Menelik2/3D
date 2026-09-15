@@ -12,6 +12,7 @@ type Initial = {
   cover_image_url?: string | null;
   notes?: string | null;
   is_published?: boolean;
+  allow_client_upload?: boolean;
 };
 
 export function GalleryForm({ initial }: { initial?: Initial }) {
@@ -26,6 +27,7 @@ export function GalleryForm({ initial }: { initial?: Initial }) {
     cover_image_url: initial?.cover_image_url ?? "",
     notes: initial?.notes ?? "",
     is_published: initial?.is_published ?? true,
+    allow_client_upload: initial?.allow_client_upload ?? true,
   });
 
   const set = (k: string, v: string | boolean) =>
@@ -125,6 +127,15 @@ export function GalleryForm({ initial }: { initial?: Initial }) {
           onChange={(e) => set("is_published", e.target.checked)}
         />
         Published (client can open the link)
+      </label>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={form.allow_client_upload}
+          onChange={(e) => set("allow_client_upload", e.target.checked)}
+        />
+        Allow client to upload photos on the private link
       </label>
 
       <div className="flex gap-3 pt-1">

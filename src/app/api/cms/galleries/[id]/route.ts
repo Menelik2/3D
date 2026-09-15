@@ -56,18 +56,40 @@ export async function PATCH(
     if (body.notes !== undefined) updates.notes = optionalText(body.notes);
     if (body.is_published !== undefined)
       updates.is_published = parseBool(body.is_published);
+    if (body.allow_client_upload !== undefined)
+      updates.allow_client_upload = parseBool(body.allow_client_upload, true);
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No updates." }, { status: 400 });
     }
 
     const supabase = await getCmsClient();
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("client_galleries")
       .update(updates)
       .eq("id", id)
       .select("id, token, title, is_published")
       .single();
+
+    if (error && /allow_client_upload/i.test(error.message) && "allow_client_upload" in updates) {
+      const { allow_client_upload: _, ...rest } = updates;
+      if (Object.keys(rest).length === 0) {
+        return NextResponse.json({
+          ok: true,
+          item: { id },
+          warning:
+            "Run supabase/client-upload.sql to enable the client-upload toggle.",
+        });
+      }
+      const retry = await supabase
+        .from("client_galleries")
+        .update(rest)
+        .eq("id", id)
+        .select("id, token, title, is_published")
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -87,7 +109,6 @@ export async function DELETE(
     const { id } = await context.params;
     const supabase = await getCmsClient();
 
-    // Collect image URLs for storage cleanup
     const { data: images } = await supabase
       .from("gallery_images")
       .select("id, image_url")
@@ -100,7 +121,6 @@ export async function DELETE(
       if (p) paths.push(p);
     }
 
-    // Hard-delete all image rows for this gallery
     const { error: imgErr } = await supabase
       .from("gallery_images")
       .delete()
@@ -110,7 +130,6 @@ export async function DELETE(
       return NextResponse.json({ error: imgErr.message }, { status: 500 });
     }
 
-    // Hard-delete gallery row
     const { error } = await supabase
       .from("client_galleries")
       .delete()
@@ -120,7 +139,6 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Remove storage objects (non-fatal)
     if (paths.length > 0) {
       try {
         await supabase.storage.from(BUCKET).remove(paths);

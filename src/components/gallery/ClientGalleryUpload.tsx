@@ -26,7 +26,7 @@ export function ClientGalleryUpload({
   async function handleFiles(fileList: FileList | File[]) {
     const list = Array.from(fileList).filter((f) => f.type.startsWith("image/"));
     if (list.length === 0) {
-      setErr("Please choose image files (JPEG, PNG, WebP)."):
+      setErr("Please choose image files (JPEG, PNG, WebP).");
       return;
     }
     if (list.length > 20) {
@@ -127,8 +127,8 @@ export function ClientGalleryUpload({
       {open && (
         <div className="g3d-upload-panel">
           <p className="g3d-upload-hint">
-            Choose photos from your phone or computer. They are compressed
-            before upload and only visible on this private link.
+            Choose photos from your phone or computer. They are compressed before
+            upload and only visible on this private link.
           </p>
           <input
             ref={inputRef}
@@ -148,7 +148,7 @@ export function ClientGalleryUpload({
         </div>
       )}
 
-      {!open && msg && <p className="g3d-upload-ok mt-2">{msg}</p>}
+      {!open && msg && <p className="g3d-upload-ok" style={{ marginTop: 8 }}>{msg}</p>}
     </div>
   );
 }
