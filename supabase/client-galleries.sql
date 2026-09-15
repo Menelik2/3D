@@ -34,7 +34,6 @@ CREATE TRIGGER client_galleries_updated_at
 ALTER TABLE client_galleries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gallery_images ENABLE ROW LEVEL SECURITY;
 
--- Staff full access
 DROP POLICY IF EXISTS "Staff full access client_galleries" ON client_galleries;
 CREATE POLICY "Staff full access client_galleries" ON client_galleries
   FOR ALL USING (is_staff());
@@ -43,7 +42,6 @@ DROP POLICY IF EXISTS "Staff full access gallery_images" ON gallery_images;
 CREATE POLICY "Staff full access gallery_images" ON gallery_images
   FOR ALL USING (is_staff());
 
--- Public: read published galleries (token is the secret; we still require is_published)
 DROP POLICY IF EXISTS "Public read published galleries" ON client_galleries;
 CREATE POLICY "Public read published galleries" ON client_galleries
   FOR SELECT USING (is_published = true);
@@ -57,5 +55,44 @@ CREATE POLICY "Public read images of published galleries" ON gallery_images
     )
   );
 
--- Optional: create a public storage bucket named `galleries` in Dashboard → Storage
--- for client delivery photos (public read).
+-- ---------------------------------------------------------------------------
+-- Storage bucket: galleries (create in Dashboard if missing)
+-- Dashboard → Storage → New bucket → name: galleries → Public: ON
+-- Then run the policies below (Storage policies).
+-- ---------------------------------------------------------------------------
+
+-- Allow authenticated staff to upload/update/delete in galleries bucket
+-- (run in SQL; adjust if your storage schema differs)
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('galleries', 'galleries', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Public read galleries bucket" ON storage.objects;
+CREATE POLICY "Public read galleries bucket"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'galleries');
+
+DROP POLICY IF EXISTS "Staff upload galleries bucket" ON storage.objects;
+CREATE POLICY "Staff upload galleries bucket"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'galleries'
+    AND auth.role() = 'authenticated'
+  );
+
+DROP POLICY IF EXISTS "Staff update galleries bucket" ON storage.objects;
+CREATE POLICY "Staff update galleries bucket"
+  ON storage.objects FOR UPDATE
+  USING (
+    bucket_id = 'galleries'
+    AND auth.role() = 'authenticated'
+  );
+
+DROP POLICY IF EXISTS "Staff delete galleries bucket" ON storage.objects;
+CREATE POLICY "Staff delete galleries bucket"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'galleries'
+    AND auth.role() = 'authenticated'
+  );
