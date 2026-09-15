@@ -1,12 +1,86 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import "@/app/gallery-3d.css";
 
 export type GalleryPhoto = {
   id: string;
   image_url: string;
   caption: string | null;
 };
+
+function GalleryTile({
+  photo,
+  index,
+  onOpen,
+}: {
+  photo: GalleryPhoto;
+  index: number;
+  onOpen: () => void;
+}) {
+  const ref = useRef<HTMLButtonElement>(null);
+
+  function onPointerMove(e: ReactPointerEvent<HTMLButtonElement>) {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Skip heavy tilt on coarse pointers (most phones)
+    if (e.pointerType === "touch") return;
+
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+    const ry = (x - 0.5) * 14; // deg
+    const rx = (0.5 - y) * 12;
+
+    el.style.setProperty("--rx", `${rx}deg`);
+    el.style.setProperty("--ry", `${ry}deg`);
+    el.style.setProperty("--lift", "18px");
+    el.style.setProperty("--px", `${x * 100}%`);
+    el.style.setProperty("--py", `${y * 100}%`);
+    el.classList.add("is-tracking");
+  }
+
+  function onPointerLeave() {
+    const el = ref.current;
+    if (!el) return;
+    el.style.setProperty("--rx", "0deg");
+    el.style.setProperty("--ry", "0deg");
+    el.style.setProperty("--lift", "0px");
+    el.classList.remove("is-tracking");
+  }
+
+  return (
+    <button
+      ref={ref}
+      type="button"
+      className="g3d-card"
+      style={{ animationDelay: `${Math.min(index, 18) * 45}ms` }}
+      onClick={onOpen}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+      aria-label={photo.caption || `Photo ${index + 1}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photo.image_url}
+        alt={photo.caption || ""}
+        className="g3d-card-media"
+        loading={index < 12 ? "eager" : "lazy"}
+        decoding="async"
+      />
+      <span className="g3d-card-depth" aria-hidden />
+      <span className="g3d-card-rim" aria-hidden />
+      <span className="g3d-card-glare" aria-hidden />
+    </button>
+  );
+}
 
 export function ClientGalleryViewer({
   title,
@@ -18,6 +92,7 @@ export function ClientGalleryViewer({
   photos: GalleryPhoto[];
 }) {
   const [index, setIndex] = useState<number | null>(null);
+  const [swapKey, setSwapKey] = useState(0);
   const open = index !== null;
   const current = index !== null ? photos[index] : null;
 
@@ -29,6 +104,7 @@ export function ClientGalleryViewer({
         if (i === null || photos.length === 0) return i;
         return (i + dir + photos.length) % photos.length;
       });
+      setSwapKey((k) => k + 1);
     },
     [photos.length]
   );
@@ -51,7 +127,6 @@ export function ClientGalleryViewer({
     };
   }, [open, close, go]);
 
-  // Touch swipe
   useEffect(() => {
     if (!open) return;
     let startX = 0;
@@ -72,14 +147,20 @@ export function ClientGalleryViewer({
   }, [open, go]);
 
   return (
-    <>
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+    <div className="g3d-root">
+      <div className="g3d-atmosphere" aria-hidden>
+        <div className="g3d-frame g3d-frame-a" />
+        <div className="g3d-frame g3d-frame-b" />
+        <div className="g3d-frame g3d-frame-c" />
+      </div>
+
+      <header className="relative z-20 sticky top-0 border-b border-white/10 bg-black/55 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-[0.28em] text-white/40">
               META Pictures
             </p>
-            <h1 className="mt-1 truncate text-lg font-light tracking-tight text-white sm:text-xl">
+            <h1 className="mt-1 truncate text-lg font-light tracking-tight text-white sm:text-xl hero-title-3d">
               {title}
             </h1>
             {clientName ? (
@@ -92,39 +173,31 @@ export function ClientGalleryViewer({
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-2 py-3 sm:px-4 sm:py-6">
+      <main className="g3d-stage relative z-10 mx-auto max-w-6xl px-3 py-5 sm:px-5 sm:py-8">
         {photos.length === 0 ? (
           <p className="py-24 text-center text-sm text-white/40">
             No photos in this gallery yet.
           </p>
         ) : (
-          <div className="grid grid-cols-3 gap-0.5 sm:grid-cols-3 sm:gap-1 md:grid-cols-4 lg:grid-cols-5">
+          <div className="g3d-grid">
             {photos.map((p, i) => (
-              <button
+              <GalleryTile
                 key={p.id}
-                type="button"
-                onClick={() => setIndex(i)}
-                className="group relative aspect-square overflow-hidden bg-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={p.image_url}
-                  alt={p.caption || ""}
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] group-active:scale-[0.98]"
-                  loading={i < 12 ? "eager" : "lazy"}
-                  decoding="async"
-                />
-                <span className="pointer-events-none absolute inset-0 bg-black/0 transition group-hover:bg-black/10" />
-              </button>
+                photo={p}
+                index={i}
+                onOpen={() => {
+                  setIndex(i);
+                  setSwapKey((k) => k + 1);
+                }}
+              />
             ))}
           </div>
         )}
       </main>
 
-      {/* Fullscreen lightbox — iPhone Photos style */}
       {open && current && index !== null && (
         <div
-          className="fixed inset-0 z-50 flex flex-col bg-black"
+          className="g3d-lightbox"
           role="dialog"
           aria-modal="true"
           aria-label="Photo viewer"
@@ -133,7 +206,7 @@ export function ClientGalleryViewer({
             <button
               type="button"
               onClick={close}
-              className="flex h-11 min-w-[44px] items-center justify-center px-2 text-sm text-white/90"
+              className="flex h-11 min-w-[44px] items-center justify-center px-3 text-sm text-white/90 hover:text-white"
             >
               Close
             </button>
@@ -143,28 +216,32 @@ export function ClientGalleryViewer({
             <span className="w-14" />
           </div>
 
-          <div className="relative flex min-h-0 flex-1 items-center justify-center">
+          <div className="g3d-lb-stage">
             <button
               type="button"
+              className="g3d-nav-btn g3d-nav-prev"
               onClick={() => go(-1)}
-              className="absolute left-1 z-10 hidden h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur sm:flex hover:bg-white/20"
               aria-label="Previous"
             >
               ‹
             </button>
 
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={current.image_url}
-              alt={current.caption || ""}
-              className="max-h-full max-w-full object-contain select-none"
-              draggable={false}
-            />
+            <div
+              key={swapKey}
+              className="g3d-lb-frame is-swap"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={current.image_url}
+                alt={current.caption || ""}
+                draggable={false}
+              />
+            </div>
 
             <button
               type="button"
+              className="g3d-nav-btn g3d-nav-next"
               onClick={() => go(1)}
-              className="absolute right-1 z-10 hidden h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur sm:flex hover:bg-white/20"
               aria-label="Next"
             >
               ›
@@ -176,12 +253,12 @@ export function ClientGalleryViewer({
               <p className="text-sm text-white/70">{current.caption}</p>
             ) : (
               <p className="text-[10px] uppercase tracking-widest text-white/30">
-                Swipe or use arrows
+                Swipe · arrows · Esc
               </p>
             )}
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

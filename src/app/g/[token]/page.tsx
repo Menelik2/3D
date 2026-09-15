@@ -25,7 +25,8 @@ export async function generateMetadata({ params }: Props) {
     .eq("is_published", true)
     .maybeSingle();
 
-  if (!data) return { title: "Gallery | META Pictures", robots: { index: false } };
+  if (!data)
+    return { title: "Gallery | META Pictures", robots: { index: false } };
 
   return {
     title: `${data.title} | META Pictures`,
@@ -57,12 +58,10 @@ export default async function PublicGalleryPage({ params }: Props) {
     .order("sort_order", { ascending: true });
 
   return (
-    <div className="min-h-dvh bg-black text-white">
-      <ClientGalleryViewer
-        title={gallery.title}
-        clientName={gallery.client_name}
-        photos={images ?? []}
-      />
-    </div>
+    <ClientGalleryViewer
+      title={gallery.title}
+      clientName={gallery.client_name}
+      photos={images ?? []}
+    />
   );
 }

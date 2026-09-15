@@ -1,0 +1,361 @@
+/* Client private gallery — cinematic 3D layer */
+
+.g3d-root {
+  --g3d-accent: rgba(225, 29, 72, 0.55);
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -15%, rgba(225, 29, 72, 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 60%, rgba(225, 29, 72, 0.06), transparent 45%),
+    radial-gradient(ellipse 50% 35% at 0% 80%, rgba(255, 255, 255, 0.03), transparent 40%),
+    #000;
+  overflow-x: hidden;
+}
+
+.g3d-atmosphere {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.g3d-frame {
+  position: absolute;
+  border: 1px solid rgba(225, 29, 72, 0.18);
+  background: linear-gradient(
+    135deg,
+    rgba(225, 29, 72, 0.04),
+    rgba(255, 255, 255, 0.015)
+  );
+  box-shadow:
+    0 0 48px rgba(225, 29, 72, 0.05),
+    inset 0 0 40px rgba(0, 0, 0, 0.35);
+  transform-style: preserve-3d;
+  animation: g3d-float 16s ease-in-out infinite;
+  opacity: 0.55;
+}
+
+.g3d-frame-a {
+  width: min(280px, 40vw);
+  height: min(160px, 22vw);
+  top: 18%;
+  left: -4%;
+  transform: rotateY(28deg) rotateX(8deg) translateZ(-80px);
+}
+.g3d-frame-b {
+  width: min(200px, 28vw);
+  height: min(260px, 36vw);
+  top: 28%;
+  right: -2%;
+  transform: rotateY(-26deg) rotateX(4deg) translateZ(-40px);
+  animation-delay: -4s;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.g3d-frame-c {
+  width: min(220px, 32vw);
+  height: min(120px, 16vw);
+  bottom: 12%;
+  left: 8%;
+  transform: rotateY(14deg) rotateX(-12deg) translateZ(-100px);
+  animation-delay: -8s;
+}
+
+@keyframes g3d-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -14px;
+  }
+}
+
+.g3d-stage {
+  position: relative;
+  z-index: 1;
+  perspective: 1400px;
+  perspective-origin: 50% 30%;
+}
+
+.g3d-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  transform-style: preserve-3d;
+}
+
+@media (min-width: 640px) {
+  .g3d-grid {
+    gap: 0.75rem;
+  }
+}
+@media (min-width: 768px) {
+  .g3d-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .g3d-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+  }
+}
+
+.g3d-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --px: 50%;
+  --py: 50%;
+  --lift: 0px;
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0c0c0c;
+  overflow: hidden;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry))
+    translateZ(var(--lift));
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 280ms ease;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+  will-change: transform;
+  animation: g3d-card-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.g3d-card.is-tracking {
+  transition:
+    transform 70ms linear,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+  border-color: rgba(225, 29, 72, 0.4);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.55),
+    0 0 36px rgba(225, 29, 72, 0.14);
+}
+
+.g3d-card:focus-visible {
+  outline: 2px solid rgba(225, 29, 72, 0.8);
+  outline-offset: 3px;
+}
+
+.g3d-card-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translateZ(0) scale(1.04);
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.g3d-card:hover .g3d-card-media,
+.g3d-card.is-tracking .g3d-card-media {
+  transform: translateZ(18px) scale(1.1);
+}
+
+.g3d-card-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    380px circle at var(--px, 50%) var(--py, 50%),
+    rgba(255, 255, 255, 0.28),
+    transparent 45%
+  );
+  transition: opacity 280ms ease;
+}
+
+.g3d-card:hover .g3d-card-glare,
+.g3d-card.is-tracking .g3d-card-glare {
+  opacity: 1;
+}
+
+.g3d-card-rim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset 0 0 0 1px rgba(225, 29, 72, 0.45);
+  transition: opacity 280ms ease;
+}
+
+.g3d-card:hover .g3d-card-rim,
+.g3d-card.is-tracking .g3d-card-rim {
+  opacity: 1;
+}
+
+.g3d-card-depth {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    160deg,
+    transparent 40%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  transition: opacity 300ms ease;
+}
+
+.g3d-card:hover .g3d-card-depth,
+.g3d-card.is-tracking .g3d-card-depth {
+  opacity: 1;
+}
+
+@keyframes g3d-card-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(32px) rotateX(12deg) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) rotateX(0) scale(1);
+  }
+}
+
+/* Lightbox */
+.g3d-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(18px) saturate(1.2);
+  animation: g3d-lb-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes g3d-lb-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.g3d-lb-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1600px;
+  transform-style: preserve-3d;
+}
+
+.g3d-lb-frame {
+  max-width: min(96vw, 1200px);
+  max-height: min(78dvh, 900px);
+  transform-style: preserve-3d;
+  animation: g3d-lb-frame 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.7),
+    0 0 60px rgba(225, 29, 72, 0.08);
+}
+
+.g3d-lb-frame img {
+  display: block;
+  max-width: 100%;
+  max-height: min(78dvh, 900px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+@keyframes g3d-lb-frame {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94) rotateX(8deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateX(0);
+  }
+}
+
+.g3d-lb-frame.is-swap {
+  animation: g3d-lb-swap 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes g3d-lb-swap {
+  from {
+    opacity: 0.4;
+    transform: scale(0.97) rotateY(6deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotateY(0);
+  }
+}
+
+.g3d-nav-btn {
+  position: absolute;
+  top: 50%;
+  z-index: 10;
+  display: none;
+  height: 3rem;
+  width: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  transform: translateY(-50%) translateZ(40px);
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+
+@media (min-width: 640px) {
+  .g3d-nav-btn {
+    display: flex;
+  }
+}
+
+.g3d-nav-btn:hover {
+  background: rgba(225, 29, 72, 0.35);
+  border-color: rgba(225, 29, 72, 0.5);
+  box-shadow: 0 0 28px rgba(225, 29, 72, 0.3);
+  transform: translateY(-50%) translateZ(40px) scale(1.06);
+}
+
+.g3d-nav-prev {
+  left: 0.5rem;
+}
+.g3d-nav-next {
+  right: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g3d-frame,
+  .g3d-card,
+  .g3d-lightbox,
+  .g3d-lb-frame {
+    animation: none !important;
+  }
+  .g3d-card,
+  .g3d-card-media {
+    transform: none !important;
+    transition: none !important;
+  }
+}
