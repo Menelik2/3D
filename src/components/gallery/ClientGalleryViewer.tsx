@@ -215,6 +215,14 @@ function ZoomablePhoto({
   );
 }
 
+/** Side bias for 3D column tilt: left / center / right of a 3-col rhythm */
+function sideClass(index: number): string {
+  const col = index % 3;
+  if (col === 0) return "g3d-side-left";
+  if (col === 2) return "g3d-side-right";
+  return "g3d-side-center";
+}
+
 function GalleryTile({
   photo,
   index,
@@ -236,12 +244,13 @@ function GalleryTile({
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const y = (e.clientY - r.top) / r.height;
-    const ry = (x - 0.5) * 12;
-    const rx = (0.5 - y) * 10;
+    // Stronger side rotation (Y) for cinematic 3D
+    const ry = (x - 0.5) * 22;
+    const rx = (0.5 - y) * 14;
 
     el.style.setProperty("--rx", `${rx}deg`);
     el.style.setProperty("--ry", `${ry}deg`);
-    el.style.setProperty("--lift", "16px");
+    el.style.setProperty("--lift", "22px");
     el.style.setProperty("--px", `${x * 100}%`);
     el.style.setProperty("--py", `${y * 100}%`);
     el.classList.add("is-tracking");
@@ -260,8 +269,8 @@ function GalleryTile({
     <button
       ref={ref}
       type="button"
-      className="g3d-card"
-      style={{ animationDelay: `${Math.min(index, 16) * 35}ms` }}
+      className={`g3d-card ${sideClass(index)}`}
+      style={{ animationDelay: `${Math.min(index, 20) * 40}ms` }}
       onClick={onOpen}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
@@ -279,6 +288,7 @@ function GalleryTile({
       <span className="g3d-card-depth" aria-hidden />
       <span className="g3d-card-rim" aria-hidden />
       <span className="g3d-card-glare" aria-hidden />
+      <span className="g3d-card-edge" aria-hidden />
     </button>
   );
 }
@@ -496,7 +506,7 @@ export function ClientGalleryViewer({
               : "No photos in this gallery yet."}
           </p>
         ) : (
-          <div className="g3d-grid">
+          <div className="g3d-grid g3d-grid-3d">
             {photos.map((p, i) => (
               <GalleryTile
                 key={p.id}
@@ -614,7 +624,7 @@ export function ClientGalleryViewer({
             )}
 
             {photos.length > 1 && (
-              <div ref={filmRef} className="g3d-filmstrip">
+              <div ref={filmRef} className="g3d-filmstrip g3d-filmstrip-3d">
                 {photos.map((p, i) => (
                   <button
                     key={p.id}
