@@ -88,7 +88,7 @@ function GalleryTile({
         src={photo.image_url}
         alt={photo.caption || ""}
         priority={priority}
-        className="g3d-card-media !relative"
+        className="g3d-card-media"
         wrapperClassName="absolute inset-0"
         sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
         quality={75}
@@ -387,7 +387,6 @@ export function ClientGalleryViewer({
                       src={p.image_url}
                       alt=""
                       priority={Math.abs(i - index) <= 3}
-                      className=""
                       wrapperClassName="absolute inset-0"
                       sizes="56px"
                       quality={60}
