@@ -12,9 +12,7 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [64, 96, 128, 256, 384, 512],
     // How long the optimizer keeps a remote source before re-fetching (seconds).
-    // Gallery + CMS assets are immutable object URLs → long TTL is safe.
     minimumCacheTTL: THIRTY_ONE_DAYS,
-    // Prefer denser quality steps for gallery grids on mobile.
     qualities: [60, 75, 80, 90],
     remotePatterns: [
       {
@@ -41,15 +39,19 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
+    const longCache = [
+      {
+        key: "Cache-Control",
+        value: `public, max-age=${ONE_YEAR}, immutable`,
+      },
+    ];
+
     return [
-      // Next.js image optimizer output — cache hard at the edge
+      // Next.js image optimizer output
       {
         source: "/_next/image",
         headers: [
-          {
-            key: "Cache-Control",
-            value: `public, max-age=${ONE_YEAR}, immutable`,
-          },
+          ...longCache,
           {
             key: "CDN-Cache-Control",
             value: `public, max-age=${ONE_YEAR}, immutable`,
@@ -60,24 +62,10 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Static brand / public assets
+      // Brand assets under /public/brand
       {
         source: "/brand/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: `public, max-age=${ONE_YEAR}, immutable`,
-          },
-        ],
-      },
-      {
-        source: "/:path*\\.(?:jpg|jpeg|png|gif|webp|avif|ico|svg)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: `public, max-age=${ONE_YEAR}, immutable`,
-          },
-        ],
+        headers: longCache,
       },
     ];
   },
