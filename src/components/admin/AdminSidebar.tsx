@@ -9,6 +9,7 @@ const nav = [
   { href: "/admin/leads", label: "Leads" },
   { href: "/admin/consultations", label: "Consultations" },
   { href: "/admin/projects", label: "Projects" },
+  { href: "/admin/galleries", label: "Galleries" },
   { href: "/admin/portfolio", label: "Portfolio" },
   { href: "/admin/team", label: "Team" },
   { href: "/admin/journal", label: "Journal" },
@@ -54,7 +55,6 @@ export function AdminSidebar({
         >
           META Admin
         </Link>
-        {/* Close — mobile only */}
         <button
           type="button"
           onClick={onClose}
