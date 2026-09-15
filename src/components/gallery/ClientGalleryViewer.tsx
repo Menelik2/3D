@@ -30,18 +30,17 @@ function GalleryTile({
     const el = ref.current;
     if (!el) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // Skip heavy tilt on coarse pointers (most phones)
     if (e.pointerType === "touch") return;
 
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const y = (e.clientY - r.top) / r.height;
-    const ry = (x - 0.5) * 14; // deg
+    const ry = (x - 0.5) * 14;
     const rx = (0.5 - y) * 12;
 
     el.style.setProperty("--rx", `${rx}deg`);
     el.style.setProperty("--ry", `${ry}deg`);
-    el.style.setProperty("--lift", "18px");
+    el.style.setProperty("--lift", "20px");
     el.style.setProperty("--px", `${x * 100}%`);
     el.style.setProperty("--py", `${y * 100}%`);
     el.classList.add("is-tracking");
@@ -61,7 +60,7 @@ function GalleryTile({
       ref={ref}
       type="button"
       className="g3d-card"
-      style={{ animationDelay: `${Math.min(index, 18) * 45}ms` }}
+      style={{ animationDelay: `${Math.min(index, 20) * 40}ms` }}
       onClick={onOpen}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
@@ -92,23 +91,51 @@ export function ClientGalleryViewer({
   photos: GalleryPhoto[];
 }) {
   const [index, setIndex] = useState<number | null>(null);
+  const [swapDir, setSwapDir] = useState<"next" | "prev" | "open">("open");
   const [swapKey, setSwapKey] = useState(0);
+  const [chromeHidden, setChromeHidden] = useState(false);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const filmRef = useRef<HTMLDivElement>(null);
+
   const open = index !== null;
   const current = index !== null ? photos[index] : null;
 
-  const close = useCallback(() => setIndex(null), []);
+  const bumpChrome = useCallback(() => {
+    setChromeHidden(false);
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => setChromeHidden(true), 2800);
+  }, []);
+
+  const close = useCallback(() => {
+    setIndex(null);
+    setChromeHidden(false);
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+  }, []);
 
   const go = useCallback(
     (dir: -1 | 1) => {
+      setSwapDir(dir > 0 ? "next" : "prev");
       setIndex((i) => {
         if (i === null || photos.length === 0) return i;
         return (i + dir + photos.length) % photos.length;
       });
       setSwapKey((k) => k + 1);
+      bumpChrome();
     },
-    [photos.length]
+    [photos.length, bumpChrome]
   );
 
+  const openAt = useCallback(
+    (i: number) => {
+      setSwapDir("open");
+      setIndex(i);
+      setSwapKey((k) => k + 1);
+      bumpChrome();
+    },
+    [bumpChrome]
+  );
+
+  // Keyboard + body lock
   useEffect(() => {
     if (!open) return;
 
@@ -116,6 +143,7 @@ export function ClientGalleryViewer({
       if (e.key === "Escape") close();
       if (e.key === "ArrowLeft") go(-1);
       if (e.key === "ArrowRight") go(1);
+      bumpChrome();
     }
 
     const prev = document.body.style.overflow;
@@ -125,18 +153,26 @@ export function ClientGalleryViewer({
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
     };
-  }, [open, close, go]);
+  }, [open, close, go, bumpChrome]);
 
+  // Touch swipe
   useEffect(() => {
     if (!open) return;
     let startX = 0;
+    let startY = 0;
     function onStart(e: TouchEvent) {
       startX = e.touches[0]?.clientX ?? 0;
+      startY = e.touches[0]?.clientY ?? 0;
+      bumpChrome();
     }
     function onEnd(e: TouchEvent) {
       const endX = e.changedTouches[0]?.clientX ?? 0;
+      const endY = e.changedTouches[0]?.clientY ?? 0;
       const dx = endX - startX;
-      if (Math.abs(dx) > 50) go(dx > 0 ? -1 : 1);
+      const dy = endY - startY;
+      if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy)) {
+        go(dx > 0 ? -1 : 1);
+      }
     }
     window.addEventListener("touchstart", onStart, { passive: true });
     window.addEventListener("touchend", onEnd, { passive: true });
@@ -144,7 +180,29 @@ export function ClientGalleryViewer({
       window.removeEventListener("touchstart", onStart);
       window.removeEventListener("touchend", onEnd);
     };
-  }, [open, go]);
+  }, [open, go, bumpChrome]);
+
+  // Scroll active thumb into view
+  useEffect(() => {
+    if (!open || index === null || !filmRef.current) return;
+    const thumb = filmRef.current.querySelector(
+      `[data-thumb="${index}"]`
+    ) as HTMLElement | null;
+    thumb?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [open, index]);
+
+  useEffect(() => {
+    return () => {
+      if (hideTimer.current) clearTimeout(hideTimer.current);
+    };
+  }, []);
+
+  const swapClass =
+    swapDir === "next"
+      ? "is-swap-next"
+      : swapDir === "prev"
+        ? "is-swap-prev"
+        : "";
 
   return (
     <div className="g3d-root">
@@ -154,7 +212,7 @@ export function ClientGalleryViewer({
         <div className="g3d-frame g3d-frame-c" />
       </div>
 
-      <header className="relative z-20 sticky top-0 border-b border-white/10 bg-black/55 backdrop-blur-xl">
+      <header className="g3d-header">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-[0.28em] text-white/40">
@@ -173,7 +231,7 @@ export function ClientGalleryViewer({
         </div>
       </header>
 
-      <main className="g3d-stage relative z-10 mx-auto max-w-6xl px-3 py-5 sm:px-5 sm:py-8">
+      <main className="g3d-stage relative z-10 mx-auto max-w-6xl px-2.5 py-4 sm:px-5 sm:py-8">
         {photos.length === 0 ? (
           <p className="py-24 text-center text-sm text-white/40">
             No photos in this gallery yet.
@@ -185,10 +243,7 @@ export function ClientGalleryViewer({
                 key={p.id}
                 photo={p}
                 index={i}
-                onOpen={() => {
-                  setIndex(i);
-                  setSwapKey((k) => k + 1);
-                }}
+                onOpen={() => openAt(i)}
               />
             ))}
           </div>
@@ -197,39 +252,48 @@ export function ClientGalleryViewer({
 
       {open && current && index !== null && (
         <div
-          className="g3d-lightbox"
+          className={`g3d-lightbox${chromeHidden ? " is-chrome-hidden" : ""}`}
           role="dialog"
           aria-modal="true"
-          aria-label="Photo viewer"
+          aria-label="Full screen photo"
+          onClick={() => {
+            if (chromeHidden) bumpChrome();
+            else setChromeHidden(true);
+          }}
         >
-          <div className="flex items-center justify-between gap-3 px-3 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2">
+          {/* Top chrome */}
+          <div
+            className="g3d-lb-chrome g3d-lb-chrome-top"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               onClick={close}
-              className="flex h-11 min-w-[44px] items-center justify-center px-3 text-sm text-white/90 hover:text-white"
+              className="flex h-11 min-w-[48px] items-center justify-center rounded-full px-3 text-sm text-white/95 hover:bg-white/10"
             >
               Close
             </button>
-            <p className="text-[11px] tabular-nums text-white/50">
+            <p className="text-[11px] tabular-nums text-white/55">
               {index + 1} / {photos.length}
             </p>
-            <span className="w-14" />
+            <span className="w-12" />
           </div>
 
+          {/* Full-viewport stage */}
           <div className="g3d-lb-stage">
             <button
               type="button"
               className="g3d-nav-btn g3d-nav-prev"
-              onClick={() => go(-1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                go(-1);
+              }}
               aria-label="Previous"
             >
               ‹
             </button>
 
-            <div
-              key={swapKey}
-              className="g3d-lb-frame is-swap"
-            >
+            <div key={swapKey} className={`g3d-lb-frame ${swapClass}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={current.image_url}
@@ -241,20 +305,54 @@ export function ClientGalleryViewer({
             <button
               type="button"
               className="g3d-nav-btn g3d-nav-next"
-              onClick={() => go(1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                go(1);
+              }}
               aria-label="Next"
             >
               ›
             </button>
           </div>
 
-          <div className="px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2 text-center">
+          {/* Bottom chrome + filmstrip */}
+          <div
+            className="g3d-lb-chrome g3d-lb-chrome-bottom"
+            onClick={(e) => e.stopPropagation()}
+          >
             {current.caption ? (
-              <p className="text-sm text-white/70">{current.caption}</p>
-            ) : (
-              <p className="text-[10px] uppercase tracking-widest text-white/30">
-                Swipe · arrows · Esc
+              <p className="text-center text-sm text-white/75 px-2">
+                {current.caption}
               </p>
+            ) : (
+              <p className="text-center text-[10px] uppercase tracking-widest text-white/35">
+                Tap photo · swipe · arrows · Esc
+              </p>
+            )}
+
+            {photos.length > 1 && (
+              <div ref={filmRef} className="g3d-filmstrip">
+                {photos.map((p, i) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    data-thumb={i}
+                    className={`g3d-thumb${i === index ? " is-active" : ""}`}
+                    onClick={() => {
+                      if (i === index) return;
+                      setSwapDir(i > index ? "next" : "prev");
+                      setIndex(i);
+                      setSwapKey((k) => k + 1);
+                      bumpChrome();
+                    }}
+                    aria-label={`Go to photo ${i + 1}`}
+                    aria-current={i === index}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={p.image_url} alt="" loading="lazy" />
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         </div>
