@@ -1,7 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { compressImages, formatBytes } from "@/lib/image-compress";
+import {
+  compressImages,
+  formatBytes,
+  GALLERY_COMPRESS_DEFAULTS,
+} from "@/lib/image-compress";
 
 type AddedPhoto = {
   id: string;
@@ -42,7 +46,12 @@ export function ClientGalleryUpload({
       setProgress(`Compressing 0 / ${list.length}…`);
       const compressed = await compressImages(
         list,
-        { maxEdge: 2048, quality: 0.82 },
+        {
+          maxEdge: GALLERY_COMPRESS_DEFAULTS.maxEdge,
+          quality: GALLERY_COMPRESS_DEFAULTS.quality,
+          preferWebp: true,
+          maxBytes: GALLERY_COMPRESS_DEFAULTS.maxBytes,
+        },
         (done, total, name) => {
           setProgress(
             done >= total
@@ -127,8 +136,9 @@ export function ClientGalleryUpload({
       {open && (
         <div className="g3d-upload-panel">
           <p className="g3d-upload-hint">
-            Choose photos from your phone or computer. They are compressed before
-            upload and only visible on this private link.
+            Choose photos from your phone or computer. Images are optimized
+            (max ~1920px, WebP) before upload and only visible on this private
+            link.
           </p>
           <input
             ref={inputRef}
@@ -148,7 +158,11 @@ export function ClientGalleryUpload({
         </div>
       )}
 
-      {!open && msg && <p className="g3d-upload-ok" style={{ marginTop: 8 }}>{msg}</p>}
+      {!open && msg && (
+        <p className="g3d-upload-ok" style={{ marginTop: 8 }}>
+          {msg}
+        </p>
+      )}
     </div>
   );
 }
