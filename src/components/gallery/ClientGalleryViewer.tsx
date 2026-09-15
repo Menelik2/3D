@@ -37,12 +37,12 @@ function GalleryTile({
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const y = (e.clientY - r.top) / r.height;
-    const ry = (x - 0.5) * 14;
-    const rx = (0.5 - y) * 12;
+    const ry = (x - 0.5) * 12;
+    const rx = (0.5 - y) * 10;
 
     el.style.setProperty("--rx", `${rx}deg`);
     el.style.setProperty("--ry", `${ry}deg`);
-    el.style.setProperty("--lift", "20px");
+    el.style.setProperty("--lift", "16px");
     el.style.setProperty("--px", `${x * 100}%`);
     el.style.setProperty("--py", `${y * 100}%`);
     el.classList.add("is-tracking");
@@ -62,7 +62,7 @@ function GalleryTile({
       ref={ref}
       type="button"
       className="g3d-card"
-      style={{ animationDelay: `${Math.min(index, 20) * 40}ms` }}
+      style={{ animationDelay: `${Math.min(index, 16) * 35}ms` }}
       onClick={onOpen}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
@@ -106,7 +106,7 @@ export function ClientGalleryViewer({
   const bumpChrome = useCallback(() => {
     setChromeHidden(false);
     if (hideTimer.current) clearTimeout(hideTimer.current);
-    hideTimer.current = setTimeout(() => setChromeHidden(true), 2800);
+    hideTimer.current = setTimeout(() => setChromeHidden(true), 3200);
   }, []);
 
   const close = useCallback(() => {
@@ -227,7 +227,7 @@ export function ClientGalleryViewer({
       </div>
 
       <header className="g3d-header">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <div className="g3d-header-inner">
           <div className="min-w-0">
             <p className="text-[10px] uppercase tracking-[0.28em] text-white/40">
               META Pictures
@@ -239,13 +239,13 @@ export function ClientGalleryViewer({
               <p className="mt-0.5 text-xs text-white/50">{clientName}</p>
             ) : null}
           </div>
-          <p className="shrink-0 text-[11px] tabular-nums text-white/40">
+          <p className="shrink-0 text-[11px] uppercase tracking-widest tabular-nums text-white/40">
             {photos.length} {photos.length === 1 ? "photo" : "photos"}
           </p>
         </div>
       </header>
 
-      <main className="g3d-stage relative z-10 mx-auto max-w-6xl px-2.5 py-4 sm:px-5 sm:py-8">
+      <main className="g3d-stage">
         {photos.length === 0 ? (
           <p className="py-24 text-center text-sm text-white/40">
             No photos in this gallery yet.
@@ -275,7 +275,6 @@ export function ClientGalleryViewer({
             else setChromeHidden(true);
           }}
         >
-          {/* Always-visible Back — returns to gallery grid */}
           <button
             type="button"
             onClick={(e) => {
@@ -286,8 +285,8 @@ export function ClientGalleryViewer({
             aria-label="Back to gallery"
           >
             <svg
-              width="18"
-              height="18"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -306,7 +305,7 @@ export function ClientGalleryViewer({
             onClick={(e) => e.stopPropagation()}
           >
             <span className="w-[5.5rem]" aria-hidden />
-            <p className="text-[11px] tabular-nums text-white/55">
+            <p className="g3d-lb-counter">
               {index + 1} / {photos.length}
             </p>
             <span className="w-[5.5rem]" aria-hidden />
@@ -360,11 +359,7 @@ export function ClientGalleryViewer({
               <p className="text-center text-sm text-white/75 px-2">
                 {current.caption}
               </p>
-            ) : (
-              <p className="text-center text-[10px] uppercase tracking-widest text-white/35">
-                Back · swipe · arrows · Esc
-              </p>
-            )}
+            ) : null}
 
             {photos.length > 1 && (
               <div ref={filmRef} className="g3d-filmstrip">
