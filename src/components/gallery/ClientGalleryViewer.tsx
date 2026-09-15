@@ -7,7 +7,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { LazyImage, prefetchImages } from "@/components/ui/LazyImage";
+import { prefetchImages } from "@/components/ui/LazyImage";
 import "@/app/gallery-3d.css";
 
 export type GalleryPhoto = {
@@ -68,14 +68,15 @@ function GalleryTile({
       onPointerLeave={onPointerLeave}
       aria-label={photo.caption || `Photo ${index + 1}`}
     >
-      <LazyImage
+      {/* Plain img — same path as fullscreen, which already works in production */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={photo.image_url}
         alt={photo.caption || ""}
-        priority={priority}
-        className="g3d-card-media"
-        wrapperClassName="absolute inset-0"
-        sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
-        quality={75}
+        className="g3d-card-media absolute inset-0 h-full w-full object-cover"
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
       />
       <span className="g3d-card-depth" aria-hidden />
       <span className="g3d-card-rim" aria-hidden />
@@ -364,13 +365,13 @@ export function ClientGalleryViewer({
                     aria-label={`Go to photo ${i + 1}`}
                     aria-current={i === index}
                   >
-                    <LazyImage
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={p.image_url}
                       alt=""
-                      priority={Math.abs(i - index) <= 4}
-                      wrapperClassName="absolute inset-0"
-                      sizes="56px"
-                      quality={60}
+                      className="absolute inset-0 h-full w-full object-cover"
+                      loading={Math.abs(i - index) <= 4 ? "eager" : "lazy"}
+                      decoding="async"
                     />
                   </button>
                 ))}
