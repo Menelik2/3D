@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import Image from "next/image";
+import { useState } from "react";
 
 type Props = {
   src: string;
@@ -9,35 +8,16 @@ type Props = {
   priority?: boolean;
   className?: string;
   wrapperClassName?: string;
+  /** Kept for API compat; not used by native path */
   sizes?: string;
   objectFit?: "cover" | "contain";
   quality?: number;
 };
 
-/** Hosts allowed through the Next.js image optimizer (+ CDN cache). */
-function canOptimize(src: string): boolean {
-  if (!src) return false;
-  if (src.startsWith("/") && !src.startsWith("//")) return true;
-  try {
-    const u = new URL(src);
-    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
-    const h = u.hostname;
-    return (
-      h.endsWith(".supabase.co") ||
-      h === "images.unsplash.com" ||
-      h.endsWith(".cloudinary.com") ||
-      h === "localhost" ||
-      h === "127.0.0.1"
-    );
-  } catch {
-    return false;
-  }
-}
-
 /**
- * Lazy image via next/image when the host is allowlisted (cached by
- * /_next/image + minimumCacheTTL). Unknown hosts use a native <img>
- * so pasting arbitrary URLs still works.
+ * Gallery images use native <img>.
+ * next/image optimizer was leaving blank tiles for remote Storage URLs
+ * while plain img (fullscreen) loaded fine.
  */
 export function LazyImage({
   src,
@@ -45,16 +25,10 @@ export function LazyImage({
   priority = false,
   className = "",
   wrapperClassName = "",
-  sizes = "(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw",
   objectFit = "cover",
-  quality = 80,
 }: Props) {
-  const [useNative, setUseNative] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const optimize = useMemo(
-    () => canOptimize(src) && !useNative,
-    [src, useNative]
-  );
+  const [failed, setFailed] = useState(false);
   const fitClass = objectFit === "contain" ? "object-contain" : "object-cover";
 
   if (!src) {
@@ -66,58 +40,28 @@ export function LazyImage({
     );
   }
 
-  // Unknown host → native img (browser HTTP cache only)
-  if (!optimize) {
-    return (
-      <span
-        className={`lazy-img-wrap relative block overflow-hidden bg-zinc-900 ${wrapperClassName}`}
-      >
-        {!loaded && (
-          <span
-            className="absolute inset-0 animate-pulse bg-white/[0.05]"
-            aria-hidden
-          />
-        )}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt={alt}
-          loading={priority ? "eager" : "lazy"}
-          decoding="async"
-          fetchPriority={priority ? "high" : "auto"}
-          className={`absolute inset-0 h-full w-full ${fitClass} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-90"} ${className}`}
-          onLoad={() => setLoaded(true)}
-          onError={() => setLoaded(true)}
-        />
-      </span>
-    );
-  }
-
-  // Allowlisted host → next/image optimizer (AVIF/WebP + edge cache)
   return (
     <span
-      className={`lazy-img-wrap relative block overflow-hidden bg-zinc-900 ${wrapperClassName}`}
+      className={`lazy-img-wrap relative block h-full w-full overflow-hidden bg-zinc-900 ${wrapperClassName}`}
     >
-      {!loaded && (
+      {!loaded && !failed && (
         <span
-          className="absolute inset-0 animate-pulse bg-white/[0.05]"
+          className="absolute inset-0 z-0 animate-pulse bg-white/[0.06]"
           aria-hidden
         />
       )}
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={src}
         alt={alt}
-        fill
-        sizes={sizes}
-        quality={quality}
-        priority={priority}
-        // Optimized path — enables /_next/image caching
-        unoptimized={false}
-        className={`${fitClass} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-90"} ${className}`}
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
+        className={`absolute inset-0 z-[1] h-full w-full ${fitClass} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-100"} ${className}`}
         onLoad={() => setLoaded(true)}
         onError={() => {
-          setUseNative(true);
-          setLoaded(false);
+          setFailed(true);
+          setLoaded(true);
         }}
       />
     </span>

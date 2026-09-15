@@ -7,7 +7,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { prefetchImages } from "@/components/ui/LazyImage";
+import { LazyImage, prefetchImages } from "@/components/ui/LazyImage";
 import "@/app/gallery-3d.css";
 
 export type GalleryPhoto = {
@@ -26,7 +26,7 @@ function GalleryTile({
   onOpen: () => void;
 }) {
   const ref = useRef<HTMLButtonElement>(null);
-  const priority = index < 9;
+  const priority = index < 12;
 
   function onPointerMove(e: ReactPointerEvent<HTMLButtonElement>) {
     const el = ref.current;
@@ -68,15 +68,15 @@ function GalleryTile({
       onPointerLeave={onPointerLeave}
       aria-label={photo.caption || `Photo ${index + 1}`}
     >
-      {/* Plain img — same path as fullscreen, which already works in production */}
+      {/* Direct img — proven working in lightbox */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photo.image_url}
         alt={photo.caption || ""}
-        className="g3d-card-media absolute inset-0 h-full w-full object-cover"
         loading={priority ? "eager" : "lazy"}
         decoding="async"
         fetchPriority={priority ? "high" : "auto"}
+        className="g3d-card-media absolute inset-0 h-full w-full object-cover"
       />
       <span className="g3d-card-depth" aria-hidden />
       <span className="g3d-card-rim" aria-hidden />
@@ -369,9 +369,9 @@ export function ClientGalleryViewer({
                     <img
                       src={p.image_url}
                       alt=""
-                      className="absolute inset-0 h-full w-full object-cover"
-                      loading={Math.abs(i - index) <= 4 ? "eager" : "lazy"}
+                      loading={Math.abs(i - index) <= 5 ? "eager" : "lazy"}
                       decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover"
                     />
                   </button>
                 ))}
