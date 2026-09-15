@@ -14,19 +14,20 @@ type Props = {
   quality?: number;
 };
 
-function isRemote(src: string): boolean {
-  return /^https?:\/\//i.test(src);
-}
-
+/** Hosts allowed through the Next.js image optimizer (+ CDN cache). */
 function canOptimize(src: string): boolean {
   if (!src) return false;
   if (src.startsWith("/") && !src.startsWith("//")) return true;
   try {
-    const h = new URL(src).hostname;
+    const u = new URL(src);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
+    const h = u.hostname;
     return (
       h.endsWith(".supabase.co") ||
       h === "images.unsplash.com" ||
-      h.endsWith(".cloudinary.com")
+      h.endsWith(".cloudinary.com") ||
+      h === "localhost" ||
+      h === "127.0.0.1"
     );
   } catch {
     return false;
@@ -34,8 +35,9 @@ function canOptimize(src: string): boolean {
 }
 
 /**
- * Gallery-safe image: next/image when possible, native <img> fallback.
- * Never stays invisible if the file loads.
+ * Lazy image via next/image when the host is allowlisted (cached by
+ * /_next/image + minimumCacheTTL). Unknown hosts use a native <img>
+ * so pasting arbitrary URLs still works.
  */
 export function LazyImage({
   src,
@@ -49,7 +51,10 @@ export function LazyImage({
 }: Props) {
   const [useNative, setUseNative] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const optimize = useMemo(() => canOptimize(src) && !useNative, [src, useNative]);
+  const optimize = useMemo(
+    () => canOptimize(src) && !useNative,
+    [src, useNative]
+  );
   const fitClass = objectFit === "contain" ? "object-contain" : "object-cover";
 
   if (!src) {
@@ -61,8 +66,8 @@ export function LazyImage({
     );
   }
 
-  // Native path — most reliable for arbitrary storage URLs
-  if (useNative || !optimize) {
+  // Unknown host → native img (browser HTTP cache only)
+  if (!optimize) {
     return (
       <span
         className={`lazy-img-wrap relative block overflow-hidden bg-zinc-900 ${wrapperClassName}`}
@@ -88,6 +93,7 @@ export function LazyImage({
     );
   }
 
+  // Allowlisted host → next/image optimizer (AVIF/WebP + edge cache)
   return (
     <span
       className={`lazy-img-wrap relative block overflow-hidden bg-zinc-900 ${wrapperClassName}`}
@@ -105,12 +111,11 @@ export function LazyImage({
         sizes={sizes}
         quality={quality}
         priority={priority}
-        // Remote gallery hosts: skip optimizer if anything fails — still use Image API
-        unoptimized={isRemote(src)}
+        // Optimized path — enables /_next/image caching
+        unoptimized={false}
         className={`${fitClass} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-90"} ${className}`}
         onLoad={() => setLoaded(true)}
         onError={() => {
-          // Fall back to plain <img> on next render
           setUseNative(true);
           setLoaded(false);
         }}
