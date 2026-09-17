@@ -1,4 +1,4 @@
-/* Client private gallery — 3D side-angle cinematic grid */
+/* Client private gallery — cinematic 3D grid (mobile-safe taps) */
 
 .g3d-root {
   --g3d-accent: rgba(225, 29, 72, 0.55);
@@ -209,37 +209,41 @@
   }
 }
 
-/* ---- Grid (flat on mobile for reliable taps) ---- */
+/* ---- Grid ---- */
 .g3d-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+  gap: 0.55rem;
+  perspective: 1100px;
+  transform-style: preserve-3d;
 }
 
 .g3d-grid-3d {
-  padding: 0.25rem 0 1rem;
+  padding: 0.35rem 0.1rem 1.25rem;
 }
 
 @media (min-width: 640px) {
   .g3d-grid {
-    gap: 0.75rem;
+    gap: 0.8rem;
   }
 }
 
 @media (min-width: 768px) {
   .g3d-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.875rem;
+    gap: 0.9rem;
   }
 }
 
 @media (min-width: 1024px) {
   .g3d-grid {
     grid-template-columns: repeat(5, 1fr);
-    gap: 1rem;
+    gap: 1.05rem;
   }
 }
 
+/* Cards: resting transform is identity so mobile taps stay accurate.
+   3D lives in enter animation + layered depth shadows + press. */
 .g3d-card {
   --rx: 0deg;
   --ry: 0deg;
@@ -249,41 +253,68 @@
   --side-ry: 0deg;
   position: relative;
   aspect-ratio: 1;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   background: #0a0a0a;
   overflow: hidden;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  transform-style: preserve-3d;
   transition:
     transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 280ms ease,
     border-color 200ms ease;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
-  animation: g3d-card-in-center 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-  /* Flat by default — reliable hit targets on phones */
-  transform: none;
+  /* Cinematic depth without rotating the hit box */
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.25),
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  animation: g3d-card-in-center 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform: translateZ(0);
 }
 
 .g3d-card.g3d-side-left {
   animation-name: g3d-card-in-left;
+  box-shadow:
+    6px 12px 28px rgba(0, 0, 0, 0.5),
+    -2px 0 12px rgba(225, 29, 72, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
 }
+
 .g3d-card.g3d-side-right {
   animation-name: g3d-card-in-right;
+  box-shadow:
+    -6px 12px 28px rgba(0, 0, 0, 0.5),
+    2px 0 12px rgba(225, 29, 72, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
 }
+
 .g3d-card.g3d-side-center {
   animation-name: g3d-card-in-center;
 }
 
+/* Press feedback — professional “lift into surface” */
 .g3d-card:active {
-  transform: scale(0.97);
+  transform: scale(0.96) translateY(2px);
   border-color: rgba(225, 29, 72, 0.55);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(225, 29, 72, 0.18);
 }
 
-/* 3D tilt only on fine pointer (mouse) — keeps mobile taps accurate */
+.g3d-card:active .g3d-card-media {
+  transform: scale(1.04);
+}
+
+.g3d-card:active .g3d-card-rim {
+  opacity: 1;
+}
+
+/* Desktop: interactive 3D tracking */
 @media (hover: hover) and (pointer: fine) {
   .g3d-card.g3d-side-left {
     --side-ry: 8deg;
@@ -341,6 +372,7 @@
 .g3d-card-media {
   transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
+  will-change: transform;
 }
 
 .g3d-card-glare,
@@ -354,12 +386,12 @@
 
 .g3d-card-glare {
   z-index: 4;
-  opacity: 0;
+  opacity: 0.22;
   mix-blend-mode: screen;
   background: radial-gradient(
-    380px circle at var(--px, 50%) var(--py, 50%),
-    rgba(255, 255, 255, 0.28),
-    transparent 45%
+    120% 80% at 30% 15%,
+    rgba(255, 255, 255, 0.22),
+    transparent 55%
   );
   transition: opacity 250ms ease;
 }
@@ -373,62 +405,95 @@
 
 .g3d-card-depth {
   z-index: 2;
-  opacity: 0.25;
+  opacity: 0.4;
   background: linear-gradient(
-    160deg,
-    transparent 35%,
-    rgba(0, 0, 0, 0.35) 100%
+    165deg,
+    transparent 30%,
+    rgba(0, 0, 0, 0.45) 100%
   );
   transition: opacity 250ms ease;
 }
 
 .g3d-card-edge {
   z-index: 5;
-  opacity: 0.4;
+  opacity: 0.55;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    transparent 14%,
-    transparent 86%,
-    rgba(0, 0, 0, 0.28) 100%
+    rgba(255, 255, 255, 0.16) 0%,
+    transparent 16%,
+    transparent 84%,
+    rgba(0, 0, 0, 0.3) 100%
   );
   transition: opacity 250ms ease;
 }
 
+.g3d-side-left .g3d-card-edge {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 22%,
+    transparent 100%
+  );
+}
+
+.g3d-side-right .g3d-card-edge {
+  background: linear-gradient(
+    270deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 22%,
+    transparent 100%
+  );
+}
+
+/* Mobile / all: cinematic 3D enter — settles to identity (tap-safe) */
 @keyframes g3d-card-in-left {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: perspective(800px) translate3d(-18px, 22px, -40px) rotateY(18deg)
+      rotateX(6deg) scale(0.9);
+  }
+  70% {
+    opacity: 1;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: perspective(800px) translate3d(0, 0, 0) rotateY(0) rotateX(0)
+      scale(1);
   }
 }
 
 @keyframes g3d-card-in-right {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: perspective(800px) translate3d(18px, 22px, -40px) rotateY(-18deg)
+      rotateX(6deg) scale(0.9);
+  }
+  70% {
+    opacity: 1;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: perspective(800px) translate3d(0, 0, 0) rotateY(0) rotateX(0)
+      scale(1);
   }
 }
 
 @keyframes g3d-card-in-center {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: perspective(800px) translate3d(0, 26px, -50px) rotateX(12deg)
+      scale(0.88);
+  }
+  70% {
+    opacity: 1;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: perspective(800px) translate3d(0, 0, 0) rotateX(0) scale(1);
   }
 }
 
-/* ========== LIGHTBOX (portaled to body) ========== */
+/* ========== LIGHTBOX ========== */
 
 .g3d-lightbox {
   position: fixed;
