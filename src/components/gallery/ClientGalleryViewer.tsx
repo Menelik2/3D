@@ -8,6 +8,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type TouchEvent as ReactTouchEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { prefetchImages } from "@/components/ui/LazyImage";
 import { ClientGalleryUpload } from "@/components/gallery/ClientGalleryUpload";
 import "@/app/gallery-3d.css";
@@ -22,6 +23,7 @@ const MIN_SCALE = 1;
 const MAX_SCALE = 4;
 const DOUBLE_TAP_MS = 280;
 const DOUBLE_TAP_ZOOM = 2.5;
+const TAP_MOVE_MAX = 14;
 
 function dist(
   a: { clientX: number; clientY: number },
@@ -215,7 +217,6 @@ function ZoomablePhoto({
   );
 }
 
-/** Side bias for 3D column tilt: left / center / right of a 3-col rhythm */
 function sideClass(index: number): string {
   const col = index % 3;
   if (col === 0) return "g3d-side-left";
@@ -234,6 +235,7 @@ function GalleryTile({
 }) {
   const ref = useRef<HTMLButtonElement>(null);
   const priority = index < 12;
+  const ptrStart = useRef<{ x: number; y: number; id: number } | null>(null);
 
   function onPointerMove(e: ReactPointerEvent<HTMLButtonElement>) {
     const el = ref.current;
@@ -244,7 +246,6 @@ function GalleryTile({
     const r = el.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width;
     const y = (e.clientY - r.top) / r.height;
-    // Stronger side rotation (Y) for cinematic 3D
     const ry = (x - 0.5) * 22;
     const rx = (0.5 - y) * 14;
 
@@ -263,6 +264,22 @@ function GalleryTile({
     el.style.setProperty("--ry", "0deg");
     el.style.setProperty("--lift", "0px");
     el.classList.remove("is-tracking");
+    ptrStart.current = null;
+  }
+
+  function onPointerDown(e: ReactPointerEvent<HTMLButtonElement>) {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    ptrStart.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+  }
+
+  function onPointerUp(e: ReactPointerEvent<HTMLButtonElement>) {
+    const start = ptrStart.current;
+    ptrStart.current = null;
+    if (!start || start.id !== e.pointerId) return;
+    const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+    if (moved > TAP_MOVE_MAX) return;
+    e.preventDefault();
+    onOpen();
   }
 
   return (
@@ -271,9 +288,18 @@ function GalleryTile({
       type="button"
       className={`g3d-card ${sideClass(index)}`}
       style={{ animationDelay: `${Math.min(index, 20) * 40}ms` }}
-      onClick={onOpen}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerCancel={() => {
+        ptrStart.current = null;
+      }}
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
+      onClick={(e) => {
+        // Fallback for browsers that don't fire pointerup cleanly
+        e.preventDefault();
+        if (!ptrStart.current) onOpen();
+      }}
       aria-label={photo.caption || `Photo ${index + 1}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -283,6 +309,7 @@ function GalleryTile({
         loading={priority ? "eager" : "lazy"}
         decoding="async"
         fetchPriority={priority ? "high" : "auto"}
+        draggable={false}
         className="g3d-card-media absolute inset-0 h-full w-full object-cover"
       />
       <span className="g3d-card-depth" aria-hidden />
@@ -312,9 +339,14 @@ export function ClientGalleryViewer({
   const [swapKey, setSwapKey] = useState(0);
   const [chromeHidden, setChromeHidden] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const filmRef = useRef<HTMLDivElement>(null);
   const zoomedRef = useRef(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setPhotos(initialPhotos);
@@ -453,6 +485,143 @@ export function ClientGalleryViewer({
         ? "is-swap-prev"
         : "";
 
+  const lightbox =
+    open && current && index !== null ? (
+      <div
+        className={`g3d-lightbox${chromeHidden ? " is-chrome-hidden" : ""}${zoomed ? " is-zoomed" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Full screen photo"
+        onClick={() => {
+          if (zoomed) return;
+          if (chromeHidden) bumpChrome();
+          else setChromeHidden(true);
+        }}
+      >
+        <button
+          type="button"
+          className="g3d-back-btn"
+          aria-label="Back to gallery"
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            close();
+          }}
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M19 12H5" />
+            <path d="M12 19l-7-7 7-7" />
+          </svg>
+          <span>Back</span>
+        </button>
+
+        <div
+          className="g3d-lb-chrome g3d-lb-chrome-top"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <span className="w-[6.5rem]" aria-hidden />
+          <p className="g3d-lb-counter">
+            {index + 1} / {photos.length}
+          </p>
+          <span className="w-[6.5rem]" aria-hidden />
+        </div>
+
+        <div className="g3d-lb-stage">
+          <button
+            type="button"
+            className="g3d-nav-btn g3d-nav-prev"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(-1);
+            }}
+            aria-label="Previous"
+          >
+            ‹
+          </button>
+
+          <div key={swapKey} className={`g3d-lb-frame ${swapClass}`}>
+            <ZoomablePhoto
+              src={current.image_url}
+              alt={current.caption || ""}
+              onZoomChange={(z) => {
+                zoomedRef.current = z;
+                setZoomed(z);
+              }}
+            />
+          </div>
+
+          <button
+            type="button"
+            className="g3d-nav-btn g3d-nav-next"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(1);
+            }}
+            aria-label="Next"
+          >
+            ›
+          </button>
+        </div>
+
+        <div
+          className="g3d-lb-chrome g3d-lb-chrome-bottom"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {current.caption ? (
+            <p className="text-center text-sm text-white/75 px-2">
+              {current.caption}
+            </p>
+          ) : (
+            <p className="g3d-zoom-hint">Pinch to zoom · double-tap · swipe</p>
+          )}
+
+          {photos.length > 1 && (
+            <div ref={filmRef} className="g3d-filmstrip g3d-filmstrip-3d">
+              {photos.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  data-thumb={i}
+                  className={`g3d-thumb relative${i === index ? " is-active" : ""}`}
+                  onClick={() => {
+                    if (i === index) return;
+                    setSwapDir(i > index ? "next" : "prev");
+                    setIndex(i);
+                    setSwapKey((k) => k + 1);
+                    setZoomed(false);
+                    zoomedRef.current = false;
+                    bumpChrome();
+                  }}
+                  aria-label={`Go to photo ${i + 1}`}
+                  aria-current={i === index}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.image_url}
+                    alt=""
+                    loading={Math.abs(i - index) <= 5 ? "eager" : "lazy"}
+                    decoding="async"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    ) : null;
+
   return (
     <div className="g3d-root">
       <div className="g3d-atmosphere" aria-hidden>
@@ -519,145 +688,7 @@ export function ClientGalleryViewer({
         )}
       </main>
 
-      {open && current && index !== null && (
-        <div
-          className={`g3d-lightbox${chromeHidden ? " is-chrome-hidden" : ""}${zoomed ? " is-zoomed" : ""}`}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Full screen photo"
-          onClick={() => {
-            if (zoomed) return;
-            if (chromeHidden) bumpChrome();
-            else setChromeHidden(true);
-          }}
-        >
-          <button
-            type="button"
-            className="g3d-back-btn"
-            aria-label="Back to gallery"
-            onPointerDown={(e) => {
-              e.stopPropagation();
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              close();
-            }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="M19 12H5" />
-              <path d="M12 19l-7-7 7-7" />
-            </svg>
-            <span>Back</span>
-          </button>
-
-          <div
-            className="g3d-lb-chrome g3d-lb-chrome-top"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className="w-[6.5rem]" aria-hidden />
-            <p className="g3d-lb-counter">
-              {index + 1} / {photos.length}
-            </p>
-            <span className="w-[6.5rem]" aria-hidden />
-          </div>
-
-          <div className="g3d-lb-stage">
-            <button
-              type="button"
-              className="g3d-nav-btn g3d-nav-prev"
-              onClick={(e) => {
-                e.stopPropagation();
-                go(-1);
-              }}
-              aria-label="Previous"
-            >
-              ‹
-            </button>
-
-            <div key={swapKey} className={`g3d-lb-frame ${swapClass}`}>
-              <ZoomablePhoto
-                src={current.image_url}
-                alt={current.caption || ""}
-                onZoomChange={(z) => {
-                  zoomedRef.current = z;
-                  setZoomed(z);
-                }}
-              />
-            </div>
-
-            <button
-              type="button"
-              className="g3d-nav-btn g3d-nav-next"
-              onClick={(e) => {
-                e.stopPropagation();
-                go(1);
-              }}
-              aria-label="Next"
-            >
-              ›
-            </button>
-          </div>
-
-          <div
-            className="g3d-lb-chrome g3d-lb-chrome-bottom"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {current.caption ? (
-              <p className="text-center text-sm text-white/75 px-2">
-                {current.caption}
-              </p>
-            ) : (
-              <p className="g3d-zoom-hint">
-                Pinch to zoom · double-tap · swipe
-              </p>
-            )}
-
-            {photos.length > 1 && (
-              <div ref={filmRef} className="g3d-filmstrip g3d-filmstrip-3d">
-                {photos.map((p, i) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    data-thumb={i}
-                    className={`g3d-thumb relative${i === index ? " is-active" : ""}`}
-                    onClick={() => {
-                      if (i === index) return;
-                      setSwapDir(i > index ? "next" : "prev");
-                      setIndex(i);
-                      setSwapKey((k) => k + 1);
-                      setZoomed(false);
-                      zoomedRef.current = false;
-                      bumpChrome();
-                    }}
-                    aria-label={`Go to photo ${i + 1}`}
-                    aria-current={i === index}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={p.image_url}
-                      alt=""
-                      loading={Math.abs(i - index) <= 5 ? "eager" : "lazy"}
-                      decoding="async"
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {mounted && lightbox ? createPortal(lightbox, document.body) : lightbox}
     </div>
   );
 }

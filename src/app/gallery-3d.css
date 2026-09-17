@@ -10,7 +10,6 @@
     radial-gradient(ellipse 50% 40% at 95% 70%, rgba(225, 29, 72, 0.06), transparent 48%),
     #050505;
   overflow-x: hidden;
-  perspective: 1400px;
 }
 
 .g3d-atmosphere {
@@ -108,7 +107,6 @@
   margin-right: auto;
   max-width: 72rem;
   padding: 1rem 0.75rem 2.5rem;
-  transform-style: preserve-3d;
 }
 
 @media (min-width: 640px) {
@@ -138,6 +136,7 @@
   text-transform: uppercase;
   cursor: pointer;
   transition: background 160ms ease, border-color 160ms ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .g3d-upload-toggle:hover,
@@ -210,36 +209,34 @@
   }
 }
 
-/* ---- 3D grid ---- */
+/* ---- Grid (flat on mobile for reliable taps) ---- */
 .g3d-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.55rem;
-  perspective: 1200px;
-  transform-style: preserve-3d;
+  gap: 0.5rem;
 }
 
 .g3d-grid-3d {
-  padding: 0.35rem 0.15rem 1rem;
+  padding: 0.25rem 0 1rem;
 }
 
 @media (min-width: 640px) {
   .g3d-grid {
-    gap: 0.85rem;
+    gap: 0.75rem;
   }
 }
 
 @media (min-width: 768px) {
   .g3d-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    gap: 0.875rem;
   }
 }
 
 @media (min-width: 1024px) {
   .g3d-grid {
     grid-template-columns: repeat(5, 1fr);
-    gap: 1.1rem;
+    gap: 1rem;
   }
 }
 
@@ -257,53 +254,51 @@
   overflow: hidden;
   cursor: pointer;
   border-radius: 6px;
-  transform-style: preserve-3d;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
   transition:
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 320ms ease,
-    border-color 250ms ease;
-  box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.45),
-    0 2px 0 rgba(255, 255, 255, 0.04) inset;
-  animation: g3d-card-in-center 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 280ms ease,
+    border-color 200ms ease;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  animation: g3d-card-in-center 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Flat by default — reliable hit targets on phones */
+  transform: none;
 }
 
-/* Resting side tilt — left / center / right columns */
 .g3d-card.g3d-side-left {
-  --side-ry: 9deg;
   animation-name: g3d-card-in-left;
-  box-shadow:
-    8px 14px 32px rgba(0, 0, 0, 0.5),
-    -1px 0 0 rgba(225, 29, 72, 0.12);
 }
-
 .g3d-card.g3d-side-right {
-  --side-ry: -9deg;
   animation-name: g3d-card-in-right;
-  box-shadow:
-    -8px 14px 32px rgba(0, 0, 0, 0.5),
-    1px 0 0 rgba(225, 29, 72, 0.12);
 }
-
 .g3d-card.g3d-side-center {
-  --side-ry: 0deg;
   animation-name: g3d-card-in-center;
 }
 
-/* Always apply slight side perspective (mobile + desktop) */
-.g3d-card {
-  transform: perspective(900px) rotateY(var(--side-ry)) translateZ(0);
-}
-
 .g3d-card:active {
-  transform: perspective(900px) rotateY(var(--side-ry)) scale(0.97);
-  border-color: rgba(225, 29, 72, 0.5);
+  transform: scale(0.97);
+  border-color: rgba(225, 29, 72, 0.55);
 }
 
+/* 3D tilt only on fine pointer (mouse) — keeps mobile taps accurate */
 @media (hover: hover) and (pointer: fine) {
+  .g3d-card.g3d-side-left {
+    --side-ry: 8deg;
+  }
+  .g3d-card.g3d-side-right {
+    --side-ry: -8deg;
+  }
+
   .g3d-card {
-    transform: perspective(1000px) rotateX(var(--rx)) rotateY(calc(var(--side-ry) + var(--ry)))
-      translateZ(var(--lift));
+    transform: perspective(1000px) rotateX(var(--rx))
+      rotateY(calc(var(--side-ry) + var(--ry))) translateZ(var(--lift));
+  }
+
+  .g3d-card:active {
+    transform: perspective(1000px) rotateY(var(--side-ry)) scale(0.97);
   }
 
   .g3d-card.is-tracking {
@@ -320,12 +315,21 @@
 
   .g3d-card:hover .g3d-card-media,
   .g3d-card.is-tracking .g3d-card-media {
-    transform: scale(1.08);
+    transform: scale(1.06);
   }
 
   .g3d-card:hover .g3d-card-edge,
-  .g3d-card.is-tracking .g3d-card-edge {
+  .g3d-card.is-tracking .g3d-card-edge,
+  .g3d-card:hover .g3d-card-glare,
+  .g3d-card.is-tracking .g3d-card-glare,
+  .g3d-card:hover .g3d-card-rim,
+  .g3d-card.is-tracking .g3d-card-rim {
     opacity: 1;
+  }
+
+  .g3d-card:hover .g3d-card-depth,
+  .g3d-card.is-tracking .g3d-card-depth {
+    opacity: 0.55;
   }
 }
 
@@ -335,8 +339,8 @@
 }
 
 .g3d-card-media {
-  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
-  transform: translateZ(0);
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
 
 .g3d-card-glare,
@@ -354,7 +358,7 @@
   mix-blend-mode: screen;
   background: radial-gradient(
     380px circle at var(--px, 50%) var(--py, 50%),
-    rgba(255, 255, 255, 0.32),
+    rgba(255, 255, 255, 0.28),
     transparent 45%
   );
   transition: opacity 250ms ease;
@@ -369,109 +373,76 @@
 
 .g3d-card-depth {
   z-index: 2;
-  opacity: 0.35;
+  opacity: 0.25;
   background: linear-gradient(
     160deg,
     transparent 35%,
-    rgba(0, 0, 0, 0.4) 100%
-  );
-  transition: opacity 250ms ease;
-}
-
-/* Side edge highlight (3D thickness feel) */
-.g3d-card-edge {
-  z-index: 5;
-  opacity: 0.55;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.14) 0%,
-    transparent 12%,
-    transparent 88%,
     rgba(0, 0, 0, 0.35) 100%
   );
   transition: opacity 250ms ease;
 }
 
-.g3d-side-left .g3d-card-edge {
+.g3d-card-edge {
+  z-index: 5;
+  opacity: 0.4;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.18) 0%,
-    transparent 18%,
-    transparent 100%
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 14%,
+    transparent 86%,
+    rgba(0, 0, 0, 0.28) 100%
   );
+  transition: opacity 250ms ease;
 }
 
-.g3d-side-right .g3d-card-edge {
-  background: linear-gradient(
-    270deg,
-    rgba(255, 255, 255, 0.18) 0%,
-    transparent 18%,
-    transparent 100%
-  );
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .g3d-card:hover .g3d-card-glare,
-  .g3d-card.is-tracking .g3d-card-glare,
-  .g3d-card:hover .g3d-card-rim,
-  .g3d-card.is-tracking .g3d-card-rim {
-    opacity: 1;
-  }
-
-  .g3d-card:hover .g3d-card-depth,
-  .g3d-card.is-tracking .g3d-card-depth {
-    opacity: 0.55;
-  }
-}
-
-/* Enter from sides */
 @keyframes g3d-card-in-left {
   from {
     opacity: 0;
-    transform: perspective(900px) translateX(-28px) rotateY(28deg) scale(0.92);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
-    transform: perspective(900px) translateX(0) rotateY(9deg) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes g3d-card-in-right {
   from {
     opacity: 0;
-    transform: perspective(900px) translateX(28px) rotateY(-28deg) scale(0.92);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
-    transform: perspective(900px) translateX(0) rotateY(-9deg) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes g3d-card-in-center {
   from {
     opacity: 0;
-    transform: perspective(900px) translateY(18px) rotateX(8deg) scale(0.94);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
-    transform: perspective(900px) translateY(0) rotateX(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-/* ========== LIGHTBOX ========== */
+/* ========== LIGHTBOX (portaled to body) ========== */
 
 .g3d-lightbox {
   position: fixed;
   inset: 0;
-  z-index: 100;
-  width: 100vw;
-  height: 100dvh;
-  max-height: 100dvh;
+  z-index: 99999;
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: #000;
-  animation: g3d-lb-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: g3d-lb-in 220ms ease both;
   touch-action: none;
+  overscroll-behavior: none;
 }
 
 @keyframes g3d-lb-in {
@@ -485,16 +456,16 @@
 
 .g3d-back-btn {
   position: absolute;
-  top: max(0.85rem, env(safe-area-inset-top));
-  left: max(0.85rem, env(safe-area-inset-left));
-  z-index: 120;
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: max(0.75rem, env(safe-area-inset-left));
+  z-index: 30;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
   min-height: 48px;
   min-width: 48px;
-  padding: 0.65rem 1.15rem 0.65rem 0.9rem;
+  padding: 0.6rem 1.1rem 0.6rem 0.85rem;
   border-radius: 9999px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   background: rgba(0, 0, 0, 0.88);
@@ -505,31 +476,16 @@
   text-transform: uppercase;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    transform 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.g3d-back-btn:hover {
-  background: rgba(225, 29, 72, 0.65);
-  border-color: rgba(225, 29, 72, 0.85);
-  box-shadow: 0 12px 36px rgba(225, 29, 72, 0.35);
+  touch-action: manipulation;
+  pointer-events: auto;
 }
 
 .g3d-back-btn:active {
   transform: scale(0.96);
   background: rgba(225, 29, 72, 0.75);
-}
-
-.g3d-back-btn svg {
-  flex-shrink: 0;
 }
 
 .g3d-lb-chrome {
@@ -543,9 +499,8 @@
   gap: 0.75rem;
   padding-left: max(0.75rem, env(safe-area-inset-left));
   padding-right: max(0.75rem, env(safe-area-inset-right));
-  transition:
-    opacity 280ms ease,
-    transform 280ms ease;
+  transition: opacity 280ms ease, transform 280ms ease;
+  pointer-events: none;
 }
 
 .g3d-lb-chrome-top {
@@ -553,7 +508,6 @@
   padding-top: max(0.85rem, env(safe-area-inset-top));
   padding-bottom: 1rem;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.65), transparent);
-  pointer-events: none;
 }
 
 .g3d-lb-counter {
@@ -573,19 +527,12 @@
   background: linear-gradient(to top, rgba(0, 0, 0, 0.78), transparent);
   flex-direction: column;
   gap: 0.75rem;
+  pointer-events: auto;
 }
 
 .g3d-lightbox.is-chrome-hidden .g3d-lb-chrome {
   opacity: 0;
   pointer-events: none;
-}
-
-.g3d-lightbox.is-chrome-hidden .g3d-lb-chrome-top {
-  transform: translateY(-8px);
-}
-
-.g3d-lightbox.is-chrome-hidden .g3d-lb-chrome-bottom {
-  transform: translateY(8px);
 }
 
 .g3d-lightbox.is-chrome-hidden .g3d-back-btn {
@@ -595,10 +542,9 @@
 
 .g3d-lb-stage {
   position: relative;
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -611,47 +557,45 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: g3d-lb-frame 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: g3d-lb-frame 280ms ease both;
 }
 
 @keyframes g3d-lb-frame {
   from {
     opacity: 0;
-    transform: scale(1.03) rotateY(4deg);
   }
   to {
     opacity: 1;
-    transform: scale(1) rotateY(0);
   }
 }
 
 .g3d-lb-frame.is-swap-next {
-  animation: g3d-lb-next 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: g3d-lb-next 280ms ease both;
 }
 
 .g3d-lb-frame.is-swap-prev {
-  animation: g3d-lb-prev 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: g3d-lb-prev 280ms ease both;
 }
 
 @keyframes g3d-lb-next {
   from {
     opacity: 0;
-    transform: perspective(800px) translateX(48px) rotateY(-12deg);
+    transform: translateX(40px);
   }
   to {
     opacity: 1;
-    transform: perspective(800px) translateX(0) rotateY(0);
+    transform: translateX(0);
   }
 }
 
 @keyframes g3d-lb-prev {
   from {
     opacity: 0;
-    transform: perspective(800px) translateX(-48px) rotateY(12deg);
+    transform: translateX(-40px);
   }
   to {
     opacity: 1;
-    transform: perspective(800px) translateX(0) rotateY(0);
+    transform: translateX(0);
   }
 }
 
@@ -668,8 +612,9 @@
 }
 
 .g3d-zoom-img {
-  max-width: 100vw;
-  max-height: 100dvh;
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -704,25 +649,13 @@
   line-height: 1;
   backdrop-filter: blur(12px);
   transform: translateY(-50%);
-  transition:
-    background 200ms ease,
-    border-color 200ms ease,
-    box-shadow 200ms ease,
-    transform 200ms ease,
-    opacity 200ms ease;
+  cursor: pointer;
 }
 
 @media (min-width: 768px) {
   .g3d-nav-btn {
     display: flex;
   }
-}
-
-.g3d-nav-btn:hover,
-.g3d-nav-btn:active {
-  background: rgba(225, 29, 72, 0.45);
-  border-color: rgba(225, 29, 72, 0.6);
-  box-shadow: 0 0 28px rgba(225, 29, 72, 0.3);
 }
 
 .g3d-nav-prev {
@@ -737,22 +670,16 @@
   pointer-events: none;
 }
 
-/* Filmstrip with side 3D */
 .g3d-filmstrip {
   display: flex;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.4rem;
   max-width: 100%;
   overflow-x: auto;
-  padding: 0.35rem 0.5rem 0.15rem;
+  padding: 0.25rem 0.5rem;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  perspective: 600px;
-  transform-style: preserve-3d;
-}
-
-.g3d-filmstrip-3d .g3d-thumb {
-  transform: rotateY(0deg) scale(1);
+  pointer-events: auto;
 }
 
 .g3d-filmstrip::-webkit-scrollbar {
@@ -768,12 +695,10 @@
   overflow: hidden;
   border: 2px solid transparent;
   opacity: 0.48;
-  transform-style: preserve-3d;
-  transition:
-    opacity 200ms ease,
-    border-color 200ms ease,
-    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 200ms ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: opacity 200ms ease, border-color 200ms ease, transform 200ms ease;
 }
 
 @media (min-width: 640px) {
@@ -786,14 +711,8 @@
 .g3d-thumb.is-active {
   opacity: 1;
   border-color: rgba(225, 29, 72, 0.95);
-  transform: translateY(-4px) scale(1.1) rotateY(0deg);
-  box-shadow:
-    0 8px 20px rgba(0, 0, 0, 0.45),
-    0 0 20px rgba(225, 29, 72, 0.4);
-}
-
-.g3d-thumb:active {
-  opacity: 0.95;
+  transform: scale(1.08);
+  box-shadow: 0 0 18px rgba(225, 29, 72, 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {
