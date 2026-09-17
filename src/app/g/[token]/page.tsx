@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { ClientGalleryViewer } from "@/components/gallery/ClientGalleryViewer";
 
 type Props = { params: Promise<{ token: string }> };
@@ -13,9 +14,14 @@ function publicClient() {
   });
 }
 
+/** Prefer service role for reliable reads if RLS policies are incomplete. */
+function galleryDb() {
+  return tryCreateAdminClient() ?? publicClient();
+}
+
 export async function generateMetadata({ params }: Props) {
   const { token } = await params;
-  const supabase = publicClient();
+  const supabase = galleryDb();
   if (!supabase) return { title: "Gallery | META Pictures" };
 
   const { data } = await supabase
@@ -39,10 +45,9 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function PublicGalleryPage({ params }: Props) {
   const { token } = await params;
-  const supabase = publicClient();
+  const supabase = galleryDb();
   if (!supabase) notFound();
 
-  // allow_client_upload may be missing until SQL migration runs
   let gallery: {
     id: string;
     title: string;
@@ -69,6 +74,9 @@ export default async function PublicGalleryPage({ params }: Props) {
       gallery = retry.data
         ? { ...retry.data, allow_client_upload: true }
         : null;
+    } else if (error) {
+      console.error("[gallery] load error", error.message);
+      notFound();
     } else {
       gallery = data;
     }
@@ -76,11 +84,19 @@ export default async function PublicGalleryPage({ params }: Props) {
 
   if (!gallery) notFound();
 
-  const { data: images } = await supabase
+  const { data: images, error: imgErr } = await supabase
     .from("gallery_images")
     .select("id, image_url, caption, sort_order")
     .eq("gallery_id", gallery.id)
     .order("sort_order", { ascending: true });
+
+  if (imgErr) {
+    console.error("[gallery] images error", imgErr.message);
+  }
+
+  const photos = (images ?? []).filter(
+    (p) => typeof p.image_url === "string" && p.image_url.length > 0
+  );
 
   const allowUpload = gallery.allow_client_upload !== false;
 
@@ -88,7 +104,7 @@ export default async function PublicGalleryPage({ params }: Props) {
     <ClientGalleryViewer
       title={gallery.title}
       clientName={gallery.client_name}
-      photos={images ?? []}
+      photos={photos}
       token={token}
       allowUpload={allowUpload}
     />

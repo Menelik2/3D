@@ -2,8 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { compressImages, formatBytes } from "@/lib/image-compress";
+import {
+  compressImages,
+  formatBytes,
+  GALLERY_COMPRESS_DEFAULTS,
+} from "@/lib/image-compress";
 import { LazyImage } from "@/components/ui/LazyImage";
 import { fieldClass, labelClass } from "./CmsFormFields";
 
@@ -13,8 +16,6 @@ type Img = {
   caption: string | null;
   sort_order: number;
 };
-
-const BUCKET = "galleries";
 
 export function GalleryImagesManager({
   galleryId,
@@ -39,7 +40,7 @@ export function GalleryImagesManager({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ urls }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || "Failed to save image records");
     if (data.items) {
       setImages((prev) => [...prev, ...data.items]);
@@ -74,7 +75,11 @@ export function GalleryImagesManager({
   async function uploadCompressed(files: FileList | File[]) {
     const list = Array.from(files).filter((f) => f.type.startsWith("image/"));
     if (list.length === 0) {
-      setErr("Select image files (JPEG, PNG, WebP, HEIC may not compress).");
+      setErr("Select image files (JPEG, PNG, WebP).");
+      return;
+    }
+    if (list.length > 30) {
+      setErr("You can upload up to 30 photos at a time.");
       return;
     }
 
@@ -86,7 +91,12 @@ export function GalleryImagesManager({
       setProgress(`Compressing 0 / ${list.length}…`);
       const compressed = await compressImages(
         list,
-        { maxEdge: 2048, quality: 0.82 },
+        {
+          maxEdge: GALLERY_COMPRESS_DEFAULTS.maxEdge,
+          quality: GALLERY_COMPRESS_DEFAULTS.quality,
+          preferWebp: true,
+          maxBytes: GALLERY_COMPRESS_DEFAULTS.maxBytes,
+        },
         (done, total, name) => {
           setProgress(
             done >= total
@@ -96,47 +106,39 @@ export function GalleryImagesManager({
         }
       );
 
-      const supabase = createClient();
-      const publicUrls: string[] = [];
-      let savedBytes = 0;
       let originalBytes = 0;
-
-      for (let i = 0; i < compressed.length; i++) {
-        const c = compressed[i]!;
+      let savedBytes = 0;
+      const form = new FormData();
+      for (const c of compressed) {
         originalBytes += c.originalBytes;
         savedBytes += c.compressedBytes;
-        setProgress(`Uploading ${i + 1} / ${compressed.length}…`);
-
-        const path = `${galleryId}/${Date.now()}-${i}-${safeName(c.fileName)}`;
-        const { error: upErr } = await supabase.storage
-          .from(BUCKET)
-          .upload(path, c.blob, {
-            contentType: c.mime || "image/jpeg",
-            upsert: false,
-            cacheControl: "31536000",
-          });
-
-        if (upErr) {
-          throw new Error(
-            upErr.message.includes("Bucket not found")
-              ? `Storage bucket "${BUCKET}" not found. Create a public bucket named "${BUCKET}" in Supabase → Storage.`
-              : upErr.message
-          );
-        }
-
-        const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-        if (pub?.publicUrl) publicUrls.push(pub.publicUrl);
+        form.append(
+          "files",
+          new File([c.blob], c.fileName, { type: c.mime || "image/jpeg" })
+        );
       }
 
-      setProgress("Saving…");
-      const n = await registerUrls(publicUrls);
+      setProgress("Uploading…");
+      const res = await fetch(`/api/cms/galleries/${galleryId}/images/upload`, {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      const items = (data.items ?? []) as Img[];
+      if (items.length) {
+        setImages((prev) => [...prev, ...items]);
+      }
 
       const ratio =
         originalBytes > 0
           ? Math.round((1 - savedBytes / originalBytes) * 100)
           : 0;
       setMsg(
-        `Added ${n} photo(s) · ${formatBytes(originalBytes)} → ${formatBytes(savedBytes)}` +
+        `Added ${items.length || compressed.length} photo(s) · ${formatBytes(originalBytes)} → ${formatBytes(savedBytes)}` +
           (ratio > 0 ? ` (${ratio}% smaller)` : "")
       );
       router.refresh();
@@ -207,13 +209,13 @@ export function GalleryImagesManager({
         <div>
           <p className={labelClass}>Upload & compress</p>
           <p className="text-[11px] text-muted mb-3">
-            Images are resized (max 2048px) and compressed to WebP/JPEG in your browser
-            before upload — faster delivery for clients.
+            Images are resized (max {GALLERY_COMPRESS_DEFAULTS.maxEdge}px) and
+            compressed in your browser before upload.
           </p>
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/*"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/*"
             multiple
             disabled={busy}
             className="block w-full text-sm text-muted file:mr-4 file:border-0 file:bg-accent file:px-4 file:py-2.5 file:text-[10px] file:uppercase file:tracking-widest file:text-white hover:file:bg-accent-hover disabled:opacity-50"
@@ -323,12 +325,4 @@ export function GalleryImagesManager({
       )}
     </div>
   );
-}
-
-function safeName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 80);
 }

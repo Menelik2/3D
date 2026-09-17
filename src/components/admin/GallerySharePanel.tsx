@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function GallerySharePanel({
   token,
@@ -10,11 +10,15 @@ export function GallerySharePanel({
   title: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState("https://metapictures.pro.et");
 
-  const shareUrl = useMemo(() => {
-    if (typeof window === "undefined") return `/g/${token}`;
-    return `${window.location.origin}/g/${token}`;
-  }, [token]);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location?.origin) {
+      setOrigin(window.location.origin);
+    }
+  }, []);
+
+  const shareUrl = useMemo(() => `${origin}/g/${token}`, [origin, token]);
 
   const qrUrl = useMemo(() => {
     const data = encodeURIComponent(shareUrl);
@@ -27,7 +31,6 @@ export function GallerySharePanel({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* fallback */
       prompt("Copy this link:", shareUrl);
     }
   }
@@ -38,8 +41,8 @@ export function GallerySharePanel({
         Client access
       </h2>
       <p className="text-sm text-muted">
-        Only people with this link (or QR) can open <strong className="text-foreground/90">{title}</strong>.
-        No login required.
+        Only people with this link (or QR) can open{" "}
+        <strong className="text-foreground/90">{title}</strong>. No login required.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3">
