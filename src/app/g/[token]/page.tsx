@@ -48,40 +48,17 @@ export default async function PublicGalleryPage({ params }: Props) {
   const supabase = galleryDb();
   if (!supabase) notFound();
 
-  let gallery: {
-    id: string;
-    title: string;
-    client_name: string | null;
-    is_published: boolean;
-    allow_client_upload?: boolean | null;
-  } | null = null;
+  const { data: gallery, error } = await supabase
+    .from("client_galleries")
+    .select("id, title, client_name, is_published")
+    .eq("token", token)
+    .eq("is_published", true)
+    .maybeSingle();
 
-  {
-    const { data, error } = await supabase
-      .from("client_galleries")
-      .select("id, title, client_name, is_published, allow_client_upload")
-      .eq("token", token)
-      .eq("is_published", true)
-      .maybeSingle();
-
-    if (error && /allow_client_upload/i.test(error.message || "")) {
-      const retry = await supabase
-        .from("client_galleries")
-        .select("id, title, client_name, is_published")
-        .eq("token", token)
-        .eq("is_published", true)
-        .maybeSingle();
-      gallery = retry.data
-        ? { ...retry.data, allow_client_upload: true }
-        : null;
-    } else if (error) {
-      console.error("[gallery] load error", error.message);
-      notFound();
-    } else {
-      gallery = data;
-    }
+  if (error) {
+    console.error("[gallery] load error", error.message);
+    notFound();
   }
-
   if (!gallery) notFound();
 
   const { data: images, error: imgErr } = await supabase
@@ -98,15 +75,11 @@ export default async function PublicGalleryPage({ params }: Props) {
     (p) => typeof p.image_url === "string" && p.image_url.length > 0
   );
 
-  const allowUpload = gallery.allow_client_upload !== false;
-
   return (
     <ClientGalleryViewer
       title={gallery.title}
       clientName={gallery.client_name}
       photos={photos}
-      token={token}
-      allowUpload={allowUpload}
     />
   );
 }

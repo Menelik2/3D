@@ -10,7 +10,6 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { prefetchImages } from "@/components/ui/LazyImage";
-import { ClientGalleryUpload } from "@/components/gallery/ClientGalleryUpload";
 import "@/app/gallery-3d.css";
 
 export type GalleryPhoto = {
@@ -296,7 +295,6 @@ function GalleryTile({
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
       onClick={(e) => {
-        // Fallback for browsers that don't fire pointerup cleanly
         e.preventDefault();
         if (!ptrStart.current) onOpen();
       }}
@@ -324,14 +322,10 @@ export function ClientGalleryViewer({
   title,
   clientName,
   photos: initialPhotos,
-  token,
-  allowUpload = false,
 }: {
   title: string;
   clientName?: string | null;
   photos: GalleryPhoto[];
-  token?: string;
-  allowUpload?: boolean;
 }) {
   const [photos, setPhotos] = useState(initialPhotos);
   const [index, setIndex] = useState<number | null>(null);
@@ -650,29 +644,9 @@ export function ClientGalleryViewer({
       </header>
 
       <main className="g3d-stage">
-        {allowUpload && token ? (
-          <div className="mb-5">
-            <ClientGalleryUpload
-              token={token}
-              onAdded={(items) => {
-                setPhotos((prev) => [
-                  ...prev,
-                  ...items.map((i) => ({
-                    id: i.id,
-                    image_url: i.image_url,
-                    caption: i.caption,
-                  })),
-                ]);
-              }}
-            />
-          </div>
-        ) : null}
-
         {photos.length === 0 ? (
           <p className="py-16 text-center text-sm text-white/40">
-            {allowUpload
-              ? "No photos yet — tap Add photos to upload."
-              : "No photos in this gallery yet."}
+            No photos in this gallery yet.
           </p>
         ) : (
           <div className="g3d-grid g3d-grid-3d">
