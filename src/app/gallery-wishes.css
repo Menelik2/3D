@@ -1,0 +1,261 @@
+/* Best Wishes (private gallery guest book) */
+
+.g3d-wishes {
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@media (min-width: 640px) {
+  .g3d-wishes {
+    margin-top: 3.25rem;
+    padding-top: 2.5rem;
+  }
+}
+
+.g3d-wishes-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.g3d-wishes-eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.g3d-wishes-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+
+@media (min-width: 640px) {
+  .g3d-wishes-title {
+    font-size: 1.85rem;
+  }
+}
+
+.g3d-wishes-desc {
+  margin: 0.65rem auto 0;
+  max-width: 28rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.g3d-wishes-card {
+  margin: 0 auto 2rem;
+  max-width: 36rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+@media (min-width: 640px) {
+  .g3d-wishes-card {
+    padding: 1.5rem 1.65rem;
+  }
+}
+
+.g3d-wishes-field {
+  margin-bottom: 1rem;
+}
+
+.g3d-wishes-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.g3d-wishes-label span {
+  color: #fb7185;
+}
+
+.g3d-wishes-input,
+.g3d-wishes-textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f5f5f5;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  padding: 0.7rem 0.85rem;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.g3d-wishes-textarea {
+  resize: vertical;
+  min-height: 6.5rem;
+  font-family: inherit;
+}
+
+.g3d-wishes-input::placeholder,
+.g3d-wishes-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.g3d-wishes-input:focus,
+.g3d-wishes-textarea:focus {
+  border-color: rgba(225, 29, 72, 0.55);
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+}
+
+.g3d-wishes-input.is-invalid,
+.g3d-wishes-textarea.is-invalid {
+  border-color: rgba(248, 113, 113, 0.65);
+}
+
+.g3d-wishes-field-err {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: #f87171;
+}
+
+.g3d-wishes-count {
+  margin: 0.35rem 0 0;
+  text-align: right;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.g3d-wishes-banner {
+  margin: 0 0 0.85rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+}
+
+.g3d-wishes-banner.is-err {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #fca5a5;
+}
+
+.g3d-wishes-banner.is-ok {
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #6ee7b7;
+}
+
+.g3d-wishes-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 9999px;
+  background: #e11d48;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 160ms ease, opacity 160ms ease, transform 160ms ease;
+}
+
+.g3d-wishes-submit:hover:not(:disabled) {
+  background: #be123c;
+}
+
+.g3d-wishes-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.g3d-wishes-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.g3d-wishes-empty {
+  margin: 0;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.g3d-wishes-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .g3d-wishes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.9rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .g3d-wishes-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.g3d-wish-card {
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(160deg, rgba(225, 29, 72, 0.08), transparent 55%),
+    rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-height: 100%;
+}
+
+.g3d-wish-message {
+  margin: 0;
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.g3d-wish-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.g3d-wish-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fb7185;
+}
+
+.g3d-wish-time {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.35);
+}
