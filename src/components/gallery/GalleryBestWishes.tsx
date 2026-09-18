@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import "@/app/gallery-wishes.css";
 
 export type WishItem = {
   id: string;
@@ -138,7 +139,8 @@ export function GalleryBestWishes({
             value={message}
             onChange={(e) => {
               setMessage(e.target.value);
-              if (errors.message) setErrors((x) => ({ ...x, message: undefined }));
+              if (errors.message)
+                setErrors((x) => ({ ...x, message: undefined }));
             }}
             className={`g3d-wishes-textarea${errors.message ? " is-invalid" : ""}`}
             placeholder="Write your best wishes…"
@@ -146,7 +148,11 @@ export function GalleryBestWishes({
             aria-describedby={errors.message ? "wish-message-err" : undefined}
           />
           {errors.message ? (
-            <p id="wish-message-err" className="g3d-wishes-field-err" role="alert">
+            <p
+              id="wish-message-err"
+              className="g3d-wishes-field-err"
+              role="alert"
+            >
               {errors.message}
             </p>
           ) : null}
@@ -185,10 +191,7 @@ export function GalleryBestWishes({
                 <p className="g3d-wish-message">{w.message}</p>
                 <div className="g3d-wish-meta">
                   <span className="g3d-wish-name">{w.author_name}</span>
-                  <time
-                    className="g3d-wish-time"
-                    dateTime={w.created_at}
-                  >
+                  <time className="g3d-wish-time" dateTime={w.created_at}>
                     {formatWishTime(w.created_at)}
                   </time>
                 </div>
