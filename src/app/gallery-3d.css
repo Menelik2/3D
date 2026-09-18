@@ -1,3 +1,677 @@
-/* Client private gallery styles */
-@import "./gallery-3d-part1.css";
-@import "./gallery-3d-part2.css";
+/* Client private gallery — cinematic 3D grid (mobile-safe taps) */
+
+.g3d-root {
+  --g3d-accent: rgba(225, 29, 72, 0.55);
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -20%, rgba(225, 29, 72, 0.14), transparent 58%),
+    radial-gradient(ellipse 50% 40% at 95% 70%, rgba(225, 29, 72, 0.06), transparent 48%),
+    #050505;
+  overflow-x: hidden;
+}
+
+.g3d-atmosphere {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.g3d-frame {
+  position: absolute;
+  border: 1px solid rgba(225, 29, 72, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(225, 29, 72, 0.04),
+    rgba(255, 255, 255, 0.01)
+  );
+  box-shadow: 0 0 48px rgba(225, 29, 72, 0.04);
+  animation: g3d-float 16s ease-in-out infinite;
+  opacity: 0.4;
+}
+
+@media (max-width: 767px) {
+  .g3d-frame {
+    display: none;
+  }
+}
+
+.g3d-frame-a {
+  width: min(280px, 40vw);
+  height: min(160px, 22vw);
+  top: 18%;
+  left: -4%;
+  transform: rotateY(28deg) rotateX(8deg);
+}
+.g3d-frame-b {
+  width: min(200px, 28vw);
+  height: min(260px, 36vw);
+  top: 28%;
+  right: -2%;
+  transform: rotateY(-26deg) rotateX(4deg);
+  animation-delay: -4s;
+}
+.g3d-frame-c {
+  width: min(220px, 32vw);
+  height: min(120px, 16vw);
+  bottom: 12%;
+  left: 8%;
+  transform: rotateY(14deg) rotateX(-12deg);
+  animation-delay: -8s;
+}
+
+@keyframes g3d-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -14px;
+  }
+}
+
+.g3d-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(20px) saturate(1.3);
+  -webkit-backdrop-filter: blur(20px) saturate(1.3);
+}
+
+.g3d-header-inner {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 72rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .g3d-header-inner {
+    padding: 1.35rem 1.5rem 1.15rem;
+  }
+}
+
+.g3d-stage {
+  position: relative;
+  z-index: 1;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 72rem;
+  padding: 1rem 0.75rem 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .g3d-stage {
+    padding: 1.5rem 1.25rem 3rem;
+  }
+}
+
+.g3d-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+  perspective: 1100px;
+  transform-style: preserve-3d;
+}
+
+.g3d-grid-3d {
+  padding: 0.35rem 0.1rem 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .g3d-grid {
+    gap: 0.8rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .g3d-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.9rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .g3d-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.05rem;
+  }
+}
+
+.g3d-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --px: 50%;
+  --py: 50%;
+  --lift: 0px;
+  --side-ry: 0deg;
+  position: relative;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #0a0a0a;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 8px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  transform-style: preserve-3d;
+  transition:
+    transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 280ms ease,
+    border-color 200ms ease;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.25),
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  animation: g3d-card-in-center 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform: translateZ(0);
+}
+
+.g3d-card.g3d-side-left {
+  animation-name: g3d-card-in-left;
+  box-shadow:
+    6px 12px 28px rgba(0, 0, 0, 0.5),
+    -2px 0 12px rgba(225, 29, 72, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.g3d-card.g3d-side-right {
+  animation-name: g3d-card-in-right;
+  box-shadow:
+    -6px 12px 28px rgba(0, 0, 0, 0.5),
+    2px 0 12px rgba(225, 29, 72, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.g3d-card.g3d-side-center {
+  animation-name: g3d-card-in-center;
+}
+
+.g3d-card:active {
+  transform: scale(0.96) translateY(2px);
+  border-color: rgba(225, 29, 72, 0.55);
+}
+
+.g3d-card:active .g3d-card-media {
+  transform: scale(1.04);
+}
+
+.g3d-card:active .g3d-card-rim {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .g3d-card.g3d-side-left {
+    --side-ry: 8deg;
+  }
+  .g3d-card.g3d-side-right {
+    --side-ry: -8deg;
+  }
+
+  .g3d-card {
+    transform: perspective(1000px) rotateX(var(--rx))
+      rotateY(calc(var(--side-ry) + var(--ry))) translateZ(var(--lift));
+  }
+
+  .g3d-card:active {
+    transform: perspective(1000px) rotateY(var(--side-ry)) scale(0.97);
+  }
+
+  .g3d-card.is-tracking {
+    transition:
+      transform 60ms linear,
+      box-shadow 200ms ease,
+      border-color 200ms ease;
+    border-color: rgba(225, 29, 72, 0.55);
+    z-index: 2;
+    box-shadow:
+      0 32px 64px rgba(0, 0, 0, 0.6),
+      0 0 48px rgba(225, 29, 72, 0.22);
+  }
+
+  .g3d-card:hover .g3d-card-media,
+  .g3d-card.is-tracking .g3d-card-media {
+    transform: scale(1.06);
+  }
+
+  .g3d-card:hover .g3d-card-edge,
+  .g3d-card.is-tracking .g3d-card-edge,
+  .g3d-card:hover .g3d-card-glare,
+  .g3d-card.is-tracking .g3d-card-glare,
+  .g3d-card:hover .g3d-card-rim,
+  .g3d-card.is-tracking .g3d-card-rim {
+    opacity: 1;
+  }
+
+  .g3d-card:hover .g3d-card-depth,
+  .g3d-card.is-tracking .g3d-card-depth {
+    opacity: 0.55;
+  }
+}
+
+.g3d-card:focus-visible {
+  outline: 2px solid rgba(225, 29, 72, 0.85);
+  outline-offset: 3px;
+}
+
+.g3d-card-media {
+  transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.g3d-card-glare,
+.g3d-card-rim,
+.g3d-card-depth,
+.g3d-card-edge {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.g3d-card-glare {
+  z-index: 4;
+  opacity: 0.22;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    120% 80% at 30% 15%,
+    rgba(255, 255, 255, 0.22),
+    transparent 55%
+  );
+  transition: opacity 250ms ease;
+}
+
+.g3d-card-rim {
+  z-index: 3;
+  opacity: 0;
+  box-shadow: inset 0 0 0 1px rgba(225, 29, 72, 0.55);
+  transition: opacity 250ms ease;
+}
+
+.g3d-card-depth {
+  z-index: 2;
+  opacity: 0.4;
+  background: linear-gradient(
+    165deg,
+    transparent 30%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  transition: opacity 250ms ease;
+}
+
+.g3d-card-edge {
+  z-index: 5;
+  opacity: 0.55;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    transparent 16%,
+    transparent 84%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  transition: opacity 250ms ease;
+}
+
+@keyframes g3d-card-in-left {
+  from {
+    opacity: 0;
+    transform: perspective(800px) translate3d(-18px, 22px, -40px) rotateY(18deg)
+      rotateX(6deg) scale(0.9);
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) translate3d(0, 0, 0) rotateY(0) rotateX(0)
+      scale(1);
+  }
+}
+
+@keyframes g3d-card-in-right {
+  from {
+    opacity: 0;
+    transform: perspective(800px) translate3d(18px, 22px, -40px) rotateY(-18deg)
+      rotateX(6deg) scale(0.9);
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) translate3d(0, 0, 0) rotateY(0) rotateX(0)
+      scale(1);
+  }
+}
+
+@keyframes g3d-card-in-center {
+  from {
+    opacity: 0;
+    transform: perspective(800px) translate3d(0, 26px, -50px) rotateX(12deg)
+      scale(0.88);
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: perspective(800px) translate3d(0, 0, 0) rotateX(0) scale(1);
+  }
+}
+
+.g3d-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  width: 100%;
+  height: 100%;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  animation: g3d-lb-in 220ms ease both;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+@keyframes g3d-lb-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.g3d-back-btn {
+  position: absolute;
+  top: max(0.65rem, env(safe-area-inset-top));
+  left: max(0.65rem, env(safe-area-inset-left));
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  min-height: 34px;
+  min-width: 34px;
+  padding: 0.35rem 0.7rem 0.35rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+
+.g3d-back-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.g3d-back-btn:active {
+  transform: scale(0.95);
+  background: rgba(225, 29, 72, 0.7);
+}
+
+.g3d-lb-chrome {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+  transition: opacity 280ms ease, transform 280ms ease;
+  pointer-events: none;
+}
+
+.g3d-lb-chrome-top {
+  top: 0;
+  padding-top: max(0.85rem, env(safe-area-inset-top));
+  padding-bottom: 1rem;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.65), transparent);
+}
+
+.g3d-lb-counter {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+
+.g3d-lb-chrome-bottom {
+  bottom: 0;
+  padding-top: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.78), transparent);
+  flex-direction: column;
+  gap: 0.75rem;
+  pointer-events: auto;
+}
+
+.g3d-lightbox.is-chrome-hidden .g3d-lb-chrome {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.g3d-lightbox.is-chrome-hidden .g3d-back-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.g3d-lb-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.g3d-lb-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: g3d-lb-frame 280ms ease both;
+}
+
+@keyframes g3d-lb-frame {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.g3d-lb-frame.is-swap-next {
+  animation: g3d-lb-next 280ms ease both;
+}
+
+.g3d-lb-frame.is-swap-prev {
+  animation: g3d-lb-prev 280ms ease both;
+}
+
+@keyframes g3d-lb-next {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes g3d-lb-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.g3d-zoom-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.g3d-zoom-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transform-origin: center center;
+  will-change: transform;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.g3d-zoom-hint {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.g3d-nav-btn {
+  display: none;
+  position: absolute;
+  top: 50%;
+  z-index: 15;
+  height: 3.25rem;
+  width: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  backdrop-filter: blur(12px);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+@media (min-width: 768px) {
+  .g3d-nav-btn {
+    display: flex;
+  }
+}
+
+.g3d-nav-prev {
+  left: max(0.5rem, env(safe-area-inset-left));
+}
+.g3d-nav-next {
+  right: max(0.5rem, env(safe-area-inset-right));
+}
+
+.g3d-lightbox.is-chrome-hidden .g3d-nav-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.g3d-filmstrip {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0.25rem 0.5rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  pointer-events: auto;
+}
+
+.g3d-filmstrip::-webkit-scrollbar {
+  display: none;
+}
+
+.g3d-thumb {
+  position: relative;
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  opacity: 0.48;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: opacity 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+
+@media (min-width: 640px) {
+  .g3d-thumb {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+.g3d-thumb.is-active {
+  opacity: 1;
+  border-color: rgba(225, 29, 72, 0.95);
+  transform: scale(1.08);
+  box-shadow: 0 0 18px rgba(225, 29, 72, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .g3d-frame,
+  .g3d-card,
+  .g3d-lightbox,
+  .g3d-lb-frame {
+    animation: none !important;
+  }
+  .g3d-card,
+  .g3d-card-media,
+  .g3d-thumb {
+    transform: none !important;
+    transition: none !important;
+  }
+}
