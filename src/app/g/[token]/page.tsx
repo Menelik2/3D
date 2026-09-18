@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { tryCreateAdminClient } from "@/lib/supabase/admin";
 import { ClientGalleryViewer } from "@/components/gallery/ClientGalleryViewer";
+import type { WishItem } from "@/components/gallery/GalleryBestWishes";
 
 type Props = { params: Promise<{ token: string }> };
 
@@ -75,11 +76,30 @@ export default async function PublicGalleryPage({ params }: Props) {
     (p) => typeof p.image_url === "string" && p.image_url.length > 0
   );
 
+  let wishes: WishItem[] = [];
+  const { data: wishRows, error: wishErr } = await supabase
+    .from("gallery_wishes")
+    .select("id, author_name, message, created_at")
+    .eq("gallery_id", gallery.id)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (wishErr) {
+    // Table may not exist until SQL migration is run
+    if (!/relation|does not exist|gallery_wishes/i.test(wishErr.message)) {
+      console.error("[gallery] wishes error", wishErr.message);
+    }
+  } else {
+    wishes = (wishRows ?? []) as WishItem[];
+  }
+
   return (
     <ClientGalleryViewer
       title={gallery.title}
       clientName={gallery.client_name}
       photos={photos}
+      token={token}
+      wishes={wishes}
     />
   );
 }
