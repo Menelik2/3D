@@ -125,17 +125,18 @@ export function Navbar({
             : "bg-transparent"
         }`}
       >
-        <div className="mx-auto flex h-16 md:h-[4.5rem] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 lg:h-[4.5rem] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="group flex items-center gap-2.5 transition-opacity duration-300 hover:opacity-90"
+            className="group flex shrink-0 items-center gap-2.5 transition-opacity duration-300 hover:opacity-90"
             onClick={() => setOpen(false)}
           >
-            <MetaMark className="h-8 w-auto md:h-9 transition-transform duration-300 group-hover:scale-[1.04]" />
+            <MetaMark className="h-8 w-auto lg:h-9 transition-transform duration-300 group-hover:scale-[1.04]" />
             <span className="sr-only">META Pictures</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Full desktop nav from lg (1024+) — avoids cramped tablet landscape */}
+          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 min-w-0">
             {desktopLinks.map((link) => {
               const active = isActive(link.href);
               return (
@@ -143,7 +144,7 @@ export function Navbar({
                   key={link.href}
                   href={link.href}
                   data-active={active ? "true" : "false"}
-                  className={`nav-link-underline relative px-3.5 py-2 text-[11px] uppercase tracking-[0.18em] transition-colors duration-300 ${
+                  className={`nav-link-underline relative whitespace-nowrap px-2.5 xl:px-3.5 py-2 text-[10px] xl:text-[11px] uppercase tracking-[0.14em] xl:tracking-[0.18em] transition-colors duration-300 ${
                     active ? "text-foreground" : "text-muted hover:text-foreground"
                   }`}
                 >
@@ -151,13 +152,17 @@ export function Navbar({
                 </Link>
               );
             })}
-            <LanguageSwitcher className="ml-2" />
-            <Link href="/start-a-project" className="btn-primary ml-3 !py-2 !px-4 !text-[10px]">
+            <LanguageSwitcher className="ml-1.5 xl:ml-2 shrink-0" />
+            <Link
+              href="/start-a-project"
+              className="btn-primary ml-2 xl:ml-3 shrink-0 !py-2 !px-3.5 xl:!px-4 !text-[10px]"
+            >
               {t.nav.startProject}
             </Link>
           </nav>
 
-          <div className="flex md:hidden items-center gap-2">
+          {/* Tablet + mobile: hamburger */}
+          <div className="flex lg:hidden items-center gap-2">
             <LanguageSwitcher compact />
             <button
               type="button"
@@ -178,7 +183,7 @@ export function Navbar({
       </header>
 
       <div
-        className={`menu-backdrop fixed inset-0 z-[55] md:hidden bg-black/70 backdrop-blur-sm ${
+        className={`menu-backdrop fixed inset-0 z-[55] lg:hidden bg-black/70 backdrop-blur-sm ${
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setOpen(false)}
@@ -187,7 +192,7 @@ export function Navbar({
 
       <aside
         data-open={open ? "true" : "false"}
-        className={`menu-panel fixed top-0 left-0 z-[56] md:hidden flex h-full w-[min(300px,86vw)] flex-col bg-[#0a0a0a] ${
+        className={`menu-panel fixed top-0 left-0 z-[56] lg:hidden flex h-full w-[min(300px,86vw)] flex-col bg-[#0a0a0a] ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{ boxShadow: open ? "8px 0 48px rgba(225, 29, 72, 0.15)" : "none" }}

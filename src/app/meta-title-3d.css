@@ -149,10 +149,35 @@
 @media (min-width: 768px) {
   .meta-title-line-meta {
     letter-spacing: 0.16em;
+    font-size: clamp(4rem, 10vw, 7rem);
   }
   .meta-title-line-pictures {
     letter-spacing: 0.5em;
     padding-left: 0.5em;
+    font-size: clamp(1.15rem, 2.8vw, 1.85rem);
+  }
+  .meta-title-glow {
+    width: min(70vw, 560px);
+    height: min(28vw, 240px);
+  }
+  .meta-title-ring {
+    width: min(60vw, 420px);
+    height: min(60vw, 420px);
+    max-height: 300px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .meta-title-line-meta {
+    font-size: clamp(5.5rem, 8vw, 8rem);
+    letter-spacing: 0.18em;
+  }
+  .meta-title-line-pictures {
+    font-size: clamp(1.35rem, 2vw, 2.1rem);
+    letter-spacing: 0.55em;
+  }
+  .meta-title-3d {
+    padding: 2rem 1rem 2.5rem;
   }
 }
 
