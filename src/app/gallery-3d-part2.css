@@ -1,0 +1,5 @@
+/* lightbox minimal so build does not break */
+.g3d-lightbox { position: fixed; inset: 0; z-index: 99999; background: #000; }
+.g3d-back-btn { position: absolute; top: 0.65rem; left: 0.65rem; z-index: 30; }
+.g3d-card { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 8px; cursor: pointer; }
+.g3d-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem; }
