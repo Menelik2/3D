@@ -31,6 +31,7 @@ export function GalleryBestWishes({
   initialWishes?: WishItem[];
 }) {
   const [wishes, setWishes] = useState<WishItem[]>(initialWishes);
+  const [showWishes, setShowWishes] = useState(false);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<{ name?: string; message?: string }>({});
@@ -69,12 +70,15 @@ export function GalleryBestWishes({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setFormError(
-          typeof data.error === "string" ? data.error : "Could not send your wish."
+          typeof data.error === "string"
+            ? data.error
+            : "Could not send your wish."
         );
         return;
       }
       if (data.item) {
         setWishes((prev) => [data.item as WishItem, ...prev]);
+        setShowWishes(true);
       }
       setName("");
       setMessage("");
@@ -86,6 +90,8 @@ export function GalleryBestWishes({
       setSubmitting(false);
     }
   }
+
+  const count = wishes.length;
 
   return (
     <section className="g3d-wishes" aria-labelledby="best-wishes-heading">
@@ -179,27 +185,65 @@ export function GalleryBestWishes({
         </button>
       </form>
 
-      <div className="g3d-wishes-wall">
-        {wishes.length === 0 ? (
-          <p className="g3d-wishes-empty">
-            No wishes yet — be the first to leave a note.
-          </p>
-        ) : (
-          <ul className="g3d-wishes-grid">
-            {wishes.map((w) => (
-              <li key={w.id} className="g3d-wish-card">
-                <p className="g3d-wish-message">{w.message}</p>
-                <div className="g3d-wish-meta">
-                  <span className="g3d-wish-name">{w.author_name}</span>
-                  <time className="g3d-wish-time" dateTime={w.created_at}>
-                    {formatWishTime(w.created_at)}
-                  </time>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+      <div className="g3d-wishes-toggle-wrap">
+        <button
+          type="button"
+          className={`g3d-wishes-toggle${showWishes ? " is-open" : ""}`}
+          onClick={() => setShowWishes((v) => !v)}
+          aria-expanded={showWishes}
+          aria-controls="g3d-wishes-wall"
+        >
+          <span className="g3d-wishes-toggle-label">
+            {showWishes ? "Hide wishes" : "Show wishes"}
+          </span>
+          <span className="g3d-wishes-toggle-count">
+            {count} {count === 1 ? "wish" : "wishes"}
+          </span>
+          <svg
+            className="g3d-wishes-toggle-chevron"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
       </div>
+
+      {showWishes ? (
+        <div
+          id="g3d-wishes-wall"
+          className="g3d-wishes-wall is-visible"
+          role="region"
+          aria-label="All wishes"
+        >
+          {count === 0 ? (
+            <p className="g3d-wishes-empty">
+              No wishes yet — be the first to leave a note.
+            </p>
+          ) : (
+            <ul className="g3d-wishes-grid">
+              {wishes.map((w) => (
+                <li key={w.id} className="g3d-wish-card">
+                  <p className="g3d-wish-message">{w.message}</p>
+                  <div className="g3d-wish-meta">
+                    <span className="g3d-wish-name">{w.author_name}</span>
+                    <time className="g3d-wish-time" dateTime={w.created_at}>
+                      {formatWishTime(w.created_at)}
+                    </time>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }
