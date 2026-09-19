@@ -26,6 +26,13 @@ export default async function EditGalleryPage({ params }: Props) {
     .eq("gallery_id", id)
     .order("sort_order", { ascending: true });
 
+  let wishCount = 0;
+  const { count } = await supabase
+    .from("gallery_wishes")
+    .select("id", { count: "exact", head: true })
+    .eq("gallery_id", id);
+  wishCount = count ?? 0;
+
   return (
     <div className="space-y-10 max-w-4xl">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -57,6 +64,33 @@ export default async function EditGalleryPage({ params }: Props) {
       </div>
 
       <GallerySharePanel token={gallery.token} title={gallery.title} />
+
+      <section className="border border-border bg-card/20 p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xs uppercase tracking-widest text-muted">
+              Best Wishes
+            </h2>
+            <p className="mt-1 text-sm text-foreground/90">
+              {wishCount} message{wishCount === 1 ? "" : "s"} on this gallery
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/admin/wishes?gallery=${id}`}
+              className="text-[10px] uppercase tracking-widest text-accent hover:underline"
+            >
+              Manage wishes →
+            </Link>
+            <Link
+              href="/admin/wishes/new"
+              className="text-[10px] uppercase tracking-widest text-muted hover:text-foreground"
+            >
+              + Add wish
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <section>
         <h2 className="text-xs uppercase tracking-widest text-muted mb-4">
