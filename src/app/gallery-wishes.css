@@ -182,7 +182,6 @@
   cursor: not-allowed;
 }
 
-/* Show / Hide wishes toggle */
 .g3d-wishes-toggle-wrap {
   display: flex;
   justify-content: center;
@@ -341,6 +340,38 @@
   font-size: 10px;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.35);
+}
+
+.g3d-wishes-load-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.g3d-wishes-load-btn {
+  min-height: 42px;
+  padding: 0.55rem 1.4rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.g3d-wishes-load-btn:hover:not(:disabled) {
+  background: rgba(225, 29, 72, 0.15);
+  border-color: rgba(225, 29, 72, 0.45);
+}
+
+.g3d-wishes-load-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
 @media (prefers-reduced-motion: reduce) {
