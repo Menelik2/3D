@@ -140,22 +140,32 @@ export function Footer({
             {hasSocial ? (
               <SocialIcons social={social} iconClassName="border-border bg-card/40 text-muted hover:text-accent" />
             ) : (
-              <>
-                <SocialIcons
-                  social={social}
-                  showEmpty
-                  iconClassName="border-border bg-card/40 text-muted hover:text-accent"
-                />
-                
-              </>
+              <SocialIcons
+                social={social}
+                showEmpty
+                iconClassName="border-border bg-card/40 text-muted hover:text-accent"
+              />
             )}
           </div>
         </div>
 
         <div className="mt-16 flex flex-col gap-4 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted">
-            © {new Date().getFullYear()} META Pictures. {t.footer.rights}
-          </p>
+          <div className="space-y-1.5">
+            <p className="text-xs text-muted">
+              © {new Date().getFullYear()} META Pictures. {t.footer.rights}
+            </p>
+            <p className="text-xs text-muted/80">
+              Developed by{" "}
+              <span className="text-foreground/85">Menelik Admasu</span>
+              {" · "}
+              <a
+                href="tel:+251977832379"
+                className="text-muted hover:text-accent transition-colors tabular-nums"
+              >
+                0977832379
+              </a>
+            </p>
+          </div>
           <div className="flex gap-6 text-xs text-muted">
             <Link href="/privacy" className="hover:text-foreground transition-colors">
               {t.footer.privacy}
