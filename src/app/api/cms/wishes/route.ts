@@ -6,6 +6,7 @@ const UUID_RE =
 
 const NAME_MAX = 80;
 const MESSAGE_MAX = 800;
+const ADMIN_LIST_LIMIT = 5000;
 
 export async function GET(request: Request) {
   try {
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
         "id, gallery_id, author_name, message, created_at, client_galleries(id, title, client_name, token)"
       )
       .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(ADMIN_LIST_LIMIT);
 
     if (galleryId && UUID_RE.test(galleryId)) {
       q = q.eq("gallery_id", galleryId);
@@ -143,9 +144,9 @@ export async function DELETE(request: Request) {
         { status: 400 }
       );
     }
-    if (ids.length > 200) {
+    if (ids.length > 500) {
       return NextResponse.json(
-        { error: "Maximum 200 wishes per bulk delete." },
+        { error: "Maximum 500 wishes per bulk delete." },
         { status: 400 }
       );
     }

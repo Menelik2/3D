@@ -4,6 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 
 const NAME_MAX = 80;
 const MESSAGE_MAX = 800;
+/** Max rows per request (Supabase default max is 1000). */
+const PAGE_MAX = 1000;
 
 function publicClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -36,7 +38,7 @@ async function resolveGallery(token: string) {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ token: string }> }
 ) {
   try {
@@ -44,6 +46,13 @@ export async function GET(
     if (!token || token.length < 6) {
       return NextResponse.json({ error: "Invalid gallery link." }, { status: 400 });
     }
+
+    const { searchParams } = new URL(request.url);
+    const limit = Math.min(
+      PAGE_MAX,
+      Math.max(1, parseInt(searchParams.get("limit") || "100", 10) || 100)
+    );
+    const offset = Math.max(0, parseInt(searchParams.get("offset") || "0", 10) || 0);
 
     const resolved = await resolveGallery(token);
     if ("error" in resolved && resolved.error) {
@@ -59,22 +68,56 @@ export async function GET(
       return NextResponse.json({ error: "Database not configured." }, { status: 503 });
     }
 
+    const { count: total, error: countErr } = await supabase
+      .from("gallery_wishes")
+      .select("id", { count: "exact", head: true })
+      .eq("gallery_id", gallery.id);
+
+    if (countErr) {
+      if (/relation|does not exist|gallery_wishes/i.test(countErr.message)) {
+        return NextResponse.json({
+          items: [],
+          total: 0,
+          offset,
+          limit,
+          hasMore: false,
+          needsMigration: true,
+        });
+      }
+      return NextResponse.json({ error: countErr.message }, { status: 500 });
+    }
+
     const { data, error } = await supabase
       .from("gallery_wishes")
       .select("id, author_name, message, created_at")
       .eq("gallery_id", gallery.id)
       .order("created_at", { ascending: false })
-      .limit(200);
+      .range(offset, offset + limit - 1);
 
     if (error) {
-      // Table may not exist yet
       if (/relation|does not exist|gallery_wishes/i.test(error.message)) {
-        return NextResponse.json({ items: [], needsMigration: true });
+        return NextResponse.json({
+          items: [],
+          total: 0,
+          offset,
+          limit,
+          hasMore: false,
+          needsMigration: true,
+        });
       }
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ items: data ?? [] });
+    const items = data ?? [];
+    const totalCount = total ?? items.length;
+
+    return NextResponse.json({
+      items,
+      total: totalCount,
+      offset,
+      limit,
+      hasMore: offset + items.length < totalCount,
+    });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
@@ -90,8 +133,9 @@ export async function POST(
       return NextResponse.json({ error: "Invalid gallery link." }, { status: 400 });
     }
 
-    const admin = tryCreateAdminClient();
-    if (!admin) {
+    // Prefer service role; fall back to anon if RLS allows inserts later
+    const client = tryCreateAdminClient() ?? publicClient();
+    if (!client) {
       return NextResponse.json(
         {
           error:
@@ -101,7 +145,7 @@ export async function POST(
       );
     }
 
-    const { data: gallery, error: gErr } = await admin
+    const { data: gallery, error: gErr } = await client
       .from("client_galleries")
       .select("id, is_published")
       .eq("token", token)
@@ -143,7 +187,8 @@ export async function POST(
       );
     }
 
-    const { data: row, error: insErr } = await admin
+    // No cap on number of wishes — unlimited guests may submit
+    const { data: row, error: insErr } = await client
       .from("gallery_wishes")
       .insert({
         gallery_id: gallery.id,
@@ -159,6 +204,16 @@ export async function POST(
           {
             error:
               "Wishes table is missing. Run supabase/gallery-wishes.sql in the Supabase SQL Editor.",
+          },
+          { status: 503 }
+        );
+      }
+      // RLS often blocks anon insert — tell admin to set service role
+      if (/row-level security|RLS|permission/i.test(insErr.message)) {
+        return NextResponse.json(
+          {
+            error:
+              "Could not save wish. Studio must set SUPABASE_SERVICE_ROLE_KEY on the server.",
           },
           { status: 503 }
         );

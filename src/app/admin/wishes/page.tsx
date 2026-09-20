@@ -9,6 +9,9 @@ type GalleryJoin = {
   token: string;
 } | null;
 
+/** Admin list can show up to 5000 wishes (no guest submission cap). */
+const ADMIN_LIST_LIMIT = 5000;
+
 export default async function AdminWishesPage({
   searchParams,
 }: {
@@ -17,17 +20,26 @@ export default async function AdminWishesPage({
   const { gallery: galleryFilter } = await searchParams;
 
   let wishes: WishRow[] = [];
+  let totalInDb = 0;
   let errorMsg: string | null = null;
 
   try {
     const supabase = await getCmsClient();
+
+    let countQ = supabase
+      .from("gallery_wishes")
+      .select("id", { count: "exact", head: true });
+    if (galleryFilter) countQ = countQ.eq("gallery_id", galleryFilter);
+    const { count } = await countQ;
+    totalInDb = count ?? 0;
+
     let q = supabase
       .from("gallery_wishes")
       .select(
         "id, gallery_id, author_name, message, created_at, client_galleries(id, title, client_name, token)"
       )
       .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(ADMIN_LIST_LIMIT);
 
     if (galleryFilter) {
       q = q.eq("gallery_id", galleryFilter);
@@ -67,12 +79,15 @@ export default async function AdminWishesPage({
         <div>
           <h1 className="text-2xl font-light tracking-tight">Best Wishes</h1>
           <p className="mt-1 text-sm text-muted">
-            Guest messages on private galleries. Edit, add, or permanently
-            delete from the database.
+            Guest messages on private galleries. Unlimited submissions — edit or
+            permanently delete from the database.
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <p className="text-xs text-muted">{wishes.length} shown</p>
+          <p className="text-xs text-muted">
+            {wishes.length}
+            {totalInDb > wishes.length ? ` of ${totalInDb}` : ""} shown
+          </p>
           <Link
             href="/admin/wishes/new"
             className="inline-flex bg-accent px-5 py-2.5 text-xs uppercase tracking-widest text-white hover:bg-accent-hover"

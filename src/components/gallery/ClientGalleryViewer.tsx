@@ -328,12 +328,14 @@ export function ClientGalleryViewer({
   photos: initialPhotos,
   token,
   wishes = [],
+  wishesTotal,
 }: {
   title: string;
   clientName?: string | null;
   photos: GalleryPhoto[];
   token?: string;
   wishes?: WishItem[];
+  wishesTotal?: number;
 }) {
   const [photos, setPhotos] = useState(initialPhotos);
   const [index, setIndex] = useState<number | null>(null);
@@ -670,7 +672,11 @@ export function ClientGalleryViewer({
         )}
 
         {token ? (
-          <GalleryBestWishes token={token} initialWishes={wishes} />
+          <GalleryBestWishes
+            token={token}
+            initialWishes={wishes}
+            initialTotal={wishesTotal}
+          />
         ) : null}
       </main>
 

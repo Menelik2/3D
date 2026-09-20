@@ -6,6 +6,9 @@ import type { WishItem } from "@/components/gallery/GalleryBestWishes";
 
 type Props = { params: Promise<{ token: string }> };
 
+/** First page of wishes for SSR; client loads more via API. */
+const WISHES_INITIAL = 100;
+
 function publicClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -15,7 +18,6 @@ function publicClient() {
   });
 }
 
-/** Prefer service role for reliable reads if RLS policies are incomplete. */
 function galleryDb() {
   return tryCreateAdminClient() ?? publicClient();
 }
@@ -77,20 +79,29 @@ export default async function PublicGalleryPage({ params }: Props) {
   );
 
   let wishes: WishItem[] = [];
+  let wishesTotal = 0;
+
+  const { count } = await supabase
+    .from("gallery_wishes")
+    .select("id", { count: "exact", head: true })
+    .eq("gallery_id", gallery.id);
+
+  wishesTotal = count ?? 0;
+
   const { data: wishRows, error: wishErr } = await supabase
     .from("gallery_wishes")
     .select("id, author_name, message, created_at")
     .eq("gallery_id", gallery.id)
     .order("created_at", { ascending: false })
-    .limit(200);
+    .range(0, WISHES_INITIAL - 1);
 
   if (wishErr) {
-    // Table may not exist until SQL migration is run
     if (!/relation|does not exist|gallery_wishes/i.test(wishErr.message)) {
       console.error("[gallery] wishes error", wishErr.message);
     }
   } else {
     wishes = (wishRows ?? []) as WishItem[];
+    if (!wishesTotal) wishesTotal = wishes.length;
   }
 
   return (
@@ -100,6 +111,7 @@ export default async function PublicGalleryPage({ params }: Props) {
       photos={photos}
       token={token}
       wishes={wishes}
+      wishesTotal={wishesTotal}
     />
   );
 }

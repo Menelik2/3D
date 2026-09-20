@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useCallback, useMemo, useState } from "react";
 import "@/app/gallery-wishes.css";
 
 export type WishItem = {
@@ -9,6 +9,8 @@ export type WishItem = {
   message: string;
   created_at: string;
 };
+
+const PAGE_SIZE = 100;
 
 function formatWishTime(iso: string): string {
   try {
@@ -26,18 +28,27 @@ function formatWishTime(iso: string): string {
 export function GalleryBestWishes({
   token,
   initialWishes = [],
+  initialTotal,
 }: {
   token: string;
   initialWishes?: WishItem[];
+  /** Total wishes in DB (may be > initialWishes.length). */
+  initialTotal?: number;
 }) {
   const [wishes, setWishes] = useState<WishItem[]>(initialWishes);
+  const [total, setTotal] = useState(
+    Math.max(initialTotal ?? 0, initialWishes.length)
+  );
   const [showWishes, setShowWishes] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<{ name?: string; message?: string }>({});
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formOk, setFormOk] = useState<string | null>(null);
+
+  const hasMore = wishes.length < total;
 
   const canSubmit = useMemo(() => {
     return name.trim().length > 0 && message.trim().length > 0 && !submitting;
@@ -50,6 +61,33 @@ export function GalleryBestWishes({
     setErrors(next);
     return Object.keys(next).length === 0;
   }
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const offset = wishes.length;
+      const res = await fetch(
+        `/api/g/${encodeURIComponent(token)}/wishes?limit=${PAGE_SIZE}&offset=${offset}`
+      );
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && Array.isArray(data.items)) {
+        setWishes((prev) => {
+          const seen = new Set(prev.map((w) => w.id));
+          const next = [...prev];
+          for (const item of data.items as WishItem[]) {
+            if (!seen.has(item.id)) next.push(item);
+          }
+          return next;
+        });
+        if (typeof data.total === "number") setTotal(data.total);
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [hasMore, loadingMore, token, wishes.length]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -78,6 +116,7 @@ export function GalleryBestWishes({
       }
       if (data.item) {
         setWishes((prev) => [data.item as WishItem, ...prev]);
+        setTotal((t) => t + 1);
         setShowWishes(true);
       }
       setName("");
@@ -90,8 +129,6 @@ export function GalleryBestWishes({
       setSubmitting(false);
     }
   }
-
-  const count = wishes.length;
 
   return (
     <section className="g3d-wishes" aria-labelledby="best-wishes-heading">
@@ -197,7 +234,7 @@ export function GalleryBestWishes({
             {showWishes ? "Hide wishes" : "Show wishes"}
           </span>
           <span className="g3d-wishes-toggle-count">
-            {count} {count === 1 ? "wish" : "wishes"}
+            {total} {total === 1 ? "wish" : "wishes"}
           </span>
           <svg
             className="g3d-wishes-toggle-chevron"
@@ -223,24 +260,40 @@ export function GalleryBestWishes({
           role="region"
           aria-label="All wishes"
         >
-          {count === 0 ? (
+          {total === 0 ? (
             <p className="g3d-wishes-empty">
               No wishes yet — be the first to leave a note.
             </p>
           ) : (
-            <ul className="g3d-wishes-grid">
-              {wishes.map((w) => (
-                <li key={w.id} className="g3d-wish-card">
-                  <p className="g3d-wish-message">{w.message}</p>
-                  <div className="g3d-wish-meta">
-                    <span className="g3d-wish-name">{w.author_name}</span>
-                    <time className="g3d-wish-time" dateTime={w.created_at}>
-                      {formatWishTime(w.created_at)}
-                    </time>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="g3d-wishes-grid">
+                {wishes.map((w) => (
+                  <li key={w.id} className="g3d-wish-card">
+                    <p className="g3d-wish-message">{w.message}</p>
+                    <div className="g3d-wish-meta">
+                      <span className="g3d-wish-name">{w.author_name}</span>
+                      <time className="g3d-wish-time" dateTime={w.created_at}>
+                        {formatWishTime(w.created_at)}
+                      </time>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              {hasMore ? (
+                <div className="g3d-wishes-load-more">
+                  <button
+                    type="button"
+                    className="g3d-wishes-load-btn"
+                    disabled={loadingMore}
+                    onClick={loadMore}
+                  >
+                    {loadingMore
+                      ? "Loading…"
+                      : `Load more (${wishes.length} of ${total})`}
+                  </button>
+                </div>
+              ) : null}
+            </>
           )}
         </div>
       ) : null}
